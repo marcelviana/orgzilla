@@ -1,0 +1,1119 @@
+"use client"
+
+import { useState } from "react"
+import { DashboardShell } from "@/components/dashboard-shell"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Switch } from "@/components/ui/switch"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
+import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Key, Trash2, CheckCircle2, XCircle, Download, X } from 'lucide-react'
+import Link from "next/link"
+
+// Mock data
+const mockUsers = [
+  {
+    id: "u1",
+    nome: "Carlos Silva",
+    email: "carlos@orgzilla.com",
+    tipoPerfil: "admin" as const,
+    pessoaVinculada: { id: "p1", nome: "Carlos Silva" },
+    ativo: true,
+    ultimoAcesso: "2024-11-16T10:30:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u2",
+    nome: "Maria Santos",
+    email: "maria@orgzilla.com",
+    tipoPerfil: "gestor" as const,
+    pessoaVinculada: { id: "p2", nome: "Maria Santos" },
+    ativo: true,
+    ultimoAcesso: "2024-11-16T09:15:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u3",
+    nome: "João Silva",
+    email: "joao@orgzilla.com",
+    tipoPerfil: "gestor" as const,
+    pessoaVinculada: { id: "p3", nome: "João Silva" },
+    ativo: true,
+    ultimoAcesso: "2024-11-15T18:45:00",
+    avatar: "/man.jpg",
+  },
+  {
+    id: "u4",
+    nome: "Ana Costa",
+    email: "ana@orgzilla.com",
+    tipoPerfil: "visualizador" as const,
+    pessoaVinculada: null,
+    ativo: true,
+    ultimoAcesso: "2024-11-14T14:20:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u5",
+    nome: "Pedro Lima",
+    email: "pedro@orgzilla.com",
+    tipoPerfil: "gestor" as const,
+    pessoaVinculada: { id: "p5", nome: "Pedro Lima" },
+    ativo: false,
+    ultimoAcesso: "2024-10-01T16:30:00",
+    avatar: "/man.jpg",
+  },
+  {
+    id: "u6",
+    nome: "Julia Martins",
+    email: "julia@orgzilla.com",
+    tipoPerfil: "visualizador" as const,
+    pessoaVinculada: { id: "p6", nome: "Julia Martins" },
+    ativo: true,
+    ultimoAcesso: "2024-11-16T08:00:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u7",
+    nome: "Roberto Santos",
+    email: "roberto@orgzilla.com",
+    tipoPerfil: "gestor" as const,
+    pessoaVinculada: { id: "p7", nome: "Roberto Santos" },
+    ativo: true,
+    ultimoAcesso: "2024-11-15T17:30:00",
+    avatar: "/man.jpg",
+  },
+  {
+    id: "u8",
+    nome: "Fernanda Silva",
+    email: "fernanda@orgzilla.com",
+    tipoPerfil: "gestor" as const,
+    pessoaVinculada: null,
+    ativo: true,
+    ultimoAcesso: "2024-11-16T11:00:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u9",
+    nome: "Lucas Oliveira",
+    email: "lucas@orgzilla.com",
+    tipoPerfil: "visualizador" as const,
+    pessoaVinculada: { id: "p9", nome: "Lucas Oliveira" },
+    ativo: true,
+    ultimoAcesso: "2024-11-13T15:45:00",
+    avatar: "/man.jpg",
+  },
+  {
+    id: "u10",
+    nome: "Carla Mendes",
+    email: "carla@orgzilla.com",
+    tipoPerfil: "gestor" as const,
+    pessoaVinculada: { id: "p10", nome: "Carla Mendes" },
+    ativo: false,
+    ultimoAcesso: "2024-09-20T10:15:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u11",
+    nome: "Rafael Souza",
+    email: "rafael@orgzilla.com",
+    tipoPerfil: "visualizador" as const,
+    pessoaVinculada: { id: "p11", nome: "Rafael Souza" },
+    ativo: true,
+    ultimoAcesso: "2024-11-15T12:30:00",
+    avatar: "/man.jpg",
+  },
+  {
+    id: "u12",
+    nome: "Patricia Costa",
+    email: "patricia@orgzilla.com",
+    tipoPerfil: "gestor" as const,
+    pessoaVinculada: null,
+    ativo: true,
+    ultimoAcesso: "2024-11-16T07:45:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u13",
+    nome: "Bruno Alves",
+    email: "bruno@orgzilla.com",
+    tipoPerfil: "visualizador" as const,
+    pessoaVinculada: { id: "p13", nome: "Bruno Alves" },
+    ativo: true,
+    ultimoAcesso: "2024-11-14T16:20:00",
+    avatar: "/man.jpg",
+  },
+  {
+    id: "u14",
+    nome: "Juliana Lima",
+    email: "juliana@orgzilla.com",
+    tipoPerfil: "visualizador" as const,
+    pessoaVinculada: { id: "p14", nome: "Juliana Lima" },
+    ativo: false,
+    ultimoAcesso: "2024-10-15T13:00:00",
+    avatar: "/diverse-woman-portrait.png",
+  },
+  {
+    id: "u15",
+    nome: "Thiago Santos",
+    email: "thiago@orgzilla.com",
+    tipoPerfil: "visualizador" as const,
+    pessoaVinculada: { id: "p15", nome: "Thiago Santos" },
+    ativo: true,
+    ultimoAcesso: "2024-11-15T19:10:00",
+    avatar: "/man.jpg",
+  },
+]
+
+function formatRelativeTime(dateString: string) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 60) return `há ${diffMins} minutos`
+  if (diffHours < 24) return `há ${diffHours} horas`
+  if (diffDays === 1) return "há 1 dia"
+  if (diffDays < 30) return `há ${diffDays} dias`
+  return date.toLocaleDateString("pt-BR")
+}
+
+export default function UsuariosPage() {
+  const [users, setUsers] = useState(mockUsers)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [showFilters, setShowFilters] = useState(false)
+  const [filterProfile, setFilterProfile] = useState("todos")
+  const [filterStatus, setFilterStatus] = useState("todos")
+  const [filterLinked, setFilterLinked] = useState("todos")
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // Modals
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [linkModalOpen, setLinkModalOpen] = useState(false)
+  const [unlinkModalOpen, setUnlinkModalOpen] = useState(false)
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+
+  // Form state
+  const [formData, setFormData] = useState({
+    nome: "",
+    email: "",
+    tipoPerfil: "visualizador",
+    senha: "",
+    ativo: true,
+  })
+  const [showPassword, setShowPassword] = useState(false)
+  const [deleteConfirmed, setDeleteConfirmed] = useState(false)
+
+  // Filter and search users
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesProfile =
+      filterProfile === "todos" || user.tipoPerfil === filterProfile
+
+    const matchesStatus =
+      filterStatus === "todos" ||
+      (filterStatus === "ativos" && user.ativo) ||
+      (filterStatus === "inativos" && !user.ativo)
+
+    const matchesLinked =
+      filterLinked === "todos" ||
+      (filterLinked === "vinculados" && user.pessoaVinculada !== null) ||
+      (filterLinked === "sem-vinculo" && user.pessoaVinculada === null)
+
+    return matchesSearch && matchesProfile && matchesStatus && matchesLinked
+  })
+
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex)
+
+  // Stats
+  const totalUsers = users.length
+  const activeUsers = users.filter((u) => u.ativo).length
+  const inactiveUsers = users.filter((u) => !u.ativo).length
+  const admins = users.filter((u) => u.tipoPerfil === "admin").length
+  const gestores = users.filter((u) => u.tipoPerfil === "gestor").length
+
+  const handleToggleStatus = (userId: string) => {
+    console.log("[v0] Toggling status for user:", userId)
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, ativo: !u.ativo } : u))
+    )
+  }
+
+  const handleCreateUser = () => {
+    console.log("[v0] Creating user:", formData)
+    setCreateModalOpen(false)
+    setFormData({
+      nome: "",
+      email: "",
+      tipoPerfil: "visualizador",
+      senha: "",
+      ativo: true,
+    })
+  }
+
+  const handleEditUser = () => {
+    console.log("[v0] Editing user:", currentUser?.id, formData)
+    setEditModalOpen(false)
+  }
+
+  const handleDeleteUser = () => {
+    if (!deleteConfirmed) return
+    console.log("[v0] Deleting user:", currentUser?.id)
+    setUsers((prev) => prev.filter((u) => u.id !== currentUser?.id))
+    setDeleteModalOpen(false)
+    setDeleteConfirmed(false)
+  }
+
+  const handleBulkAction = (action: string) => {
+    console.log("[v0] Bulk action:", action, "for users:", selectedUsers)
+    setSelectedUsers([])
+  }
+
+  const getProfileBadge = (tipo: string) => {
+    switch (tipo) {
+      case "admin":
+        return (
+          <Badge className="bg-error text-white">
+            Admin
+          </Badge>
+        )
+      case "gestor":
+        return (
+          <Badge className="bg-primary text-white">
+            Gestor
+          </Badge>
+        )
+      case "visualizador":
+        return (
+          <Badge className="bg-accent text-white">
+            Visualizador
+          </Badge>
+        )
+    }
+  }
+
+  return (
+    <DashboardShell>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <Link href="/" className="hover:text-primary">
+                Dashboard
+              </Link>
+              <span>&gt;</span>
+              <Link href="/configuracoes" className="hover:text-primary">
+                Configurações
+              </Link>
+              <span>&gt;</span>
+              <span className="text-foreground">Usuários</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-secondary">
+                Usuários
+              </h1>
+              <ShieldAlert className="h-5 w-5 text-error" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative hidden sm:block">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                type="search"
+                placeholder="Buscar usuários..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-64 pl-10"
+              />
+            </div>
+            <Button
+              onClick={() => setCreateModalOpen(true)}
+              className="bg-primary hover:bg-primary/90 text-white"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Criar Usuário
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-lg border bg-white p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total de Usuários</p>
+                <p className="mt-2 text-3xl font-bold text-secondary">{totalUsers}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {activeUsers} ativos, {inactiveUsers} inativos
+                </p>
+              </div>
+              <div className="rounded-lg bg-primary/10 p-3">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border bg-white p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Administradores</p>
+                <p className="mt-2 text-3xl font-bold text-secondary">{admins}</p>
+                <p className="mt-1 text-sm text-muted-foreground">acesso total</p>
+              </div>
+              <div className="rounded-lg bg-error/10 p-3">
+                <ShieldAlert className="h-6 w-6 text-error" />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border bg-white p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Gestores</p>
+                <p className="mt-2 text-3xl font-bold text-secondary">{gestores}</p>
+                <p className="mt-1 text-sm text-muted-foreground">gerenciam equipes</p>
+              </div>
+              <div className="rounded-lg bg-accent/10 p-3">
+                <Network className="h-6 w-6 text-accent" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="rounded-lg border bg-white">
+          <Button
+            variant="ghost"
+            className="w-full justify-between p-4"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <span className="font-medium">Filtros</span>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showFilters ? "rotate-180" : ""}`}
+            />
+          </Button>
+
+          {showFilters && (
+            <div className="border-t p-4">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <Label>Tipo de Perfil</Label>
+                  <Select value={filterProfile} onValueChange={setFilterProfile}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="gestor">Gestor</SelectItem>
+                      <SelectItem value="visualizador">Visualizador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Status</Label>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="ativos">Ativos</SelectItem>
+                      <SelectItem value="inativos">Inativos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Pessoa Vinculada</Label>
+                  <Select value={filterLinked} onValueChange={setFilterLinked}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="todos">Todos</SelectItem>
+                      <SelectItem value="vinculados">Com Pessoa Vinculada</SelectItem>
+                      <SelectItem value="sem-vinculo">Sem Vínculo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFilterProfile("todos")
+                    setFilterStatus("todos")
+                    setFilterLinked("todos")
+                  }}
+                >
+                  Limpar Filtros
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Users Table */}
+        <div className="rounded-lg border bg-white">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={
+                      selectedUsers.length === paginatedUsers.length &&
+                      paginatedUsers.length > 0
+                    }
+                    onCheckedChange={(checked) => {
+                      setSelectedUsers(
+                        checked ? paginatedUsers.map((u) => u.id) : []
+                      )
+                    }}
+                  />
+                </TableHead>
+                <TableHead>Usuário</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Tipo de Perfil</TableHead>
+                <TableHead>Pessoa Vinculada</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Último Acesso</TableHead>
+                <TableHead className="w-12"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedUsers.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedUsers.includes(user.id)}
+                      onCheckedChange={(checked) => {
+                        setSelectedUsers((prev) =>
+                          checked
+                            ? [...prev, user.id]
+                            : prev.filter((id) => id !== user.id)
+                        )
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                        <AvatarFallback>
+                          {user.nome
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">{user.nome}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {user.email}
+                  </TableCell>
+                  <TableCell>{getProfileBadge(user.tipoPerfil)}</TableCell>
+                  <TableCell>
+                    {user.pessoaVinculada ? (
+                      <Link
+                        href={`/pessoas/${user.pessoaVinculada.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {user.pessoaVinculada.nome}
+                      </Link>
+                    ) : (
+                      <span className="text-muted-foreground">Sem vínculo</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Switch
+                      checked={user.ativo}
+                      onCheckedChange={() => handleToggleStatus(user.id)}
+                    />
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatRelativeTime(user.ultimoAcesso)}
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setCurrentUser(user)
+                            setFormData({
+                              nome: user.nome,
+                              email: user.email,
+                              tipoPerfil: user.tipoPerfil,
+                              senha: "",
+                              ativo: user.ativo,
+                            })
+                            setEditModalOpen(true)
+                          }}
+                        >
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setCurrentUser(user)
+                            setPasswordModalOpen(true)
+                          }}
+                        >
+                          <Key className="mr-2 h-4 w-4" />
+                          Alterar Senha
+                        </DropdownMenuItem>
+                        {user.pessoaVinculada ? (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCurrentUser(user)
+                              setUnlinkModalOpen(true)
+                            }}
+                          >
+                            <Unlink className="mr-2 h-4 w-4" />
+                            Desvincular Pessoa
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setCurrentUser(user)
+                              setLinkModalOpen(true)
+                            }}
+                          >
+                            <LinkIcon className="mr-2 h-4 w-4" />
+                            Vincular Pessoa
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-error"
+                          onClick={() => {
+                            setCurrentUser(user)
+                            setDeleteModalOpen(true)
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between border-t px-4 py-4">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {startIndex + 1}-
+              {Math.min(endIndex, filteredUsers.length)} de {filteredUsers.length}{" "}
+              usuários
+            </div>
+            <div className="flex items-center gap-2">
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={(value) => {
+                  setItemsPerPage(Number(value))
+                  setCurrentPage(1)
+                }}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk Actions Bar */}
+        {selectedUsers.length > 0 && (
+          <div className="fixed bottom-0 left-60 right-0 border-t bg-secondary p-4 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <span className="font-medium">
+                {selectedUsers.length} usuários selecionados
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulkAction("ativar")}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Ativar
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulkAction("desativar")}
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Desativar
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulkAction("exportar")}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Exportar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-secondary/80"
+                  onClick={() => setSelectedUsers([])}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create/Edit User Modal */}
+        <Dialog
+          open={createModalOpen || editModalOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              setCreateModalOpen(false)
+              setEditModalOpen(false)
+              setFormData({
+                nome: "",
+                email: "",
+                tipoPerfil: "visualizador",
+                senha: "",
+                ativo: true,
+              })
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-2xl w-full p-0">
+            <div className="p-6 pb-4 border-b">
+              <DialogHeader>
+                <DialogTitle>
+                  {createModalOpen ? "Novo Usuário" : "Editar Usuário"}
+                </DialogTitle>
+                <DialogDescription>
+                  {createModalOpen
+                    ? "Preencha as informações para criar um novo usuário"
+                    : "Atualize as informações do usuário"}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+
+            <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+              <div>
+                <Label htmlFor="nome">
+                  Nome Completo <span className="text-error">*</span>
+                </Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nome: e.target.value })
+                  }
+                  placeholder="Nome completo do usuário"
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">
+                  Email <span className="text-error">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  placeholder="email@exemplo.com"
+                  className="mt-1"
+                  disabled={editModalOpen}
+                />
+              </div>
+
+              <div>
+                <Label>
+                  Tipo de Perfil <span className="text-error">*</span>
+                </Label>
+                <div className="mt-2 space-y-3">
+                  <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
+                    <input
+                      type="radio"
+                      name="tipoPerfil"
+                      value="admin"
+                      checked={formData.tipoPerfil === "admin"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tipoPerfil: e.target.value })
+                      }
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <ShieldAlert className="h-4 w-4 text-error" />
+                        <span className="font-medium">Admin</span>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Acesso total ao sistema e configurações
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
+                    <input
+                      type="radio"
+                      name="tipoPerfil"
+                      value="gestor"
+                      checked={formData.tipoPerfil === "gestor"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tipoPerfil: e.target.value })
+                      }
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Network className="h-4 w-4 text-primary" />
+                        <span className="font-medium">Gestor</span>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Gerencia sua equipe e hierarquia
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
+                    <input
+                      type="radio"
+                      name="tipoPerfil"
+                      value="visualizador"
+                      checked={formData.tipoPerfil === "visualizador"}
+                      onChange={(e) =>
+                        setFormData({ ...formData, tipoPerfil: e.target.value })
+                      }
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-accent" />
+                        <span className="font-medium">Visualizador</span>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Apenas visualização, sem edições
+                      </p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {createModalOpen && (
+                <div>
+                  <Label htmlFor="senha">
+                    Senha <span className="text-error">*</span>
+                  </Label>
+                  <div className="relative mt-1">
+                    <Input
+                      id="senha"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.senha}
+                      onChange={(e) =>
+                        setFormData({ ...formData, senha: e.target.value })
+                      }
+                      placeholder="Mínimo 8 caracteres"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {formData.senha && (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Força:{" "}
+                      {formData.senha.length < 8
+                        ? "Fraca"
+                        : formData.senha.length < 12
+                          ? "Média"
+                          : "Forte"}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <Label>Status do Usuário</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Usuários inativos não podem fazer login
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.ativo}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, ativo: checked })
+                  }
+                />
+              </div>
+
+              {formData.tipoPerfil === "admin" && (
+                <div className="rounded-lg border border-error/20 bg-error/5 p-4">
+                  <p className="text-sm text-error">
+                    Administradores têm acesso total ao sistema
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 pt-4 border-t">
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setCreateModalOpen(false)
+                    setEditModalOpen(false)
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={createModalOpen ? handleCreateUser : handleEditUser}
+                  className="bg-primary hover:bg-primary/90 text-white"
+                >
+                  Salvar Usuário
+                </Button>
+              </DialogFooter>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete User Modal */}
+        <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Excluir Usuário?</DialogTitle>
+              <DialogDescription>
+                Esta ação não pode ser desfeita. O usuário perderá acesso ao
+                sistema.
+                {currentUser?.pessoaVinculada && (
+                  <span className="mt-2 block">
+                    A pessoa {currentUser.pessoaVinculada.nome} permanecerá no
+                    sistema, apenas o acesso será removido.
+                  </span>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-start gap-2 py-4">
+              <Checkbox
+                id="confirm"
+                checked={deleteConfirmed}
+                onCheckedChange={(checked) =>
+                  setDeleteConfirmed(checked as boolean)
+                }
+              />
+              <label
+                htmlFor="confirm"
+                className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Entendo as consequências
+              </label>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDeleteModalOpen(false)
+                  setDeleteConfirmed(false)
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={!deleteConfirmed}
+                onClick={handleDeleteUser}
+              >
+                Excluir
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Unlink Person Modal */}
+        <Dialog open={unlinkModalOpen} onOpenChange={setUnlinkModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Desvincular Pessoa?</DialogTitle>
+              <DialogDescription>
+                Usuário continuará existindo mas sem vínculo com a pessoa{" "}
+                {currentUser?.pessoaVinculada?.nome}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setUnlinkModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  console.log("[v0] Unlinking person from user:", currentUser?.id)
+                  setUnlinkModalOpen(false)
+                }}
+              >
+                Desvincular
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Change Password Modal */}
+        <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Alterar Senha</DialogTitle>
+              <DialogDescription>
+                Defina uma nova senha para {currentUser?.nome}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label htmlFor="newPassword">Nova Senha</Label>
+                <div className="relative mt-1">
+                  <Input
+                    id="newPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Mínimo 8 caracteres"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-full"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Digite novamente"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setPasswordModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  console.log("[v0] Changing password for user:", currentUser?.id)
+                  setPasswordModalOpen(false)
+                }}
+              >
+                Alterar Senha
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </DashboardShell>
+  )
+}

@@ -1,0 +1,1208 @@
+'use client'
+
+import { useState } from 'react'
+import { DashboardShell } from '@/components/dashboard-shell'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, UserCheck, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
+// Mock data
+const mockLevels = [
+  {
+    id: 'n1',
+    nome: 'L1',
+    nivelAnterior: null,
+    nivelAnteriorId: null,
+    pessoas: 15,
+    cargos: 3,
+    ativo: true,
+    cargosLista: ['Estagiário', 'Trainee', 'Analista Júnior'],
+  },
+  {
+    id: 'n2',
+    nome: 'L2',
+    nivelAnterior: 'L1',
+    nivelAnteriorId: 'n1',
+    pessoas: 32,
+    cargos: 5,
+    ativo: true,
+    cargosLista: [
+      'Analista',
+      'Engineer I',
+      'Designer Júnior',
+      'Analista de Dados',
+      'Marketing Analyst',
+    ],
+  },
+  {
+    id: 'n3',
+    nome: 'L3',
+    nivelAnterior: 'L2',
+    nivelAnteriorId: 'n2',
+    pessoas: 45,
+    cargos: 6,
+    ativo: true,
+    cargosLista: [
+      'Analista Sênior',
+      'Engineer II',
+      'Designer',
+      'PM Associate',
+      'Data Analyst',
+      'Marketing Specialist',
+    ],
+  },
+  {
+    id: 'n4',
+    nome: 'L4',
+    nivelAnterior: 'L3',
+    nivelAnteriorId: 'n3',
+    pessoas: 25,
+    cargos: 8,
+    ativo: true,
+    cargosLista: [
+      'Senior Engineer',
+      'Product Manager',
+      'Senior Designer',
+      'Data Scientist',
+      'Marketing Manager',
+      'QA Lead',
+      'DevOps Engineer',
+      'Tech Writer',
+    ],
+  },
+  {
+    id: 'n5',
+    nome: 'L5',
+    nivelAnterior: 'L4',
+    nivelAnteriorId: 'n4',
+    pessoas: 10,
+    cargos: 7,
+    ativo: true,
+    cargosLista: [
+      'Staff Engineer',
+      'Senior PM',
+      'Design Lead',
+      'Senior Data Scientist',
+      'Engineering Manager',
+      'Marketing Lead',
+      'Security Lead',
+    ],
+  },
+  {
+    id: 'n6',
+    nome: 'L6',
+    nivelAnterior: 'L5',
+    nivelAnteriorId: 'n5',
+    pessoas: 5,
+    cargos: 5,
+    ativo: true,
+    cargosLista: [
+      'Principal Engineer',
+      'Group PM',
+      'Head of Design',
+      'Engineering Manager',
+      'Data Lead',
+    ],
+  },
+  {
+    id: 'n7',
+    nome: 'L7',
+    nivelAnterior: 'L6',
+    nivelAnteriorId: 'n6',
+    pessoas: 2,
+    cargos: 3,
+    ativo: true,
+    cargosLista: ['Engineering Director', 'Head of Product', 'Senior Manager'],
+  },
+  {
+    id: 'n8',
+    nome: 'L8',
+    nivelAnterior: 'L7',
+    nivelAnteriorId: 'n7',
+    pessoas: 1,
+    cargos: 1,
+    ativo: true,
+    cargosLista: ['VP of Engineering'],
+  },
+  {
+    id: 'n9',
+    nome: 'L9',
+    nivelAnterior: 'L8',
+    nivelAnteriorId: 'n8',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+  {
+    id: 'n10',
+    nome: 'L10',
+    nivelAnterior: 'L9',
+    nivelAnteriorId: 'n9',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+  {
+    id: 'n11',
+    nome: 'L11',
+    nivelAnterior: 'L10',
+    nivelAnteriorId: 'n10',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+  {
+    id: 'n12',
+    nome: 'L12',
+    nivelAnterior: 'L11',
+    nivelAnteriorId: 'n11',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+  {
+    id: 'n13',
+    nome: 'L13',
+    nivelAnterior: 'L12',
+    nivelAnteriorId: 'n12',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+  {
+    id: 'n14',
+    nome: 'L14',
+    nivelAnterior: 'L13',
+    nivelAnteriorId: 'n13',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+  {
+    id: 'n15',
+    nome: 'L15',
+    nivelAnterior: 'L14',
+    nivelAnteriorId: 'n14',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+  {
+    id: 'n16',
+    nome: 'L16',
+    nivelAnterior: 'L15',
+    nivelAnteriorId: 'n15',
+    pessoas: 0,
+    cargos: 0,
+    ativo: true,
+    cargosLista: [],
+  },
+]
+
+const mockPeople = [
+  {
+    id: '1',
+    nome: 'Maria Santos',
+    avatar: '/diverse-woman-portrait.png',
+    cargo: 'Senior Engineer',
+    time: 'Engenharia',
+    desde: 'Jan 2023',
+  },
+  {
+    id: '2',
+    nome: 'João Silva',
+    avatar: '/man.jpg',
+    cargo: 'Product Manager',
+    time: 'Produto',
+    desde: 'Mar 2022',
+  },
+]
+
+export default function NiveisPage() {
+  const [levels, setLevels] = useState(mockLevels)
+  const [expandedRows, setExpandedRows] = useState<string[]>([])
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
+  const [peopleModalOpen, setPeopleModalOpen] = useState(false)
+  const [positionsModalOpen, setPositionsModalOpen] = useState(false)
+  const [infoModalOpen, setInfoModalOpen] = useState(false)
+  const [selectedLevel, setSelectedLevel] = useState<any>(null)
+
+  // Form state
+  const [formNome, setFormNome] = useState('')
+  const [formNivelAnterior, setFormNivelAnterior] = useState<string | null>(
+    null
+  )
+  const [formAtivo, setFormAtivo] = useState(true)
+
+  const toggleRow = (id: string) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+    )
+  }
+
+  const scrollToLevel = (levelId: string) => {
+    const element = document.getElementById(`level-row-${levelId}`)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
+  const handleCreateLevel = () => {
+    console.log('[v0] Creating level:', { formNome, formNivelAnterior, formAtivo })
+    // TODO: Add to list
+    setCreateModalOpen(false)
+    // Reset form
+    setFormNome('')
+    setFormNivelAnterior(null)
+    setFormAtivo(true)
+  }
+
+  const handleEditLevel = () => {
+    console.log('[v0] Editing level:', selectedLevel?.id, {
+      formNivelAnterior,
+      formAtivo,
+    })
+    setEditModalOpen(false)
+  }
+
+  const handleDeleteLevel = () => {
+    console.log('[v0] Deleting level:', selectedLevel?.id)
+    setDeleteModalOpen(false)
+  }
+
+  const handleToggleStatus = (levelId: string, currentStatus: boolean) => {
+    console.log('[v0] Toggling status for:', levelId, 'to:', !currentStatus)
+    setLevels((prev) =>
+      prev.map((l) => (l.id === levelId ? { ...l, ativo: !currentStatus } : l))
+    )
+  }
+
+  const getHierarchyChain = (levelId: string): string[] => {
+    const chain: string[] = []
+    let current = levels.find((l) => l.id === levelId)
+    while (current) {
+      chain.unshift(current.nome)
+      if (!current.nivelAnteriorId) break
+      current = levels.find((l) => l.id === current!.nivelAnteriorId)
+    }
+    return chain
+  }
+
+  const niveisEmUso = levels.filter((l) => l.pessoas > 0).length
+  const totalCargos = levels.reduce((acc, l) => acc + l.cargos, 0)
+
+  return (
+    <DashboardShell>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+              <Link href="/" className="hover:text-foreground">
+                Dashboard
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <Link href="/configuracoes" className="hover:text-foreground">
+                Configurações
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <span className="text-foreground">Níveis</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">Níveis</h1>
+              {/* Icon already correct - ShieldAlert in red-500 */}
+              <ShieldAlert className="h-5 w-5 text-red-500" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setInfoModalOpen(true)}
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+            <Button
+              className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
+              onClick={() => setCreateModalOpen(true)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Criar Nível
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Total de Níveis
+                </p>
+                <p className="text-3xl font-bold mt-2">{levels.length}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  L1 até L16
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-[#FF7A00]/10 flex items-center justify-center">
+                <Layers className="h-6 w-6 text-[#FF7A00]" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Níveis em Uso</p>
+                <p className="text-3xl font-bold mt-2">{niveisEmUso}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  com pessoas alocadas
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-[#00C8FF]/10 flex items-center justify-center">
+                <Users className="h-6 w-6 text-[#00C8FF]" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg border p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Cargos por Nível
+                </p>
+                <p className="text-3xl font-bold mt-2">{totalCargos}</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  cargos criados
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                <Briefcase className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Visual Hierarchy */}
+        <div className="bg-white rounded-lg border p-6">
+          <h2 className="text-lg font-semibold mb-4">Hierarquia de Níveis</h2>
+          <div className="overflow-x-auto">
+            <div className="flex items-center gap-2 pb-4 min-w-max">
+              {levels.slice(0, 8).map((level, index) => (
+                <div key={level.id} className="flex items-center">
+                  <button
+                    onClick={() => scrollToLevel(level.id)}
+                    className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg border-2 transition-colors ${
+                      level.pessoas > 0
+                        ? 'border-[#FF7A00] bg-[#FF7A00]/5 hover:bg-[#FF7A00]/10'
+                        : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="font-bold">{level.nome}</span>
+                    <Badge
+                      variant={level.pessoas > 0 ? 'default' : 'secondary'}
+                      className={
+                        level.pessoas > 0
+                          ? 'bg-[#FF7A00] hover:bg-[#FF7A00]'
+                          : 'text-white'
+                      }
+                    >
+                      {level.pessoas}
+                    </Badge>
+                  </button>
+                  {index < 7 && (
+                    <ArrowRight className="h-5 w-5 text-muted-foreground mx-1" />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 min-w-max">
+              {levels.slice(8).map((level, index) => (
+                <div key={level.id} className="flex items-center">
+                  <button
+                    onClick={() => scrollToLevel(level.id)}
+                    className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="font-bold text-gray-500">
+                      {level.nome}
+                    </span>
+                    <Badge variant="secondary" className="text-white">
+                      0
+                    </Badge>
+                  </button>
+                  {index < 7 && (
+                    <ArrowRight className="h-5 w-5 text-muted-foreground mx-1" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="bg-white rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px]"></TableHead>
+                <TableHead>Nível</TableHead>
+                <TableHead>Nível Anterior</TableHead>
+                <TableHead>Pessoas</TableHead>
+                <TableHead>Cargos</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[80px]">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {levels.map((level) => (
+                <>
+                  <TableRow
+                    key={level.id}
+                    id={`level-row-${level.id}`}
+                    className={
+                      level.pessoas > 0 ? 'bg-[#FF7A00]/5' : undefined
+                    }
+                  >
+                    <TableCell>
+                      {level.cargos > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleRow(level.id)}
+                        >
+                          {expandedRows.includes(level.id) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={level.pessoas > 0 ? 'default' : 'secondary'}
+                        className={
+                          level.pessoas > 0
+                            ? 'bg-[#FF7A00] hover:bg-[#FF7A00]'
+                            : 'text-white'
+                        }
+                      >
+                        {level.nome}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {level.nivelAnterior ? (
+                        <span className="text-sm text-muted-foreground">
+                          {level.nome} → {level.nivelAnterior}
+                        </span>
+                      ) : (
+                        <Badge variant="outline">Inicial</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {level.pessoas > 0 ? (
+                        <button
+                          onClick={() => {
+                            setSelectedLevel(level)
+                            setPeopleModalOpen(true)
+                          }}
+                          className="text-[#00C8FF] hover:underline"
+                        >
+                          {level.pessoas} pessoas
+                        </button>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          0 pessoas
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {level.cargos > 0 ? (
+                        <button
+                          onClick={() => {
+                            setSelectedLevel(level)
+                            setPositionsModalOpen(true)
+                          }}
+                          className="text-[#00C8FF] hover:underline"
+                        >
+                          {level.cargos} cargos
+                        </button>
+                      ) : (
+                        <span className="text-muted-foreground">0 cargos</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={level.ativo}
+                        onCheckedChange={() =>
+                          handleToggleStatus(level.id, level.ativo)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedLevel(level)
+                              setDetailsModalOpen(true)
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedLevel(level)
+                              setFormNome(level.nome)
+                              setFormNivelAnterior(level.nivelAnteriorId)
+                              setFormAtivo(level.ativo)
+                              setEditModalOpen(true)
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedLevel(level)
+                              setPeopleModalOpen(true)
+                            }}
+                          >
+                            <Users className="h-4 w-4 mr-2" />
+                            Ver Pessoas
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedLevel(level)
+                              setPositionsModalOpen(true)
+                            }}
+                          >
+                            <Briefcase className="h-4 w-4 mr-2" />
+                            Ver Cargos
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setSelectedLevel(level)
+                              setDeleteModalOpen(true)
+                            }}
+                            className="text-red-600"
+                            disabled={level.pessoas > 0 || level.cargos > 0}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                  {expandedRows.includes(level.id) && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="bg-gray-50">
+                        <div className="py-2 px-4">
+                          <p className="text-sm font-medium mb-2">
+                            Cargos neste nível:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {level.cargosLista.map((cargo, idx) => (
+                              <Badge key={idx} variant="outline">
+                                {cargo}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+
+      {/* Create Modal */}
+      <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+        <DialogContent className="sm:max-w-2xl w-full p-0">
+          <div className="p-6 border-b">
+            <DialogHeader>
+              <DialogTitle>Novo Nível</DialogTitle>
+              <DialogDescription>
+                Crie um novo nível na hierarquia
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-2">
+              <Label htmlFor="nome">
+                Nome do Nível <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="nome"
+                placeholder="Ex: L9"
+                value={formNome}
+                onChange={(e) => setFormNome(e.target.value)}
+              />
+              <p className="text-sm text-muted-foreground">
+                Convenção: L1 (júnior) até L16 (executivo)
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nivelAnterior">Nível Anterior</Label>
+              <Select
+                value={formNivelAnterior || ''}
+                onValueChange={setFormNivelAnterior}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o nível anterior (opcional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="null">Nenhum (nível inicial)</SelectItem>
+                  {levels.map((level) => (
+                    <SelectItem key={level.id} value={level.id}>
+                      {level.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                Define a sequência na hierarquia
+              </p>
+            </div>
+
+            {formNivelAnterior && formNivelAnterior !== 'null' && (
+              <div className="bg-gray-50 rounded-lg p-4 border">
+                <p className="text-sm font-medium mb-2">
+                  Visualização da Hierarquia:
+                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  {getHierarchyChain(formNivelAnterior).map((l, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Badge variant="outline">{l}</Badge>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  ))}
+                  <Badge className="bg-[#FF7A00] hover:bg-[#FF7A00]">
+                    {formNome || 'Novo Nível'}
+                  </Badge>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="ativo">Status</Label>
+                <p className="text-sm text-muted-foreground">
+                  Nível ativo pode ser usado em novos cargos
+                </p>
+              </div>
+              <Switch
+                id="ativo"
+                checked={formAtivo}
+                onCheckedChange={setFormAtivo}
+              />
+            </div>
+          </div>
+
+          <div className="p-6 border-t flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCreateModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
+              onClick={handleCreateLevel}
+            >
+              Salvar Nível
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-2xl w-full p-0">
+          <div className="p-6 border-b">
+            <DialogHeader>
+              <DialogTitle>Editar Nível</DialogTitle>
+              <DialogDescription>
+                Atualize as informações do nível {selectedLevel?.nome}
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-2">
+              <Label htmlFor="edit-nome">Nome do Nível</Label>
+              <Input
+                id="edit-nome"
+                value={formNome}
+                disabled
+                className="bg-gray-50"
+              />
+              <p className="text-sm text-muted-foreground">
+                O nome do nível não pode ser alterado
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-nivelAnterior">Nível Anterior</Label>
+              <Select
+                value={formNivelAnterior || ''}
+                onValueChange={setFormNivelAnterior}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o nível anterior" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="null">Nenhum (nível inicial)</SelectItem>
+                  {levels
+                    .filter((l) => l.id !== selectedLevel?.id)
+                    .map((level) => (
+                      <SelectItem key={level.id} value={level.id}>
+                        {level.nome}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              {selectedLevel?.pessoas > 0 && (
+                <div className="flex items-start gap-2 text-sm text-amber-600">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span>
+                    Alterar hierarquia afeta progressão de carreira de{' '}
+                    {selectedLevel.pessoas} pessoas
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {formNivelAnterior && formNivelAnterior !== 'null' && (
+              <div className="bg-gray-50 rounded-lg p-4 border">
+                <p className="text-sm font-medium mb-2">
+                  Visualização da Hierarquia:
+                </p>
+                <div className="flex items-center gap-2 text-sm flex-wrap">
+                  {getHierarchyChain(formNivelAnterior).map((l, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Badge variant="outline">{l}</Badge>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  ))}
+                  <Badge className="bg-[#FF7A00] hover:bg-[#FF7A00]">
+                    {formNome}
+                  </Badge>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="edit-ativo">Status</Label>
+                <p className="text-sm text-muted-foreground">
+                  Desativar oculta o nível em seleções de novos cargos
+                </p>
+              </div>
+              <Switch
+                id="edit-ativo"
+                checked={formAtivo}
+                onCheckedChange={setFormAtivo}
+              />
+            </div>
+          </div>
+
+          <div className="p-6 border-t flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
+              onClick={handleEditLevel}
+            >
+              Salvar Alterações
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Modal */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Excluir Nível?</DialogTitle>
+            <DialogDescription>
+              {selectedLevel?.pessoas > 0 || selectedLevel?.cargos > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 text-red-600">
+                    <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                    <span>
+                      Não é possível excluir. {selectedLevel.pessoas} pessoas e{' '}
+                      {selectedLevel.cargos} cargos neste nível.
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p>Esta ação não pode ser desfeita.</p>
+                  <p className="text-sm text-amber-600">
+                    Removerá o nível da hierarquia. Verifique a sequência.
+                  </p>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteLevel}
+              disabled={
+                selectedLevel?.pessoas > 0 || selectedLevel?.cargos > 0
+              }
+            >
+              Excluir Nível
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Details Modal */}
+      <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
+        <DialogContent className="sm:max-w-3xl w-full p-0">
+          <div className="p-6 border-b">
+            <DialogHeader>
+              <DialogTitle>{selectedLevel?.nome} - Detalhes</DialogTitle>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+            {/* Hierarchy Position */}
+            <div>
+              <h3 className="font-semibold mb-3">Posição na Hierarquia</h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                {selectedLevel &&
+                  getHierarchyChain(selectedLevel.id).map((l, idx, arr) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <Badge
+                        variant={l === selectedLevel.nome ? 'default' : 'outline'}
+                        className={
+                          l === selectedLevel.nome
+                            ? 'bg-[#FF7A00] hover:bg-[#FF7A00]'
+                            : ''
+                        }
+                      >
+                        {l}
+                      </Badge>
+                      {idx < arr.length - 1 && (
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Statistics */}
+            <div>
+              <h3 className="font-semibold mb-3">Estatísticas</h3>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">
+                    Total de Pessoas
+                  </p>
+                  <p className="text-2xl font-bold mt-1">
+                    {selectedLevel?.pessoas || 0}
+                  </p>
+                </div>
+                <div className="border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground">
+                    Total de Cargos
+                  </p>
+                  <p className="text-2xl font-bold mt-1">
+                    {selectedLevel?.cargos || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Positions */}
+            {selectedLevel?.cargos > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3">Cargos neste Nível</h3>
+                <div className="space-y-2">
+                  {selectedLevel.cargosLista.map((cargo: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between border rounded-lg p-3"
+                    >
+                      <span>{cargo}</span>
+                      <Button variant="ghost" size="sm">
+                        Ver Cargo
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-6 border-t flex justify-end">
+            <Button onClick={() => setDetailsModalOpen(false)}>Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* People Modal */}
+      <Dialog open={peopleModalOpen} onOpenChange={setPeopleModalOpen}>
+        <DialogContent className="sm:max-w-3xl w-full p-0">
+          <div className="p-6 border-b">
+            <DialogHeader>
+              <DialogTitle>
+                Pessoas no Nível {selectedLevel?.nome}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6">
+            {selectedLevel?.pessoas > 0 ? (
+              <div className="space-y-4">
+                <Input placeholder="Buscar pessoas..." />
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Cargo</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Desde</TableHead>
+                      <TableHead>Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {mockPeople.map((person) => (
+                      <TableRow key={person.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={person.avatar || "/placeholder.svg"} />
+                              <AvatarFallback>
+                                {person.nome[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            {person.nome}
+                          </div>
+                        </TableCell>
+                        <TableCell>{person.cargo}</TableCell>
+                        <TableCell>{person.time}</TableCell>
+                        <TableCell>{person.desde}</TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm">
+                            Ver Perfil
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  Nenhuma pessoa neste nível ainda
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="p-6 border-t flex justify-end">
+            <Button onClick={() => setPeopleModalOpen(false)}>Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Positions Modal */}
+      <Dialog open={positionsModalOpen} onOpenChange={setPositionsModalOpen}>
+        <DialogContent className="sm:max-w-2xl w-full p-0">
+          <div className="p-6 border-b">
+            <DialogHeader>
+              <DialogTitle>Cargos no Nível {selectedLevel?.nome}</DialogTitle>
+            </DialogHeader>
+          </div>
+
+          <div className="p-6">
+            {selectedLevel?.cargos > 0 ? (
+              <div className="space-y-3">
+                {selectedLevel.cargosLista.map((cargo: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between border rounded-lg p-4 hover:bg-gray-50"
+                  >
+                    <div>
+                      <p className="font-medium">{cargo}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Nível {selectedLevel.nome}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Ver Cargo
+                    </Button>
+                  </div>
+                ))}
+                <Button
+                  className="w-full bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white mt-4"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Novo Cargo neste Nível
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">
+                  Nenhum cargo criado para este nível
+                </p>
+                <Button className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Primeiro Cargo
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="p-6 border-t flex justify-end">
+            <Button onClick={() => setPositionsModalOpen(false)}>
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Info Modal */}
+      <Dialog open={infoModalOpen} onOpenChange={setInfoModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Como Funcionam os Níveis?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <h4 className="font-semibold mb-2">O que são níveis?</h4>
+              <p className="text-sm text-muted-foreground">
+                Níveis representam senioridade e progressão de carreira na
+                organização.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Hierarquia</h4>
+              <p className="text-sm text-muted-foreground">
+                L1 (júnior) até L16 (executivo/C-level), formando uma cadeia
+                sequencial.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Como usar</h4>
+              <p className="text-sm text-muted-foreground">
+                Cada nível aponta para o anterior, formando uma cadeia. São
+                usados em definição de cargos e promoções.
+              </p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4 border">
+              <h4 className="font-semibold mb-2">Exemplo de Progressão</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">L2</Badge>
+                  <span>Engineer I</span>
+                </div>
+                <div className="flex items-center gap-2 pl-4">
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">promoção</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">L3</Badge>
+                  <span>Engineer II</span>
+                </div>
+                <div className="flex items-center gap-2 pl-4">
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">promoção</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">L4</Badge>
+                  <span>Senior Engineer</span>
+                </div>
+                <div className="flex items-center gap-2 pl-4">
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">promoção</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">L5</Badge>
+                  <span>Staff Engineer</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setInfoModalOpen(false)}>Entendi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </DashboardShell>
+  )
+}
