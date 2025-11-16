@@ -150,7 +150,11 @@ export function DashboardShell({ children }: { children?: React.ReactNode }) {
 
       {/* User Profile Section */}
       <div className="border-t border-secondary/80 p-4">
-        <div className="flex items-center gap-3">
+        <Link 
+          href="/perfil"
+          onClick={() => setSidebarOpen(false)}
+          className="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-secondary/60"
+        >
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-primary text-sm font-semibold text-white">
               JS
@@ -166,11 +170,15 @@ export function DashboardShell({ children }: { children?: React.ReactNode }) {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-gray-400 hover:bg-secondary/80 hover:text-white"
-            onClick={handleLogout}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleLogout()
+            }}
           >
             <LogOut className="h-4 w-4" />
           </Button>
-        </div>
+        </Link>
       </div>
     </div>
   )
