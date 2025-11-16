@@ -1,0 +1,112 @@
+# Dependencies
+node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Testing
+/coverage
+*.lcov
+.nyc_output
+
+# Next.js
+/.next/
+/out/
+.next
+out
+next-env.d.ts
+
+# Production
+/build
+/dist
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment Variables
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+.tsbuildinfo
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IDE - Cursor
+.cursor
+
+# IDE - WebStorm
+.idea
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary Files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache
+
+# Misc
+*.pem
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Turbopack
+.turbopack
+
+# Storybook
+storybook-static
+
+# Supabase (local development)
+supabase/.branches
+supabase/.temp
+
+# Package manager locks (keep only one)
+# Uncomment the ones you DON'T use:
+# yarn.lock
+# pnpm-lock.yaml
+# package-lock.json
