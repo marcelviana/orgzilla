@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Fragment } from 'react'
+import { useState, Fragment, useEffect } from 'react'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,231 +37,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, UserCheck, AlertTriangle } from 'lucide-react'
+import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-
-// Mock data
-const mockLevels = [
-  {
-    id: 'n1',
-    nome: 'L1',
-    nivelAnterior: null,
-    nivelAnteriorId: null,
-    pessoas: 15,
-    cargos: 3,
-    ativo: true,
-    cargosLista: ['Estagiário', 'Trainee', 'Analista Júnior'],
-  },
-  {
-    id: 'n2',
-    nome: 'L2',
-    nivelAnterior: 'L1',
-    nivelAnteriorId: 'n1',
-    pessoas: 32,
-    cargos: 5,
-    ativo: true,
-    cargosLista: [
-      'Analista',
-      'Engineer I',
-      'Designer Júnior',
-      'Analista de Dados',
-      'Marketing Analyst',
-    ],
-  },
-  {
-    id: 'n3',
-    nome: 'L3',
-    nivelAnterior: 'L2',
-    nivelAnteriorId: 'n2',
-    pessoas: 45,
-    cargos: 6,
-    ativo: true,
-    cargosLista: [
-      'Analista Sênior',
-      'Engineer II',
-      'Designer',
-      'PM Associate',
-      'Data Analyst',
-      'Marketing Specialist',
-    ],
-  },
-  {
-    id: 'n4',
-    nome: 'L4',
-    nivelAnterior: 'L3',
-    nivelAnteriorId: 'n3',
-    pessoas: 25,
-    cargos: 8,
-    ativo: true,
-    cargosLista: [
-      'Senior Engineer',
-      'Product Manager',
-      'Senior Designer',
-      'Data Scientist',
-      'Marketing Manager',
-      'QA Lead',
-      'DevOps Engineer',
-      'Tech Writer',
-    ],
-  },
-  {
-    id: 'n5',
-    nome: 'L5',
-    nivelAnterior: 'L4',
-    nivelAnteriorId: 'n4',
-    pessoas: 10,
-    cargos: 7,
-    ativo: true,
-    cargosLista: [
-      'Staff Engineer',
-      'Senior PM',
-      'Design Lead',
-      'Senior Data Scientist',
-      'Engineering Manager',
-      'Marketing Lead',
-      'Security Lead',
-    ],
-  },
-  {
-    id: 'n6',
-    nome: 'L6',
-    nivelAnterior: 'L5',
-    nivelAnteriorId: 'n5',
-    pessoas: 5,
-    cargos: 5,
-    ativo: true,
-    cargosLista: [
-      'Principal Engineer',
-      'Group PM',
-      'Head of Design',
-      'Engineering Manager',
-      'Data Lead',
-    ],
-  },
-  {
-    id: 'n7',
-    nome: 'L7',
-    nivelAnterior: 'L6',
-    nivelAnteriorId: 'n6',
-    pessoas: 2,
-    cargos: 3,
-    ativo: true,
-    cargosLista: ['Engineering Director', 'Head of Product', 'Senior Manager'],
-  },
-  {
-    id: 'n8',
-    nome: 'L8',
-    nivelAnterior: 'L7',
-    nivelAnteriorId: 'n7',
-    pessoas: 1,
-    cargos: 1,
-    ativo: true,
-    cargosLista: ['VP of Engineering'],
-  },
-  {
-    id: 'n9',
-    nome: 'L9',
-    nivelAnterior: 'L8',
-    nivelAnteriorId: 'n8',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-  {
-    id: 'n10',
-    nome: 'L10',
-    nivelAnterior: 'L9',
-    nivelAnteriorId: 'n9',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-  {
-    id: 'n11',
-    nome: 'L11',
-    nivelAnterior: 'L10',
-    nivelAnteriorId: 'n10',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-  {
-    id: 'n12',
-    nome: 'L12',
-    nivelAnterior: 'L11',
-    nivelAnteriorId: 'n11',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-  {
-    id: 'n13',
-    nome: 'L13',
-    nivelAnterior: 'L12',
-    nivelAnteriorId: 'n12',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-  {
-    id: 'n14',
-    nome: 'L14',
-    nivelAnterior: 'L13',
-    nivelAnteriorId: 'n13',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-  {
-    id: 'n15',
-    nome: 'L15',
-    nivelAnterior: 'L14',
-    nivelAnteriorId: 'n14',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-  {
-    id: 'n16',
-    nome: 'L16',
-    nivelAnterior: 'L15',
-    nivelAnteriorId: 'n15',
-    pessoas: 0,
-    cargos: 0,
-    ativo: true,
-    cargosLista: [],
-  },
-]
-
-const mockPeople = [
-  {
-    id: '1',
-    nome: 'Maria Santos',
-    avatar: '/diverse-woman-portrait.png',
-    cargo: 'Senior Engineer',
-    time: 'Engenharia',
-    desde: 'Jan 2023',
-  },
-  {
-    id: '2',
-    nome: 'João Silva',
-    avatar: '/man.jpg',
-    cargo: 'Product Manager',
-    time: 'Produto',
-    desde: 'Mar 2022',
-  },
-]
+import { useToast } from '@/hooks/use-toast'
+import {
+  getNiveisComEstatisticas,
+  createNivel,
+  updateNivel,
+  softDeleteNivel,
+  type NivelComEstatisticas
+} from '@/app/actions/niveis.actions'
+import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 
 export default function NiveisPage() {
-  const [levels, setLevels] = useState(mockLevels)
+  const { toast } = useToast()
+
+  // Data state
+  const [levels, setLevels] = useState<NivelComEstatisticas[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [currentUser, setCurrentUser] = useState<string | null>(null)
+
+  // UI state
   const [expandedRows, setExpandedRows] = useState<string[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -270,14 +69,72 @@ export default function NiveisPage() {
   const [peopleModalOpen, setPeopleModalOpen] = useState(false)
   const [positionsModalOpen, setPositionsModalOpen] = useState(false)
   const [infoModalOpen, setInfoModalOpen] = useState(false)
-  const [selectedLevel, setSelectedLevel] = useState<any>(null)
+  const [selectedLevel, setSelectedLevel] = useState<NivelComEstatisticas | null>(null)
 
   // Form state
   const [formNome, setFormNome] = useState('')
-  const [formNivelAnterior, setFormNivelAnterior] = useState<string | null>(
-    null
-  )
+  const [formNivelAnterior, setFormNivelAnterior] = useState<string | null>(null)
   const [formAtivo, setFormAtivo] = useState(true)
+
+  // Mutation state
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Load data and check permissions on mount
+  useEffect(() => {
+    loadNiveis()
+    checkPermissions()
+  }, [])
+
+  async function checkPermissions() {
+    try {
+      const user = await getCurrentUser()
+      if (user) {
+        setCurrentUser(user.nome)
+        const adminStatus = await checkIsAdmin()
+        setIsAdmin(adminStatus)
+
+        if (!adminStatus) {
+          toast({
+            variant: 'destructive',
+            title: 'Acesso Restrito',
+            description: 'Apenas administradores podem gerenciar níveis.',
+          })
+        }
+      }
+    } catch (err) {
+      console.error('[checkPermissions] Erro:', err)
+    }
+  }
+
+  async function loadNiveis() {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const result = await getNiveisComEstatisticas()
+
+      if (result.success && result.data) {
+        setLevels(result.data)
+      } else {
+        setError(result.error || 'Erro ao carregar níveis')
+        toast({
+          variant: 'destructive',
+          title: 'Erro',
+          description: result.error || 'Não foi possível carregar os níveis',
+        })
+      }
+    } catch (err) {
+      console.error('[loadNiveis] Erro:', err)
+      setError('Erro inesperado ao carregar níveis')
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Erro inesperado ao carregar níveis',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
@@ -292,34 +149,166 @@ export default function NiveisPage() {
     }
   }
 
-  const handleCreateLevel = () => {
-    console.log('[v0] Creating level:', { formNome, formNivelAnterior, formAtivo })
-    // TODO: Add to list
-    setCreateModalOpen(false)
-    // Reset form
-    setFormNome('')
-    setFormNivelAnterior(null)
-    setFormAtivo(true)
+  const handleCreateLevel = async () => {
+    if (!formNome.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Nome do nível é obrigatório',
+      })
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await createNivel({
+        nome: formNome.trim(),
+        nivel_anterior_id: formNivelAnterior === 'null' ? null : formNivelAnterior,
+        ativo: formAtivo,
+      })
+
+      if (result.success) {
+        toast({
+          title: '🦖 Nível criado com sucesso!',
+          description: `O nível ${formNome} foi criado.`,
+        })
+
+        // Recarrega dados
+        await loadNiveis()
+
+        // Fecha modal e reseta form
+        setCreateModalOpen(false)
+        setFormNome('')
+        setFormNivelAnterior(null)
+        setFormAtivo(true)
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao criar nível',
+          description: result.error || 'Não foi possível criar o nível',
+        })
+      }
+    } catch (err) {
+      console.error('[handleCreateLevel] Erro:', err)
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Erro inesperado ao criar nível',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleEditLevel = () => {
-    console.log('[v0] Editing level:', selectedLevel?.id, {
-      formNivelAnterior,
-      formAtivo,
-    })
-    setEditModalOpen(false)
+  const handleEditLevel = async () => {
+    if (!selectedLevel) return
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await updateNivel(selectedLevel.id, {
+        nivel_anterior_id: formNivelAnterior === 'null' ? null : formNivelAnterior,
+        ativo: formAtivo,
+      })
+
+      if (result.success) {
+        toast({
+          title: '🦖 Nível atualizado com sucesso!',
+          description: `O nível ${selectedLevel.nome} foi atualizado.`,
+        })
+
+        // Recarrega dados
+        await loadNiveis()
+
+        // Fecha modal
+        setEditModalOpen(false)
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao atualizar nível',
+          description: result.error || 'Não foi possível atualizar o nível',
+        })
+      }
+    } catch (err) {
+      console.error('[handleEditLevel] Erro:', err)
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Erro inesperado ao atualizar nível',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleDeleteLevel = () => {
-    console.log('[v0] Deleting level:', selectedLevel?.id)
-    setDeleteModalOpen(false)
+  const handleDeleteLevel = async () => {
+    if (!selectedLevel) return
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await softDeleteNivel(selectedLevel.id)
+
+      if (result.success) {
+        toast({
+          title: '🦖 Nível desativado com sucesso!',
+          description: `O nível ${selectedLevel.nome} foi desativado.`,
+        })
+
+        // Recarrega dados
+        await loadNiveis()
+
+        // Fecha modal
+        setDeleteModalOpen(false)
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao desativar nível',
+          description: result.error || 'Não foi possível desativar o nível',
+        })
+      }
+    } catch (err) {
+      console.error('[handleDeleteLevel] Erro:', err)
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Erro inesperado ao desativar nível',
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleToggleStatus = (levelId: string, currentStatus: boolean) => {
-    console.log('[v0] Toggling status for:', levelId, 'to:', !currentStatus)
-    setLevels((prev) =>
-      prev.map((l) => (l.id === levelId ? { ...l, ativo: !currentStatus } : l))
-    )
+  const handleToggleStatus = async (levelId: string, currentStatus: boolean) => {
+    try {
+      const result = await updateNivel(levelId, {
+        ativo: !currentStatus,
+      })
+
+      if (result.success) {
+        toast({
+          title: '🦖 Status atualizado!',
+          description: `Nível ${!currentStatus ? 'ativado' : 'desativado'} com sucesso.`,
+        })
+
+        // Recarrega dados
+        await loadNiveis()
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao atualizar status',
+          description: result.error || 'Não foi possível atualizar o status',
+        })
+      }
+    } catch (err) {
+      console.error('[handleToggleStatus] Erro:', err)
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Erro inesperado ao atualizar status',
+      })
+    }
   }
 
   const getHierarchyChain = (levelId: string): string[] => {
@@ -335,6 +324,62 @@ export default function NiveisPage() {
 
   const niveisEmUso = levels.filter((l) => l.pessoas > 0).length
   const totalCargos = levels.reduce((acc, l) => acc + l.cargos, 0)
+
+  // Loading state
+  if (loading) {
+    return (
+      <DashboardShell>
+        <div className="space-y-6">
+          {/* Header skeleton */}
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
+              <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            </div>
+            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+          </div>
+
+          {/* Stats cards skeleton */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-lg border p-6">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2" />
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1" />
+                <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+
+          {/* Table skeleton */}
+          <div className="bg-white rounded-lg border p-6">
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <DashboardShell>
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+          <AlertTriangle className="h-12 w-12 text-red-500" />
+          <div className="text-center">
+            <h3 className="text-lg font-semibold mb-2">Erro ao carregar níveis</h3>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <Button onClick={loadNiveis} variant="outline">
+              Tentar Novamente
+            </Button>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
 
   return (
     <DashboardShell>
@@ -370,6 +415,8 @@ export default function NiveisPage() {
             <Button
               className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
               onClick={() => setCreateModalOpen(true)}
+              disabled={!isAdmin}
+              title={!isAdmin ? 'Apenas administradores podem criar níveis' : ''}
             >
               <Plus className="h-4 w-4 mr-2" />
               Criar Nível
@@ -538,7 +585,7 @@ export default function NiveisPage() {
                     <TableCell>
                       {level.nivelAnterior ? (
                         <span className="text-sm text-muted-foreground">
-                          {level.nome} → {level.nivelAnterior}
+                          {level.nivelAnterior} → {level.nome}
                         </span>
                       ) : (
                         <Badge variant="outline">Inicial</Badge>
@@ -582,6 +629,7 @@ export default function NiveisPage() {
                         onCheckedChange={() =>
                           handleToggleStatus(level.id, level.ativo)
                         }
+                        disabled={!isAdmin}
                       />
                     </TableCell>
                     <TableCell>
@@ -605,10 +653,11 @@ export default function NiveisPage() {
                             onClick={() => {
                               setSelectedLevel(level)
                               setFormNome(level.nome)
-                              setFormNivelAnterior(level.nivelAnteriorId)
+                              setFormNivelAnterior(level.nivel_anterior_id)
                               setFormAtivo(level.ativo)
                               setEditModalOpen(true)
                             }}
+                            disabled={!isAdmin}
                           >
                             <Edit className="h-4 w-4 mr-2" />
                             Editar
@@ -638,7 +687,7 @@ export default function NiveisPage() {
                               setDeleteModalOpen(true)
                             }}
                             className="text-red-600"
-                            disabled={level.pessoas > 0 || level.cargos > 0}
+                            disabled={!isAdmin || level.pessoas > 0 || level.cargos > 0}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Excluir
@@ -765,14 +814,17 @@ export default function NiveisPage() {
             <Button
               variant="outline"
               onClick={() => setCreateModalOpen(false)}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
             <Button
               className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
               onClick={handleCreateLevel}
+              disabled={isSubmitting}
             >
-              Salvar Nível
+              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isSubmitting ? 'Salvando...' : 'Salvar Nível'}
             </Button>
           </div>
         </DialogContent>
@@ -874,14 +926,20 @@ export default function NiveisPage() {
           </div>
 
           <div className="p-6 border-t flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setEditModalOpen(false)}
+              disabled={isSubmitting}
+            >
               Cancelar
             </Button>
             <Button
               className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
               onClick={handleEditLevel}
+              disabled={isSubmitting}
             >
-              Salvar Alterações
+              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </DialogContent>
@@ -921,6 +979,7 @@ export default function NiveisPage() {
             <Button
               variant="outline"
               onClick={() => setDeleteModalOpen(false)}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
@@ -928,10 +987,13 @@ export default function NiveisPage() {
               variant="destructive"
               onClick={handleDeleteLevel}
               disabled={
-                selectedLevel?.pessoas > 0 || selectedLevel?.cargos > 0
+                isSubmitting ||
+                selectedLevel?.pessoas > 0 ||
+                selectedLevel?.cargos > 0
               }
             >
-              Excluir Nível
+              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isSubmitting ? 'Excluindo...' : 'Excluir Nível'}
             </Button>
           </DialogFooter>
         </DialogContent>
