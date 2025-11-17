@@ -240,7 +240,12 @@ export default function EditarTimePage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 Time Pai
-                <Info className="w-4 h-4 text-muted-foreground cursor-help" title="Time hierarquicamente superior. Deixe vazio para times de nível raiz" />
+                <Info
+                  className="w-4 h-4 text-muted-foreground cursor-help"
+                  aria-label="Time hierarquicamente superior. Deixe vazio para times de nível raiz"
+                  data-tooltip="Time hierarquicamente superior. Deixe vazio para times de nível raiz"
+                  tabIndex={0}
+                />
               </Label>
               <button
                 type="button"
@@ -536,7 +541,7 @@ export default function EditarTimePage() {
 
         {/* Person Selector Modal */}
         <Dialog open={showPersonSelector} onOpenChange={setShowPersonSelector}>
-          <DialogContent className="sm:max-w-3xl w-full p-6">
+          <DialogContent className="p-6">
             <DialogHeader>
               <DialogTitle>Adicionar Pessoas ao Time</DialogTitle>
               <DialogDescription>Selecione as pessoas que deseja adicionar</DialogDescription>

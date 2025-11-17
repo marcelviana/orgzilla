@@ -766,7 +766,31 @@ export default function UsuariosPage() {
             }
           }}
         >
-          <DialogContent className="sm:max-w-2xl w-full p-0">
+          <DialogContent 
+            className="p-0"
+            onInteractOutside={(e) => {
+              setCreateModalOpen(false)
+              setEditModalOpen(false)
+              setFormData({
+                nome: "",
+                email: "",
+                tipoPerfil: "visualizador",
+                senha: "",
+                ativo: true,
+              })
+            }}
+            onEscapeKeyDown={(e) => {
+              setCreateModalOpen(false)
+              setEditModalOpen(false)
+              setFormData({
+                nome: "",
+                email: "",
+                tipoPerfil: "visualizador",
+                senha: "",
+                ativo: true,
+              })
+            }}
+          >
             <div className="p-6 pb-4 border-b">
               <DialogHeader>
                 <DialogTitle>
@@ -780,7 +804,7 @@ export default function UsuariosPage() {
               </DialogHeader>
             </div>
 
-            <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+            <div className="p-6 space-y-5">
               <div>
                 <Label htmlFor="nome">
                   Nome Completo <span className="text-error">*</span>
@@ -976,7 +1000,17 @@ export default function UsuariosPage() {
 
         {/* Delete User Modal */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent 
+            className="sm:max-w-md"
+            onInteractOutside={() => {
+              setDeleteModalOpen(false)
+              setDeleteConfirmed(false)
+            }}
+            onEscapeKeyDown={() => {
+              setDeleteModalOpen(false)
+              setDeleteConfirmed(false)
+            }}
+          >
             <DialogHeader>
               <DialogTitle>Excluir Usuário?</DialogTitle>
               <DialogDescription>
@@ -1028,7 +1062,11 @@ export default function UsuariosPage() {
 
         {/* Unlink Person Modal */}
         <Dialog open={unlinkModalOpen} onOpenChange={setUnlinkModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent 
+            className="sm:max-w-md"
+            onInteractOutside={() => setUnlinkModalOpen(false)}
+            onEscapeKeyDown={() => setUnlinkModalOpen(false)}
+          >
             <DialogHeader>
               <DialogTitle>Desvincular Pessoa?</DialogTitle>
               <DialogDescription>
@@ -1054,7 +1092,11 @@ export default function UsuariosPage() {
 
         {/* Change Password Modal */}
         <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent 
+            className="sm:max-w-md"
+            onInteractOutside={() => setPasswordModalOpen(false)}
+            onEscapeKeyDown={() => setPasswordModalOpen(false)}
+          >
             <DialogHeader>
               <DialogTitle>Alterar Senha</DialogTitle>
               <DialogDescription>

@@ -234,7 +234,7 @@ export default function NovoProjeto() {
 
       {/* Add People Modal */}
       <Dialog open={addPeopleModalOpen} onOpenChange={setAddPeopleModalOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Adicionar Pessoas ao Projeto</DialogTitle>
             <DialogDescription>

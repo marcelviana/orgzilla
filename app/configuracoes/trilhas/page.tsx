@@ -730,7 +730,19 @@ export default function CareerTracksPage() {
             }
           }}
         >
-          <DialogContent className="sm:max-w-2xl w-full p-0">
+          <DialogContent 
+            className="p-0"
+            onInteractOutside={() => {
+              setCreateModalOpen(false)
+              setEditModalOpen(false)
+              setFormData({ nome: '', descricao: '', cor: '#FF7A00', ativo: true })
+            }}
+            onEscapeKeyDown={() => {
+              setCreateModalOpen(false)
+              setEditModalOpen(false)
+              setFormData({ nome: '', descricao: '', cor: '#FF7A00', ativo: true })
+            }}
+          >
             <div className="p-6 pb-4 border-b">
               <DialogHeader>
                 <DialogTitle>
@@ -744,7 +756,7 @@ export default function CareerTracksPage() {
               </DialogHeader>
             </div>
 
-            <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+            <div className="p-6 space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="nome">Nome da Trilha *</Label>
                 <Input
@@ -872,7 +884,11 @@ export default function CareerTracksPage() {
 
         {/* View Details Modal */}
         <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-          <DialogContent className="sm:max-w-4xl w-full p-0">
+          <DialogContent 
+            className="sm:max-w-4xl w-full p-0"
+            onInteractOutside={() => setDetailsModalOpen(false)}
+            onEscapeKeyDown={() => setDetailsModalOpen(false)}
+          >
             <div className="p-6 pb-4 border-b">
               <DialogHeader>
                 <DialogTitle>
@@ -1039,7 +1055,11 @@ export default function CareerTracksPage() {
 
         {/* View Positions Modal */}
         <Dialog open={positionsModalOpen} onOpenChange={setPositionsModalOpen}>
-          <DialogContent className="sm:max-w-2xl w-full p-0">
+          <DialogContent 
+            className="p-0"
+            onInteractOutside={() => setPositionsModalOpen(false)}
+            onEscapeKeyDown={() => setPositionsModalOpen(false)}
+          >
             <div className="p-6 pb-4 border-b">
               <DialogHeader>
                 <DialogTitle>Cargos - {selectedTrack?.nome}</DialogTitle>
@@ -1081,7 +1101,11 @@ export default function CareerTracksPage() {
 
         {/* View People Modal */}
         <Dialog open={peopleModalOpen} onOpenChange={setPeopleModalOpen}>
-          <DialogContent className="sm:max-w-4xl w-full p-0">
+          <DialogContent 
+            className="sm:max-w-4xl w-full p-0"
+            onInteractOutside={() => setPeopleModalOpen(false)}
+            onEscapeKeyDown={() => setPeopleModalOpen(false)}
+          >
             <div className="p-6 pb-4 border-b">
               <DialogHeader>
                 <DialogTitle>Pessoas - {selectedTrack?.nome}</DialogTitle>
@@ -1137,7 +1161,11 @@ export default function CareerTracksPage() {
 
         {/* Delete Modal */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-          <DialogContent className="sm:max-w-md w-full p-6">
+          <DialogContent 
+            className="sm:max-w-md"
+            onInteractOutside={() => setDeleteModalOpen(false)}
+            onEscapeKeyDown={() => setDeleteModalOpen(false)}
+          >
             <DialogHeader>
               <DialogTitle>Excluir Trilha?</DialogTitle>
               <DialogDescription>

@@ -423,7 +423,7 @@ export default function NovoTimePage() {
 
         {/* Person Selector Modal */}
         <Dialog open={showPersonSelector} onOpenChange={setShowPersonSelector}>
-          <DialogContent className="sm:max-w-3xl w-full p-6">
+          <DialogContent className="p-6">
             <DialogHeader>
               <DialogTitle>Adicionar Pessoas ao Time</DialogTitle>
               <DialogDescription>Selecione as pessoas que deseja adicionar</DialogDescription>

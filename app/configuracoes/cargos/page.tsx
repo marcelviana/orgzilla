@@ -623,7 +623,20 @@ export default function CargosPage() {
             setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
           }
         }}>
-          <DialogContent className="sm:max-w-2xl">
+          <DialogContent 
+            onInteractOutside={() => {
+              setCreateModalOpen(false)
+              setEditModalOpen(false)
+              setSelectedPosition(null)
+              setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
+            }}
+            onEscapeKeyDown={() => {
+              setCreateModalOpen(false)
+              setEditModalOpen(false)
+              setSelectedPosition(null)
+              setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{editModalOpen ? 'Editar Cargo' : 'Novo Cargo'}</DialogTitle>
               <DialogDescription>
@@ -732,7 +745,11 @@ export default function CargosPage() {
 
         {/* Delete Confirmation Modal */}
         <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent 
+            className="sm:max-w-md"
+            onInteractOutside={() => setDeleteModalOpen(false)}
+            onEscapeKeyDown={() => setDeleteModalOpen(false)}
+          >
             <DialogHeader>
               <DialogTitle>Excluir Cargo?</DialogTitle>
               <DialogDescription>

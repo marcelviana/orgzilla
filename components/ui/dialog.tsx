@@ -9,6 +9,16 @@ import { cn } from '@/lib/utils'
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  // Block body scroll when dialog is open
+  React.useEffect(() => {
+    if (props.open) {
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = 'unset'
+      }
+    }
+  }, [props.open])
+
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
@@ -19,9 +29,25 @@ function DialogTrigger({
 }
 
 function DialogPortal({
+  container,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+  // Force portal to render in body
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
+  return (
+    <DialogPrimitive.Portal 
+      data-slot="dialog-portal" 
+      container={container || document.body}
+      {...props} 
+    />
+  )
 }
 
 function DialogClose({
@@ -38,7 +64,7 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[9998] bg-black/50',
         className,
       )}
       {...props}
@@ -54,13 +80,18 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  // Check if custom padding is provided
+  const hasCustomPadding = className?.includes('p-0') || className?.includes('p-')
+  
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] sm:max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-lg border shadow-lg duration-200 p-6',
+          'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[9999] translate-x-[-50%] translate-y-[-50%] rounded-lg border shadow-lg duration-200 max-h-[90vh] overflow-y-auto',
+          // Add default padding only if not custom
+          !hasCustomPadding && 'p-6',
           className,
         )}
         {...props}

@@ -448,7 +448,10 @@ export default function TagsPage() {
 
       {/* Create/Edit Modal */}
       <Dialog open={createEditModalOpen} onOpenChange={setCreateEditModalOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent 
+          onInteractOutside={() => setCreateEditModalOpen(false)}
+          onEscapeKeyDown={() => setCreateEditModalOpen(false)}
+        >
           <DialogHeader>
             <DialogTitle>{editMode ? 'Editar Tag' : 'Nova Tag'}</DialogTitle>
           </DialogHeader>
@@ -579,7 +582,7 @@ export default function TagsPage() {
 
       {/* Details Modal */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="sm:max-w-3xl">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div

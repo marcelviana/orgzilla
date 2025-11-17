@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -501,9 +501,8 @@ export default function NiveisPage() {
             </TableHeader>
             <TableBody>
               {levels.map((level) => (
-                <>
+                <Fragment key={level.id}>
                   <TableRow
-                    key={level.id}
                     id={`level-row-${level.id}`}
                     className={
                       level.pessoas > 0 ? 'bg-[#FF7A00]/5' : undefined
@@ -666,7 +665,7 @@ export default function NiveisPage() {
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
@@ -675,7 +674,11 @@ export default function NiveisPage() {
 
       {/* Create Modal */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
-        <DialogContent className="sm:max-w-2xl w-full p-0">
+        <DialogContent 
+          className="p-0"
+          onInteractOutside={() => setCreateModalOpen(false)}
+          onEscapeKeyDown={() => setCreateModalOpen(false)}
+        >
           <div className="p-6 border-b">
             <DialogHeader>
               <DialogTitle>Novo Nível</DialogTitle>
@@ -685,7 +688,7 @@ export default function NiveisPage() {
             </DialogHeader>
           </div>
 
-          <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+          <div className="p-6 space-y-5">
             <div className="space-y-2">
               <Label htmlFor="nome">
                 Nome do Nível <span className="text-red-500">*</span>
@@ -777,7 +780,11 @@ export default function NiveisPage() {
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="sm:max-w-2xl w-full p-0">
+        <DialogContent 
+          className="p-0"
+          onInteractOutside={() => setEditModalOpen(false)}
+          onEscapeKeyDown={() => setEditModalOpen(false)}
+        >
           <div className="p-6 border-b">
             <DialogHeader>
               <DialogTitle>Editar Nível</DialogTitle>
@@ -787,7 +794,7 @@ export default function NiveisPage() {
             </DialogHeader>
           </div>
 
-          <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+          <div className="p-6 space-y-5">
             <div className="space-y-2">
               <Label htmlFor="edit-nome">Nome do Nível</Label>
               <Input
@@ -882,7 +889,11 @@ export default function NiveisPage() {
 
       {/* Delete Modal */}
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent 
+          className="sm:max-w-md"
+          onInteractOutside={() => setDeleteModalOpen(false)}
+          onEscapeKeyDown={() => setDeleteModalOpen(false)}
+        >
           <DialogHeader>
             <DialogTitle>Excluir Nível?</DialogTitle>
             <DialogDescription>
@@ -928,7 +939,11 @@ export default function NiveisPage() {
 
       {/* Details Modal */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="sm:max-w-3xl w-full p-0">
+        <DialogContent 
+          className="p-0"
+          onInteractOutside={() => setDetailsModalOpen(false)}
+          onEscapeKeyDown={() => setDetailsModalOpen(false)}
+        >
           <div className="p-6 border-b">
             <DialogHeader>
               <DialogTitle>{selectedLevel?.nome} - Detalhes</DialogTitle>
@@ -1013,7 +1028,7 @@ export default function NiveisPage() {
 
       {/* People Modal */}
       <Dialog open={peopleModalOpen} onOpenChange={setPeopleModalOpen}>
-        <DialogContent className="sm:max-w-3xl w-full p-0">
+        <DialogContent className="p-0">
           <div className="p-6 border-b">
             <DialogHeader>
               <DialogTitle>
@@ -1081,7 +1096,7 @@ export default function NiveisPage() {
 
       {/* Positions Modal */}
       <Dialog open={positionsModalOpen} onOpenChange={setPositionsModalOpen}>
-        <DialogContent className="sm:max-w-2xl w-full p-0">
+        <DialogContent className="p-0">
           <div className="p-6 border-b">
             <DialogHeader>
               <DialogTitle>Cargos no Nível {selectedLevel?.nome}</DialogTitle>
@@ -1138,7 +1153,10 @@ export default function NiveisPage() {
 
       {/* Info Modal */}
       <Dialog open={infoModalOpen} onOpenChange={setInfoModalOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent 
+          onInteractOutside={() => setInfoModalOpen(false)}
+          onEscapeKeyDown={() => setInfoModalOpen(false)}
+        >
           <DialogHeader>
             <DialogTitle>Como Funcionam os Níveis?</DialogTitle>
           </DialogHeader>
