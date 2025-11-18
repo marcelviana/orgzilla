@@ -64,34 +64,51 @@ export default function LoginPage() {
     }
 
     try {
+      console.log('[Login] Iniciando autenticação...')
+      console.log('[Login] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
+      console.log('[Login] Anon Key configurada:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+
+      // Verificar se Supabase está configurado
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        toast.error('⚠️ Supabase não configurado. Configure as variáveis de ambiente.')
+        console.error('[Login] Variáveis de ambiente do Supabase não configuradas!')
+        setIsLoading(false)
+        return
+      }
+
       // Autenticação com Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
+      console.log('[Login] Resposta do Supabase:', { data, error })
+
       if (error) {
+        console.error('[Login] Erro do Supabase:', error)
         // Traduzir erros do Supabase
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Email ou senha incorretos')
         } else if (error.message.includes('Email not confirmed')) {
           toast.error('Por favor, confirme seu email antes de fazer login')
         } else {
-          toast.error(error.message || 'Erro ao fazer login')
+          toast.error(`Erro: ${error.message}`)
         }
         setIsLoading(false)
         return
       }
 
       // Login bem-sucedido
+      console.log('[Login] Login bem-sucedido!', data)
       toast.success('🦖 Login realizado com sucesso!')
 
       // Redirecionar para dashboard
+      console.log('[Login] Redirecionando para /')
       router.push('/')
       router.refresh() // Atualiza o middleware
     } catch (error: any) {
-      console.error('[Login] Erro:', error)
-      toast.error('Ops! Orgzilla tropeçou. Tente novamente.')
+      console.error('[Login] Erro não tratado:', error)
+      toast.error(`Ops! Erro: ${error.message || 'Tente novamente.'}`)
       setIsLoading(false)
     }
   }
