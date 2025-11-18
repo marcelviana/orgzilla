@@ -9,8 +9,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
-import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { handleError, validateEmail, validatePassword } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -50,19 +51,16 @@ export default function LoginPage() {
     // Limpar erros anteriores
     setHasError(false)
 
-    // Validações ANTES de enviar (apenas formato)
-    if (!email || !password) {
-      toast.error('Preencha email e senha para continuar')
+    // Validações ANTES de enviar usando helpers
+    const emailError = validateEmail(email)
+    if (emailError) {
+      toast.error(emailError)
       return
     }
 
-    if (!email.includes('@')) {
-      toast.error('Digite um email válido')
-      return
-    }
-
-    if (password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres')
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      toast.error(passwordError)
       return
     }
 
@@ -86,24 +84,14 @@ export default function LoginPage() {
       })
 
       if (error) {
-        console.error('[Login] Erro do Supabase:', error)
+        // Usar handleError para processar e traduzir erro
+        const appError = handleError(error, 'auth')
 
-        // IMPORTANTE: NÃO validar novamente aqui
-        // Apenas mostrar o erro de autenticação
-        setHasError(true) // Destacar campos
+        // Destacar campos visualmente
+        setHasError(true)
 
-        // Traduzir erro do Supabase
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error('Email ou senha incorretos')
-        } else if (error.message.includes('Email not confirmed')) {
-          toast.error('Email não confirmado. Verifique sua caixa de entrada.')
-        } else if (error.message.includes('User not found')) {
-          toast.error('Usuário não encontrado')
-        } else if (error.message.includes('Invalid email')) {
-          toast.error('Email inválido')
-        } else {
-          toast.error('Ops! Orgzilla tropeçou ao tentar fazer login. Tente novamente.')
-        }
+        // Mostrar toast com mensagem traduzida
+        toast.error(appError)
 
         setIsLoading(false)
         return
@@ -111,14 +99,15 @@ export default function LoginPage() {
 
       // Login bem-sucedido
       console.log('[Login] Login bem-sucedido!')
-      toast.success('🦖 Login realizado com sucesso!')
+      toast.successDino('Login realizado com sucesso!')
 
       // Redirecionar para dashboard
       router.push('/')
       router.refresh()
     } catch (error: any) {
       console.error('[Login] Erro não tratado:', error)
-      toast.error('Ops! Orgzilla tropeçou ao tentar fazer login. Tente novamente.')
+      const appError = handleError(error, 'unknown')
+      toast.error(appError)
       setIsLoading(false)
     }
   }

@@ -42,13 +42,8 @@ export default function RootLayout({
         <Toaster />
         <SonnerToaster
           position="top-right"
-          toastOptions={{
-            style: {
-              background: '#1A2734',
-              color: '#fff',
-              border: '1px solid #FF7A00',
-            },
-          }}
+          duration={4000}
+          closeButton
         />
       </body>
     </html>
