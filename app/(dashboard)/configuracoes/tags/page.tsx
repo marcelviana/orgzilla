@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,9 +29,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2, Eye } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2, Eye, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from '@/lib/ui/toast-config'
+import { handleError, validateRequired } from '@/lib/errors/error-handler'
+import {
+  getTagsComEstatisticas,
+  createTag,
+  updateTag,
+  softDeleteTag,
+  deleteTag,
+  getPessoasComTag,
+  type TagComEstatisticas
+} from '@/app/actions/tags.actions'
+import { getCurrentUser } from '@/app/actions/auth.actions'
 
 // Mock data
 const mockTags = [
@@ -83,8 +94,13 @@ const mockPeople = [
 ]
 
 export default function TagsPage() {
-  const { toast } = useToast()
-  const [tags, setTags] = useState(mockTags)
+  // Data state
+  const [tags, setTags] = useState<Array<{ id: string; nome: string; cor: string; pessoas: number; ativo: boolean }>>([])
+  const [loading, setLoading] = useState(true)
+  const [hasPermission, setHasPermission] = useState(false)
+  const [currentUser, setCurrentUser] = useState<string | null>(null)
+
+  // UI state
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('name-asc')
   const [filterBy, setFilterBy] = useState<'all' | 'used' | 'unused'>('all')
@@ -96,7 +112,7 @@ export default function TagsPage() {
   const [bulkRemoveModalOpen, setBulkRemoveModalOpen] = useState(false)
   const [mergeModalOpen, setMergeModalOpen] = useState(false)
 
-  const [selectedTag, setSelectedTag] = useState<typeof mockTags[0] | null>(null)
+  const [selectedTag, setSelectedTag] = useState<typeof tags[0] | null>(null)
   const [editMode, setEditMode] = useState(false)
 
   // Form state
@@ -105,6 +121,56 @@ export default function TagsPage() {
     cor: '#FF7A00',
   })
   const [removeFromAll, setRemoveFromAll] = useState(false)
+
+  // Mutation state
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Load data and check permissions on mount
+  useEffect(() => {
+    loadTags()
+    checkPermissions()
+  }, [])
+
+  async function checkPermissions() {
+    try {
+      const user = await getCurrentUser()
+      if (user) {
+        setCurrentUser(user.nome)
+        // Admin ou Gestor podem gerenciar tags
+        const hasAccess = user.tipo_perfil === 'admin' || user.tipo_perfil === 'gestor'
+        setHasPermission(hasAccess)
+
+        if (!hasAccess) {
+          const error = {
+            type: 'permission' as const,
+            message: 'Ops! Você não tem permissão para gerenciar tags.',
+          }
+          toast.error(error)
+        }
+      }
+    } catch (error) {
+      console.error('[Tags] Erro ao verificar permissões:', error)
+    }
+  }
+
+  async function loadTags() {
+    try {
+      setLoading(true)
+      const result = await getTagsComEstatisticas()
+
+      if (result.success && result.data) {
+        setTags(result.data)
+      } else {
+        toast.error(result.error || 'Erro ao carregar tags')
+      }
+    } catch (error) {
+      console.error('[Tags] Erro ao carregar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Stats
   const totalTags = tags.length
@@ -140,34 +206,125 @@ export default function TagsPage() {
       }
     })
 
-  const handleCreateEdit = () => {
-    console.log('[v0] Create/Edit tag:', formData)
-    toast({
-      title: editMode ? 'Tag atualizada!' : 'Tag criada!',
-      description: `🦖 ${formData.nome} foi ${editMode ? 'atualizada' : 'criada'} com sucesso!`,
-    })
-    setCreateEditModalOpen(false)
-    setFormData({ nome: '', cor: '#FF7A00' })
-    setEditMode(false)
+  const handleCreateEdit = async () => {
+    // Validação
+    const nomeError = validateRequired(formData.nome, 'Nome')
+    if (nomeError) {
+      toast.error(nomeError)
+      return
+    }
+
+    if (!hasPermission) {
+      toast.error('Você não tem permissão para gerenciar tags')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      if (editMode && selectedTag) {
+        // Atualizar tag existente
+        const result = await updateTag(selectedTag.id, {
+          nome: formData.nome,
+          cor: formData.cor,
+        })
+
+        if (result.success) {
+          toast.successDino('Tag atualizada com sucesso!')
+          setCreateEditModalOpen(false)
+          setFormData({ nome: '', cor: '#FF7A00' })
+          setEditMode(false)
+          setSelectedTag(null)
+          loadTags() // Recarregar lista
+        } else {
+          toast.error(result.error || 'Erro ao atualizar tag')
+        }
+      } else {
+        // Criar nova tag
+        const result = await createTag({
+          nome: formData.nome,
+          cor: formData.cor,
+          ativo: true,
+        })
+
+        if (result.success) {
+          toast.successDino('Tag criada com sucesso!')
+          setCreateEditModalOpen(false)
+          setFormData({ nome: '', cor: '#FF7A00' })
+          loadTags() // Recarregar lista
+        } else {
+          toast.error(result.error || 'Erro ao criar tag')
+        }
+      }
+    } catch (error) {
+      console.error('[Tags] Erro ao salvar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleDelete = () => {
-    console.log('[v0] Delete tag:', selectedTag, 'Remove from all:', removeFromAll)
-    toast({
-      title: 'Tag excluída!',
-      description: `Tag removida${selectedTag?.pessoas ? ` de ${selectedTag.pessoas} pessoas` : ''}`,
-    })
-    setDeleteModalOpen(false)
-    setRemoveFromAll(false)
+  const handleDelete = async () => {
+    if (!selectedTag) return
+
+    if (!hasPermission) {
+      toast.error('Você não tem permissão para deletar tags')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await deleteTag(selectedTag.id, removeFromAll)
+
+      if (result.success) {
+        toast.successDino('Tag deletada com sucesso!')
+        setDeleteModalOpen(false)
+        setSelectedTag(null)
+        setRemoveFromAll(false)
+        loadTags() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao deletar tag')
+      }
+    } catch (error) {
+      console.error('[Tags] Erro ao deletar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleBulkRemove = () => {
-    console.log('[v0] Bulk remove tag:', selectedTag)
-    toast({
-      title: 'Tag removida de todos!',
-      description: `${selectedTag?.pessoas} pessoas afetadas`,
-    })
-    setBulkRemoveModalOpen(false)
+  const handleBulkRemove = async () => {
+    if (!selectedTag) return
+
+    if (!hasPermission) {
+      toast.error('Você não tem permissão para remover tags')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      // Deletar tag removendo de todas as pessoas
+      const result = await deleteTag(selectedTag.id, true)
+
+      if (result.success) {
+        toast.successDino(`Tag removida de ${selectedTag.pessoas} pessoas!`)
+        setBulkRemoveModalOpen(false)
+        setSelectedTag(null)
+        loadTags() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao remover tag')
+      }
+    } catch (error) {
+      console.error('[Tags] Erro ao remover:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleMerge = () => {
@@ -207,6 +364,20 @@ export default function TagsPage() {
     const g = parseInt(hex.slice(3, 5), 16)
     const b = parseInt(hex.slice(5, 7), 16)
     return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <DashboardShell>
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando tags...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (

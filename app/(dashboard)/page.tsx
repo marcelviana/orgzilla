@@ -6,24 +6,17 @@ import {
   getTimeDistribution,
   getRecentActivities
 } from "@/app/actions/dashboard.actions"
-import { getCurrentUser } from "@/app/actions/auth.actions"
-import { redirect } from "next/navigation"
 
 /**
  * Dashboard Principal
  * - Server Component que busca dados reais do Supabase
  * - Aplica filtros de permissão (gestor vê só hierarquia)
+ * - Autenticação é verificada no layout
  * - Revalida cache a cada 60 segundos
  */
 export const revalidate = 60 // Revalidar a cada 60 segundos
 
 export default async function Page() {
-  // Verificar autenticação
-  const usuario = await getCurrentUser()
-  if (!usuario) {
-    redirect('/login')
-  }
-
   // Buscar dados do dashboard em paralelo
   const [
     metricsResult,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,8 +25,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, ShieldAlert, X, Trash2, Copy, Eye, Edit, CheckCircle2, XCircle, ArrowRight } from 'lucide-react'
+import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, ShieldAlert, X, Trash2, Copy, Eye, Edit, CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { toast } from '@/lib/ui/toast-config'
+import { handleError, validateRequired } from '@/lib/errors/error-handler'
+import {
+  getTrilhasComEstatisticas,
+  createTrilha,
+  updateTrilha,
+  softDeleteTrilha,
+  deleteTrilha,
+  type TrilhaComEstatisticas
+} from '@/app/actions/trilhas.actions'
+import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 
 interface CareerTrack {
   id: string
@@ -189,25 +200,97 @@ const mockPeople = [
 ]
 
 export default function CareerTracksPage() {
-  const [tracks, setTracks] = useState<CareerTrack[]>(mockTracks)
+  // Data state
+  const [tracks, setTracks] = useState<CareerTrack[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [currentUser, setCurrentUser] = useState<string | null>(null)
+
+  // UI state
   const [view, setView] = useState<'grid' | 'table'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilters, setActiveFilters] = useState<string[]>([])
-  
+
+  // Modal states
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [positionsModalOpen, setPositionsModalOpen] = useState(false)
   const [peopleModalOpen, setPeopleModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  
+
   const [selectedTrack, setSelectedTrack] = useState<CareerTrack | null>(null)
+
+  // Form state
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
     cor: '#FF7A00',
     ativo: true,
   })
+
+  // Mutation state
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Load data and check permissions on mount
+  useEffect(() => {
+    loadTrilhas()
+    checkPermissions()
+  }, [])
+
+  async function checkPermissions() {
+    try {
+      const user = await getCurrentUser()
+      if (user) {
+        setCurrentUser(user.nome)
+        const adminStatus = await checkIsAdmin()
+        setIsAdmin(adminStatus)
+
+        if (!adminStatus) {
+          const error = {
+            type: 'permission' as const,
+            message: 'Ops! Você não tem permissão para gerenciar trilhas de carreira.',
+          }
+          toast.error(error)
+        }
+      }
+    } catch (error) {
+      console.error('[Trilhas] Erro ao verificar permissões:', error)
+    }
+  }
+
+  async function loadTrilhas() {
+    try {
+      setLoading(true)
+      const result = await getTrilhasComEstatisticas()
+
+      if (result.success && result.data) {
+        // Converter TrilhaComEstatisticas para CareerTrack (formato da UI)
+        const tracksFormatted: CareerTrack[] = result.data.map(trilha => ({
+          id: trilha.id,
+          nome: trilha.nome,
+          descricao: trilha.descricao || '',
+          cargos: trilha.cargos,
+          pessoas: trilha.pessoas,
+          niveisUsados: { min: 'L1', max: 'L8' }, // TODO: calcular dinamicamente
+          nivelMedio: 'L4', // TODO: calcular dinamicamente
+          ativo: trilha.ativo,
+          cargosPrincipais: trilha.cargosLista.slice(0, 5),
+          cor: '#FF7A00', // TODO: adicionar campo cor na tabela
+        }))
+
+        setTracks(tracksFormatted)
+      } else {
+        toast.error(result.error || 'Erro ao carregar trilhas')
+      }
+    } catch (error) {
+      console.error('[Trilhas] Erro ao carregar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredTracks = tracks.filter((track) => {
     const matchesSearch = track.nome
@@ -227,26 +310,120 @@ export default function CareerTracksPage() {
     return matchesSearch && matchesFilters
   })
 
-  const handleCreateTrack = () => {
-    console.log('[v0] Creating track:', formData)
-    setCreateModalOpen(false)
-    // Show success toast
+  const handleCreateTrack = async () => {
+    // Validação
+    const nomeError = validateRequired(formData.nome, 'Nome')
+    if (nomeError) {
+      toast.error(nomeError)
+      return
+    }
+
+    if (!isAdmin) {
+      toast.error('Você não tem permissão para criar trilhas')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await createTrilha({
+        nome: formData.nome,
+        descricao: formData.descricao || null,
+        ativo: formData.ativo,
+      })
+
+      if (result.success) {
+        toast.successDino('Trilha criada com sucesso!')
+        setCreateModalOpen(false)
+        setFormData({ nome: '', descricao: '', cor: '#FF7A00', ativo: true })
+        loadTrilhas() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao criar trilha')
+      }
+    } catch (error) {
+      console.error('[Trilhas] Erro ao criar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleEditTrack = () => {
-    console.log('[v0] Editing track:', selectedTrack?.id, formData)
-    setEditModalOpen(false)
-    // Show success toast
+  const handleEditTrack = async () => {
+    if (!selectedTrack) return
+
+    // Validação
+    const nomeError = validateRequired(formData.nome, 'Nome')
+    if (nomeError) {
+      toast.error(nomeError)
+      return
+    }
+
+    if (!isAdmin) {
+      toast.error('Você não tem permissão para editar trilhas')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await updateTrilha(selectedTrack.id, {
+        nome: formData.nome,
+        descricao: formData.descricao || null,
+        ativo: formData.ativo,
+      })
+
+      if (result.success) {
+        toast.successDino('Trilha atualizada com sucesso!')
+        setEditModalOpen(false)
+        setSelectedTrack(null)
+        setFormData({ nome: '', descricao: '', cor: '#FF7A00', ativo: true })
+        loadTrilhas() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao atualizar trilha')
+      }
+    } catch (error) {
+      console.error('[Trilhas] Erro ao atualizar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleDeleteTrack = () => {
-    console.log('[v0] Deleting track:', selectedTrack?.id)
-    setDeleteModalOpen(false)
-    // Show success toast
+  const handleDeleteTrack = async () => {
+    if (!selectedTrack) return
+
+    if (!isAdmin) {
+      toast.error('Você não tem permissão para deletar trilhas')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await softDeleteTrilha(selectedTrack.id)
+
+      if (result.success) {
+        toast.successDino('Trilha desativada com sucesso!')
+        setDeleteModalOpen(false)
+        setSelectedTrack(null)
+        loadTrilhas() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao desativar trilha')
+      }
+    } catch (error) {
+      console.error('[Trilhas] Erro ao desativar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleDuplicateTrack = (track: CareerTrack) => {
-    console.log('[v0] Duplicating track:', track.id)
+    console.log('[Trilhas] Duplicar não implementado ainda:', track.id)
+    toast.info('Funcionalidade de duplicar virá em breve!')
     setFormData({
       nome: `${track.nome} (cópia)`,
       descricao: track.descricao,
@@ -273,6 +450,20 @@ export default function CareerTracksPage() {
       ativo: track.ativo,
     })
     setEditModalOpen(true)
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <DashboardShell>
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando trilhas...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (

@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { PessoasTable } from '@/components/pessoas/pessoas-table'
 import {
@@ -13,6 +12,7 @@ import { getCurrentUser } from '@/app/actions/auth.actions'
  * - Server Component que busca dados reais do Supabase
  * - Aplica filtros de permissão (gestor vê só hierarquia)
  * - Apenas gestores veem coluna de salário
+ * - Autenticação é verificada no layout
  * - Revalida cache a cada 30 segundos
  */
 export const revalidate = 30 // Revalidar a cada 30 segundos
@@ -29,10 +29,12 @@ type PageProps = {
 }
 
 export default async function PessoasPage({ searchParams }: PageProps) {
-  // Verificar autenticação
+  // Buscar dados do usuário para verificar permissões
+  // Autenticação já foi verificada no layout
   const usuario = await getCurrentUser()
   if (!usuario) {
-    redirect('/login')
+    // Isso nunca deve acontecer pois o layout já protege, mas TypeScript precisa
+    throw new Error('Usuário não autenticado')
   }
 
   // Parsear filtros da URL

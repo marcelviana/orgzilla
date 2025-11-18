@@ -26,6 +26,20 @@ export default function LoginPage() {
   const [hasError, setHasError] = useState(false) // Para destacar campos quando houver erro de credenciais
   const [triangles, setTriangles] = useState<Array<{ left: number; top: number; width: number; height: number }>>([])
 
+  // Redirecionar se já estiver autenticado
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        console.log('[Login] Usuário já autenticado, redirecionando...')
+        router.push('/')
+      }
+    }
+
+    checkAuth()
+  }, [supabase, router])
+
   // Generate random triangle positions on client side only
   useEffect(() => {
     const positions = Array.from({ length: 20 }, () => ({

@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npx supabase:*)",
       "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(ls:*)",
+      "WebFetch(domain:supabase.com)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

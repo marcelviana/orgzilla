@@ -42,6 +42,9 @@ import { UsuarioRepository } from '@/lib/repositories'
 /**
  * Busca o usuário logado da sessão atual
  *
+ * Se o usuário autenticou via Supabase Auth mas não existe na tabela 'usuario',
+ * cria automaticamente com perfil 'visualizador'.
+ *
  * @returns Usuario logado ou null se não autenticado
  */
 export async function getUsuarioLogado(): Promise<UsuarioLogado | null> {
@@ -59,9 +62,31 @@ export async function getUsuarioLogado(): Promise<UsuarioLogado | null> {
 
     // Busca dados do usuário na tabela 'usuario'
     const usuarioRepo = new UsuarioRepository(supabase)
-    const usuario = await usuarioRepo.findByEmail(authUser.email)
+    let usuario = await usuarioRepo.findByEmail(authUser.email)
 
-    if (!usuario || !usuario.ativo) {
+    // Se não encontrou, criar automaticamente
+    if (!usuario) {
+      console.log('[AuthMiddleware] Usuário não encontrado na tabela, criando automaticamente...')
+
+      try {
+        usuario = await usuarioRepo.create({
+          id: authUser.id,
+          email: authUser.email,
+          nome: authUser.user_metadata?.full_name || authUser.email.split('@')[0],
+          tipo_perfil: 'visualizador', // Perfil padrão
+          ativo: true,
+        })
+
+        console.log('[AuthMiddleware] Usuário criado com sucesso:', usuario.email)
+      } catch (createError) {
+        console.error('[AuthMiddleware] Erro ao criar usuário:', createError)
+        return null
+      }
+    }
+
+    // Verifica se usuário está ativo
+    if (!usuario.ativo) {
+      console.warn('[AuthMiddleware] Usuário inativo:', usuario.email)
       return null
     }
 
