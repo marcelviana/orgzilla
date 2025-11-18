@@ -19,8 +19,7 @@ export const metadata = {
   description: 'The friendly corporate kaiju that organizes everything. Smart team management with a playful dinosaur mascot theme.',
   keywords: ['team management', 'project management', 'organization', 'collaboration'],
   authors: [{ name: 'Orgzilla Team' }],
-  themeColor: '#FF7A00',
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export const viewport = {

@@ -1100,54 +1100,23 @@ export default function NiveisPage() {
           </div>
 
           <div className="p-6">
-            {selectedLevel?.pessoas > 0 ? (
-              <div className="space-y-4">
-                <Input placeholder="Buscar pessoas..." />
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Cargo</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead>Desde</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockPeople.map((person) => (
-                      <TableRow key={person.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={person.avatar || "/placeholder.svg"} />
-                              <AvatarFallback>
-                                {person.nome[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            {person.nome}
-                          </div>
-                        </TableCell>
-                        <TableCell>{person.cargo}</TableCell>
-                        <TableCell>{person.time}</TableCell>
-                        <TableCell>{person.desde}</TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm">
-                            Ver Perfil
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Nenhuma pessoa neste nível ainda
-                </p>
-              </div>
-            )}
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-2">
+                {selectedLevel?.pessoas > 0
+                  ? `${selectedLevel.pessoas} pessoas neste nível`
+                  : 'Nenhuma pessoa neste nível ainda'
+                }
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Para ver a lista completa, acesse a página de Pessoas e filtre por este nível.
+              </p>
+              <Link href="/pessoas">
+                <Button className="mt-4 bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white">
+                  Ir para Pessoas
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <div className="p-6 border-t flex justify-end">

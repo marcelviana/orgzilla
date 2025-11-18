@@ -7,15 +7,21 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, Users, Network, Workflow, Briefcase, BarChart3, Settings, LogOut, Bell, Menu, Search, ChevronDown, ChevronRight, Tag, TrendingUp, ShieldAlert } from 'lucide-react'
+import { toast } from 'sonner'
+import { useUser } from '@/components/providers/user-provider'
 
 type NavItem = {
   id: string
   label: string
   icon: React.ElementType
   href: string
+}
+
+type DashboardShellProps = {
+  children?: React.ReactNode
 }
 
 const mainNavItems: NavItem[] = [
@@ -35,13 +41,33 @@ const adminSubmenuItems: NavItem[] = [
   { id: "tags", label: "Tags", icon: Tag, href: "/configuracoes/tags" },
 ]
 
-export function DashboardShell({ children }: { children?: React.ReactNode }) {
+export function DashboardShell({ children }: DashboardShellProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const usuario = useUser()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [configExpanded, setConfigExpanded] = useState(pathname?.startsWith('/configuracoes') || false)
-  
-  const isAdmin = true
+
+  // Verificar se é admin
+  const isAdmin = usuario?.tipo_perfil === 'admin'
+
+  // Nome para exibir (prioriza nome da pessoa, senão usa nome do usuário)
+  const nomeExibicao = usuario?.pessoa?.nome || usuario?.nome || 'Usuário'
+
+  // Iniciais para avatar
+  const iniciais = nomeExibicao
+    .split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
+  // Tradução do tipo de perfil
+  const tipoPerfilLabel = {
+    admin: 'Administrador',
+    gestor: 'Gestor',
+    visualizador: 'Visualizador',
+  }[usuario?.tipo_perfil || 'visualizador']
 
   const getActiveRoute = () => {
     if (pathname?.startsWith('/configuracoes')) {
@@ -52,9 +78,24 @@ export function DashboardShell({ children }: { children?: React.ReactNode }) {
   
   const activeRoute = getActiveRoute()
 
-  const handleLogout = () => {
-    console.log("[v0] User logged out, redirecting to login page")
-    router.push('/login')
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success('🦖 Até logo!')
+        window.location.href = '/login'
+      } else {
+        toast.error(data.error || 'Erro ao fazer logout')
+      }
+    } catch (error) {
+      console.error('[Logout] Erro:', error)
+      toast.error('Ops! Orgzilla tropeçou ao fazer logout')
+    }
   }
 
   const SidebarContent = () => (
@@ -150,20 +191,23 @@ export function DashboardShell({ children }: { children?: React.ReactNode }) {
 
       {/* User Profile Section */}
       <div className="border-t border-secondary/80 p-4">
-        <Link 
+        <Link
           href="/perfil"
           onClick={() => setSidebarOpen(false)}
           className="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-secondary/60"
         >
           <Avatar className="h-10 w-10">
+            {usuario?.pessoa?.foto_url ? (
+              <AvatarImage src={usuario.pessoa.foto_url} alt={nomeExibicao} />
+            ) : null}
             <AvatarFallback className="bg-primary text-sm font-semibold text-white">
-              JS
+              {iniciais}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium text-white">João Silva</p>
+            <p className="text-sm font-medium text-white truncate">{nomeExibicao}</p>
             <Badge className="mt-1 bg-primary text-xs hover:bg-primary">
-              Administrador
+              {tipoPerfilLabel}
             </Badge>
           </div>
           <Button
@@ -238,11 +282,16 @@ export function DashboardShell({ children }: { children?: React.ReactNode }) {
             </Button>
 
             {/* User Avatar */}
-            <Avatar className="h-9 w-9 cursor-pointer border-2 border-transparent transition-all hover:border-accent">
-              <AvatarFallback className="bg-primary text-sm font-semibold text-white">
-                JS
-              </AvatarFallback>
-            </Avatar>
+            <Link href="/perfil">
+              <Avatar className="h-9 w-9 cursor-pointer border-2 border-transparent transition-all hover:border-accent">
+                {usuario?.pessoa?.foto_url ? (
+                  <AvatarImage src={usuario.pessoa.foto_url} alt={nomeExibicao} />
+                ) : null}
+                <AvatarFallback className="bg-primary text-sm font-semibold text-white">
+                  {iniciais}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
           </div>
         </header>
 

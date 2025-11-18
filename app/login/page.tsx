@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,8 +10,13 @@ import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = createClient()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -18,30 +24,89 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [emailError, setEmailError] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Verificar erro de OAuth na URL
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error === 'oauth_failed') {
+      toast.error('Erro ao fazer login com Google. Tente novamente.')
+    }
+  }, [searchParams])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
-    // Demo validation
+    setEmailError(false)
+
+    // Validação básica
     if (!email.includes('@')) {
       setEmailError(true)
       setIsLoading(false)
+      toast.error('Por favor, insira um email válido')
       return
     }
-    
-    setEmailError(false)
-    
-    // Simulate loading
-    setTimeout(() => {
-      console.log('Form data:', { email, password, rememberMe })
-      toast.success('🦖 Demo mode - No authentication yet!')
+
+    if (password.length < 6) {
       setIsLoading(false)
-    }, 1500)
+      toast.error('A senha deve ter no mínimo 6 caracteres')
+      return
+    }
+
+    try {
+      // Autenticação com Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        // Traduzir erros do Supabase
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Email ou senha incorretos')
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Por favor, confirme seu email antes de fazer login')
+        } else {
+          toast.error(error.message || 'Erro ao fazer login')
+        }
+        setIsLoading(false)
+        return
+      }
+
+      // Login bem-sucedido
+      toast.success('🦖 Login realizado com sucesso!')
+
+      // Redirecionar para dashboard
+      router.push('/')
+      router.refresh() // Atualiza o middleware
+    } catch (error: any) {
+      console.error('[Login] Erro:', error)
+      toast.error('Ops! Orgzilla tropeçou. Tente novamente.')
+      setIsLoading(false)
+    }
   }
 
-  const handleGoogleLogin = () => {
-    console.log('Google login clicked')
-    toast.info('🦖 Demo mode - Google authentication coming soon!')
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true)
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+
+      if (error) {
+        toast.error('Erro ao conectar com Google')
+        setIsLoading(false)
+        return
+      }
+
+      // O redirect acontecerá automaticamente
+    } catch (error: any) {
+      console.error('[GoogleLogin] Erro:', error)
+      toast.error('Ops! Orgzilla tropeçou. Tente novamente.')
+      setIsLoading(false)
+    }
   }
 
   return (

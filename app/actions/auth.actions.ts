@@ -41,3 +41,31 @@ export async function getCurrentUser(): Promise<UsuarioLogadoInfo | null> {
 export async function checkIsAdmin(): Promise<boolean> {
   return await isAdmin()
 }
+
+/**
+ * Faz logout do usuário
+ */
+export async function signOut(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    return {
+      success: true,
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'Erro ao fazer logout',
+    }
+  }
+}
