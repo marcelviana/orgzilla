@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [emailError, setEmailError] = useState(false)
+  const [hasError, setHasError] = useState(false) // Para destacar campos quando houver erro de credenciais
   const [triangles, setTriangles] = useState<Array<{ left: number; top: number; width: number; height: number }>>([])
 
   // Generate random triangle positions on client side only
@@ -46,31 +46,34 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setEmailError(false)
 
-    // Validação básica
+    // Limpar erros anteriores
+    setHasError(false)
+
+    // Validações ANTES de enviar (apenas formato)
+    if (!email || !password) {
+      toast.error('Preencha email e senha para continuar')
+      return
+    }
+
     if (!email.includes('@')) {
-      setEmailError(true)
-      setIsLoading(false)
-      toast.error('Por favor, insira um email válido')
+      toast.error('Digite um email válido')
       return
     }
 
     if (password.length < 6) {
-      setIsLoading(false)
-      toast.error('A senha deve ter no mínimo 6 caracteres')
+      toast.error('A senha deve ter pelo menos 6 caracteres')
       return
     }
 
+    setIsLoading(true)
+
     try {
       console.log('[Login] Iniciando autenticação...')
-      console.log('[Login] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-      console.log('[Login] Anon Key configurada:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
 
       // Verificar se Supabase está configurado
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        toast.error('⚠️ Supabase não configurado. Configure as variáveis de ambiente.')
+        toast.error('⚠️ Supabase não configurado. Veja o arquivo CONFIGURAR-SUPABASE.md')
         console.error('[Login] Variáveis de ambiente do Supabase não configuradas!')
         setIsLoading(false)
         return
@@ -82,33 +85,40 @@ export default function LoginPage() {
         password,
       })
 
-      console.log('[Login] Resposta do Supabase:', { data, error })
-
       if (error) {
         console.error('[Login] Erro do Supabase:', error)
-        // Traduzir erros do Supabase
+
+        // IMPORTANTE: NÃO validar novamente aqui
+        // Apenas mostrar o erro de autenticação
+        setHasError(true) // Destacar campos
+
+        // Traduzir erro do Supabase
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Email ou senha incorretos')
         } else if (error.message.includes('Email not confirmed')) {
-          toast.error('Por favor, confirme seu email antes de fazer login')
+          toast.error('Email não confirmado. Verifique sua caixa de entrada.')
+        } else if (error.message.includes('User not found')) {
+          toast.error('Usuário não encontrado')
+        } else if (error.message.includes('Invalid email')) {
+          toast.error('Email inválido')
         } else {
-          toast.error(`Erro: ${error.message}`)
+          toast.error('Ops! Orgzilla tropeçou ao tentar fazer login. Tente novamente.')
         }
+
         setIsLoading(false)
         return
       }
 
       // Login bem-sucedido
-      console.log('[Login] Login bem-sucedido!', data)
+      console.log('[Login] Login bem-sucedido!')
       toast.success('🦖 Login realizado com sucesso!')
 
       // Redirecionar para dashboard
-      console.log('[Login] Redirecionando para /')
       router.push('/')
-      router.refresh() // Atualiza o middleware
+      router.refresh()
     } catch (error: any) {
       console.error('[Login] Erro não tratado:', error)
-      toast.error(`Ops! Erro: ${error.message || 'Tente novamente.'}`)
+      toast.error('Ops! Orgzilla tropeçou ao tentar fazer login. Tente novamente.')
       setIsLoading(false)
     }
   }
@@ -209,7 +219,7 @@ export default function LoginPage() {
                 Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 ${hasError ? 'text-error' : 'text-muted-foreground'}`} />
                 <Input
                   id="email"
                   type="email"
@@ -217,17 +227,13 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value)
-                    setEmailError(false)
+                    setHasError(false)
                   }}
-                  className={`pl-10 h-12 ${emailError ? 'border-error focus-visible:ring-error' : ''}`}
+                  className={`pl-10 h-12 transition-colors ${hasError ? 'border-error focus-visible:ring-error' : ''}`}
                   required
+                  disabled={isLoading}
                 />
               </div>
-              {emailError && (
-                <p className="text-xs text-error mt-1">
-                  Por favor, insira um email válido
-                </p>
-              )}
             </div>
 
             {/* Password Field */}
@@ -236,20 +242,25 @@ export default function LoginPage() {
                 Senha
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Lock className={`absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 ${hasError ? 'text-error' : 'text-muted-foreground'}`} />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 h-12"
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setHasError(false)
+                  }}
+                  className={`pl-10 pr-10 h-12 transition-colors ${hasError ? 'border-error focus-visible:ring-error' : ''}`}
                   required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-secondary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-secondary transition-colors disabled:opacity-50"
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5" />

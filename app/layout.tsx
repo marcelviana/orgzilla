@@ -1,6 +1,7 @@
 import { Outfit, Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
+import { Toaster as SonnerToaster } from 'sonner'
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -39,6 +40,16 @@ export default function RootLayout({
       <body>
         {children}
         <Toaster />
+        <SonnerToaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: '#1A2734',
+              color: '#fff',
+              border: '1px solid #FF7A00',
+            },
+          }}
+        />
       </body>
     </html>
   )
