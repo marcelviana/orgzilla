@@ -23,6 +23,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [emailError, setEmailError] = useState(false)
+  const [triangles, setTriangles] = useState<Array<{ left: number; top: number; width: number; height: number }>>([])
+
+  // Generate random triangle positions on client side only
+  useEffect(() => {
+    const positions = Array.from({ length: 20 }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      width: 20 + Math.random() * 40,
+      height: 20 + Math.random() * 40,
+    }))
+    setTriangles(positions)
+  }, [])
 
   // Verificar erro de OAuth na URL
   useEffect(() => {
@@ -115,15 +127,15 @@ export default function LoginPage() {
       <div className="h-48 md:h-screen md:w-[40%] bg-gradient-to-b from-secondary to-[#0F1419] flex items-center justify-center relative overflow-hidden">
         {/* Decorative triangles pattern */}
         <div className="absolute inset-0 opacity-10">
-          {[...Array(20)].map((_, i) => (
+          {triangles.map((triangle, i) => (
             <div
               key={i}
               className="absolute"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${20 + Math.random() * 40}px`,
-                height: `${20 + Math.random() * 40}px`,
+                left: `${triangle.left}%`,
+                top: `${triangle.top}%`,
+                width: `${triangle.width}px`,
+                height: `${triangle.height}px`,
               }}
             >
               <svg viewBox="0 0 100 100" className="text-accent">
