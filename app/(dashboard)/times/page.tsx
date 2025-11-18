@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter, X } from 'lucide-react'
+import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter, X, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,
@@ -29,114 +29,156 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { useToast } from '@/hooks/use-toast'
+import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
+import {
+  getTimesHierarquia,
+  getGestoresParaFiltro,
+  softDeleteTime,
+  type TimeComEstatisticas,
+} from '@/app/actions/times.actions'
 import Link from 'next/link'
 
-type Team = {
-  id: number
-  nome: string
-  descricao: string
-  gestor: { nome: string; avatar: string }
+type Team = TimeComEstatisticas & {
+  gestor: { nome: string; avatar: string | null } | null
   numeroPessoas: number
   vagasAbertas: number
   projetos: number
-  ativo: boolean
   timesFilhos: Team[]
 }
-
-const MOCK_TEAMS: Team[] = [
-  {
-    id: 1,
-    nome: 'Tecnologia',
-    descricao: 'Toda área de tecnologia e engenharia',
-    gestor: { nome: 'Carlos Silva', avatar: '/avatar-carlos.jpg' },
-    numeroPessoas: 45,
-    vagasAbertas: 3,
-    projetos: 8,
-    ativo: true,
-    timesFilhos: [
-      {
-        id: 2,
-        nome: 'Engenharia',
-        descricao: 'Desenvolvimento de software',
-        gestor: { nome: 'Maria Santos', avatar: '/avatar-maria.jpg' },
-        numeroPessoas: 35,
-        vagasAbertas: 2,
-        projetos: 6,
-        ativo: true,
-        timesFilhos: [
-          {
-            id: 3,
-            nome: 'Frontend',
-            descricao: 'Interfaces web e mobile',
-            gestor: { nome: 'Ana Costa', avatar: '/avatar-ana.jpg' },
-            numeroPessoas: 15,
-            vagasAbertas: 1,
-            projetos: 3,
-            ativo: true,
-            timesFilhos: [],
-          },
-          {
-            id: 4,
-            nome: 'Backend',
-            descricao: 'APIs e microserviços',
-            gestor: { nome: 'Pedro Lima', avatar: '/avatar-pedro.jpg' },
-            numeroPessoas: 20,
-            vagasAbertas: 1,
-            projetos: 3,
-            ativo: true,
-            timesFilhos: [],
-          },
-        ],
-      },
-      {
-        id: 5,
-        nome: 'Dados',
-        descricao: 'Analytics e Data Science',
-        gestor: { nome: 'Julia Mendes', avatar: '/avatar-julia.jpg' },
-        numeroPessoas: 10,
-        vagasAbertas: 1,
-        projetos: 2,
-        ativo: true,
-        timesFilhos: [],
-      },
-    ],
-  },
-  {
-    id: 6,
-    nome: 'Produto',
-    descricao: 'Product Management e UX',
-    gestor: { nome: 'Roberto Alves', avatar: '/avatar-roberto.jpg' },
-    numeroPessoas: 18,
-    vagasAbertas: 2,
-    projetos: 5,
-    ativo: true,
-    timesFilhos: [
-      {
-        id: 7,
-        nome: 'Design',
-        descricao: 'UX/UI Design',
-        gestor: { nome: 'Sofia Oliveira', avatar: '/avatar-sofia.jpg' },
-        numeroPessoas: 8,
-        vagasAbertas: 1,
-        projetos: 3,
-        ativo: true,
-        timesFilhos: [],
-      },
-    ],
-  },
-]
 
 type ViewMode = 'cards' | 'tree' | 'table'
 
 export default function TimesPage() {
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [teams, setTeams] = useState<Team[]>([])
+  const [gestores, setGestores] = useState<Array<{ id: string; nome: string }>>([])
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [gestorFilter, setGestorFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [expandedTeams, setExpandedTeams] = useState<Set<number>>(new Set([1, 2, 6]))
+  const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [timeToDelete, setTimeToDelete] = useState<string | null>(null)
 
-  const toggleTeamExpansion = (teamId: number) => {
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    setLoading(true)
+    try {
+      await Promise.all([
+        checkPermissions(),
+        loadTimes(),
+        loadGestores(),
+      ])
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      toast({
+        title: 'Erro ao carregar dados',
+        description: 'Não foi possível carregar os times. Tente novamente.',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function checkPermissions() {
+    try {
+      const user = await getCurrentUser()
+      setCurrentUser(user)
+
+      const adminStatus = await checkIsAdmin()
+      setIsAdmin(adminStatus)
+    } catch (error) {
+      console.error('Erro ao verificar permissões:', error)
+    }
+  }
+
+  async function loadTimes() {
+    try {
+      const result = await getTimesHierarquia()
+      if (result.success && result.data) {
+        setTeams(result.data as Team[])
+      } else {
+        toast({
+          title: 'Erro ao carregar times',
+          description: result.error || 'Erro desconhecido',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao carregar times:', error)
+      toast({
+        title: 'Erro ao carregar times',
+        description: 'Não foi possível carregar os times.',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  async function loadGestores() {
+    try {
+      const result = await getGestoresParaFiltro()
+      if (result.success && result.data) {
+        setGestores(result.data)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar gestores:', error)
+    }
+  }
+
+  async function handleDelete(timeId: string) {
+    try {
+      const result = await softDeleteTime(timeId)
+      if (result.success) {
+        toast({
+          title: '🦖 Time desativado com sucesso!',
+          description: 'O time foi desativado.',
+        })
+        await loadTimes()
+      } else {
+        toast({
+          title: 'Erro ao desativar time',
+          description: result.error || 'Erro desconhecido',
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao desativar time:', error)
+      toast({
+        title: 'Ops! Erro ao desativar time',
+        description: 'Não foi possível desativar o time. Tente novamente.',
+        variant: 'destructive',
+      })
+    } finally {
+      setDeleteDialogOpen(false)
+      setTimeToDelete(null)
+    }
+  }
+
+  function confirmDelete(timeId: string) {
+    setTimeToDelete(timeId)
+    setDeleteDialogOpen(true)
+  }
+
+  const toggleTeamExpansion = (teamId: string) => {
     const newExpanded = new Set(expandedTeams)
     if (newExpanded.has(teamId)) {
       newExpanded.delete(teamId)
@@ -148,10 +190,11 @@ export default function TimesPage() {
 
   const filterTeams = (teams: Team[], query: string): Team[] => {
     return teams.filter((team) => {
+      const gestorNome = team.gestor?.nome || ''
       const matchesSearch = team.nome.toLowerCase().includes(query.toLowerCase()) ||
-        team.gestor.nome.toLowerCase().includes(query.toLowerCase())
-      const matchesGestor = gestorFilter === 'all' || team.gestor.nome === gestorFilter
-      const matchesStatus = statusFilter === 'all' || 
+        gestorNome.toLowerCase().includes(query.toLowerCase())
+      const matchesGestor = gestorFilter === 'all' || gestorNome === gestorFilter
+      const matchesStatus = statusFilter === 'all' ||
         (statusFilter === 'active' && team.ativo) ||
         (statusFilter === 'inactive' && !team.ativo)
 
@@ -168,13 +211,24 @@ export default function TimesPage() {
     }))
   }
 
-  const filteredTeams = filterTeams(MOCK_TEAMS, searchQuery)
+  const filteredTeams = filterTeams(teams, searchQuery)
 
   const flattenTeams = (teams: Team[], level = 0): Array<Team & { level: number }> => {
     return teams.flatMap((team) => [
       { ...team, level },
       ...flattenTeams(team.timesFilhos, level + 1),
     ])
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardShell>
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (
@@ -264,9 +318,11 @@ export default function TimesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os gestores</SelectItem>
-                    <SelectItem value="Carlos Silva">Carlos Silva</SelectItem>
-                    <SelectItem value="Maria Santos">Maria Santos</SelectItem>
-                    <SelectItem value="Roberto Alves">Roberto Alves</SelectItem>
+                    {gestores.map((gestor) => (
+                      <SelectItem key={gestor.id} value={gestor.nome}>
+                        {gestor.nome}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -307,6 +363,7 @@ export default function TimesPage() {
             teams={filteredTeams}
             expandedTeams={expandedTeams}
             toggleTeamExpansion={toggleTeamExpansion}
+            confirmDelete={confirmDelete}
           />
         )}
 
@@ -319,7 +376,12 @@ export default function TimesPage() {
           </div>
         )}
 
-        {viewMode === 'table' && <TableView teams={flattenTeams(filteredTeams)} />}
+        {viewMode === 'table' && (
+          <TableView
+            teams={flattenTeams(filteredTeams)}
+            confirmDelete={confirmDelete}
+          />
+        )}
 
         {/* Empty State */}
         {filteredTeams.length === 0 && (
@@ -333,6 +395,27 @@ export default function TimesPage() {
             </div>
           </div>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Desativar Time</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja desativar este time? Esta ação pode ser revertida reativando o time posteriormente.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => timeToDelete && handleDelete(timeToDelete)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Desativar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardShell>
   )
@@ -342,11 +425,13 @@ function CardsView({
   teams,
   expandedTeams,
   toggleTeamExpansion,
+  confirmDelete,
   level = 0,
 }: {
   teams: Team[]
-  expandedTeams: Set<number>
-  toggleTeamExpansion: (id: number) => void
+  expandedTeams: Set<string>
+  toggleTeamExpansion: (id: string) => void
+  confirmDelete: (id: string) => void
   level?: number
 }) {
   return (
@@ -404,16 +489,18 @@ function CardsView({
               {/* Body */}
               <p className="text-sm text-muted-foreground line-clamp-2">{team.descricao}</p>
 
-              <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={team.gestor.avatar || "/placeholder.svg"} />
-                  <AvatarFallback>{team.gestor.nome.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm">
-                  <span className="text-muted-foreground">Gestor:</span>{' '}
-                  <span className="font-medium">{team.gestor.nome}</span>
-                </span>
-              </div>
+              {team.gestor && (
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={team.gestor.avatar || "/placeholder.svg"} />
+                    <AvatarFallback>{team.gestor.nome.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm">
+                    <span className="text-muted-foreground">Gestor:</span>{' '}
+                    <span className="font-medium">{team.gestor.nome}</span>
+                  </span>
+                </div>
+              )}
 
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-1 text-muted-foreground">
@@ -468,11 +555,11 @@ function CardsView({
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => console.log('Delete team', team.id)}
+                      onClick={() => confirmDelete(team.id)}
                       className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Excluir
+                      Desativar
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -487,6 +574,7 @@ function CardsView({
                 teams={team.timesFilhos}
                 expandedTeams={expandedTeams}
                 toggleTeamExpansion={toggleTeamExpansion}
+                confirmDelete={confirmDelete}
                 level={level + 1}
               />
             </div>
@@ -497,7 +585,13 @@ function CardsView({
   )
 }
 
-function TableView({ teams }: { teams: Array<Team & { level: number }> }) {
+function TableView({
+  teams,
+  confirmDelete,
+}: {
+  teams: Array<Team & { level: number }>
+  confirmDelete: (id: string) => void
+}) {
   return (
     <Card>
       <Table>
@@ -524,15 +618,19 @@ function TableView({ teams }: { teams: Array<Team & { level: number }> }) {
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={team.gestor.avatar || "/placeholder.svg"} />
-                    <AvatarFallback className="text-xs">
-                      {team.gestor.nome.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm">{team.gestor.nome}</span>
-                </div>
+                {team.gestor ? (
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={team.gestor.avatar || "/placeholder.svg"} />
+                      <AvatarFallback className="text-xs">
+                        {team.gestor.nome.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{team.gestor.nome}</span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Sem gestor</span>
+                )}
               </TableCell>
               <TableCell className="text-center">{team.numeroPessoas}</TableCell>
               <TableCell className="text-center">{team.vagasAbertas}</TableCell>
@@ -563,11 +661,11 @@ function TableView({ teams }: { teams: Array<Team & { level: number }> }) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => console.log('Delete team', team.id)}
+                      onClick={() => confirmDelete(team.id)}
                       className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Excluir
+                      Desativar
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
