@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth.actions'
+import { handleError } from '@/lib/errors/error-handler'
 
 export type PessoaListItem = {
   id: string
@@ -218,10 +219,10 @@ export async function getPessoasComFiltros(
       },
     }
   } catch (error) {
-    console.error('[getPessoasComFiltros] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar pessoas',
+      error: appError.message,
     }
   }
 }
@@ -266,10 +267,10 @@ export async function getTimesParaFiltro(): Promise<ActionResult<Array<{ id: str
       data: times || [],
     }
   } catch (error) {
-    console.error('[getTimesParaFiltro] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar times',
+      error: appError.message,
     }
   }
 }
@@ -294,10 +295,10 @@ export async function getCargosParaFiltro(): Promise<ActionResult<Array<{ id: st
       data: cargos || [],
     }
   } catch (error) {
-    console.error('[getCargosParaFiltro] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar cargos',
+      error: appError.message,
     }
   }
 }
@@ -365,10 +366,10 @@ export async function exportPessoasCSV(
       data: csv,
     }
   } catch (error) {
-    console.error('[exportPessoasCSV] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao exportar',
+      error: appError.message,
     }
   }
 }

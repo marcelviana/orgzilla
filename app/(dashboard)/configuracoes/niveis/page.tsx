@@ -40,7 +40,8 @@ import {
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/ui/toast-config'
+import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
   getNiveisComEstatisticas,
   createNivel,
@@ -51,8 +52,6 @@ import {
 import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 
 export default function NiveisPage() {
-  const { toast } = useToast()
-
   // Data state
   const [levels, setLevels] = useState<NivelComEstatisticas[]>([])
   const [loading, setLoading] = useState(true)
@@ -94,11 +93,11 @@ export default function NiveisPage() {
         setIsAdmin(adminStatus)
 
         if (!adminStatus) {
-          toast({
-            variant: 'destructive',
-            title: 'Acesso Restrito',
-            description: 'Apenas administradores podem gerenciar níveis.',
-          })
+          const error = {
+            type: 'permission' as const,
+            message: 'Ops! Você não tem permissão para gerenciar níveis.',
+          }
+          toast.error(error)
         }
       }
     } catch (err) {
@@ -116,21 +115,14 @@ export default function NiveisPage() {
       if (result.success && result.data) {
         setLevels(result.data)
       } else {
-        setError(result.error || 'Erro ao carregar níveis')
-        toast({
-          variant: 'destructive',
-          title: 'Erro',
-          description: result.error || 'Não foi possível carregar os níveis',
-        })
+        const errorMsg = result.error || 'Não foi possível carregar os níveis'
+        setError(errorMsg)
+        toast.error(errorMsg)
       }
     } catch (err) {
-      console.error('[loadNiveis] Erro:', err)
-      setError('Erro inesperado ao carregar níveis')
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Erro inesperado ao carregar níveis',
-      })
+      const appError = handleError(err, 'database')
+      setError(appError.message)
+      toast.error(appError)
     } finally {
       setLoading(false)
     }
@@ -150,12 +142,10 @@ export default function NiveisPage() {
   }
 
   const handleCreateLevel = async () => {
-    if (!formNome.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Nome do nível é obrigatório',
-      })
+    // Validar usando helper
+    const nomeError = validateRequired(formNome, 'Nome do nível')
+    if (nomeError) {
+      toast.error(nomeError)
       return
     }
 
@@ -169,10 +159,7 @@ export default function NiveisPage() {
       })
 
       if (result.success) {
-        toast({
-          title: '🦖 Nível criado com sucesso!',
-          description: `O nível ${formNome} foi criado.`,
-        })
+        toast.successDino(`Nível ${formNome} criado com sucesso!`)
 
         // Recarrega dados
         await loadNiveis()
@@ -183,19 +170,11 @@ export default function NiveisPage() {
         setFormNivelAnterior(null)
         setFormAtivo(true)
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erro ao criar nível',
-          description: result.error || 'Não foi possível criar o nível',
-        })
+        toast.error(result.error || 'Não foi possível criar o nível')
       }
     } catch (err) {
-      console.error('[handleCreateLevel] Erro:', err)
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Erro inesperado ao criar nível',
-      })
+      const appError = handleError(err, 'database')
+      toast.error(appError)
     } finally {
       setIsSubmitting(false)
     }
@@ -213,10 +192,7 @@ export default function NiveisPage() {
       })
 
       if (result.success) {
-        toast({
-          title: '🦖 Nível atualizado com sucesso!',
-          description: `O nível ${selectedLevel.nome} foi atualizado.`,
-        })
+        toast.successDino(`Nível ${selectedLevel.nome} atualizado com sucesso!`)
 
         // Recarrega dados
         await loadNiveis()
@@ -224,19 +200,11 @@ export default function NiveisPage() {
         // Fecha modal
         setEditModalOpen(false)
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erro ao atualizar nível',
-          description: result.error || 'Não foi possível atualizar o nível',
-        })
+        toast.error(result.error || 'Não foi possível atualizar o nível')
       }
     } catch (err) {
-      console.error('[handleEditLevel] Erro:', err)
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Erro inesperado ao atualizar nível',
-      })
+      const appError = handleError(err, 'database')
+      toast.error(appError)
     } finally {
       setIsSubmitting(false)
     }
@@ -251,10 +219,7 @@ export default function NiveisPage() {
       const result = await softDeleteNivel(selectedLevel.id)
 
       if (result.success) {
-        toast({
-          title: '🦖 Nível desativado com sucesso!',
-          description: `O nível ${selectedLevel.nome} foi desativado.`,
-        })
+        toast.successDino(`Nível ${selectedLevel.nome} desativado com sucesso!`)
 
         // Recarrega dados
         await loadNiveis()
@@ -262,19 +227,11 @@ export default function NiveisPage() {
         // Fecha modal
         setDeleteModalOpen(false)
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erro ao desativar nível',
-          description: result.error || 'Não foi possível desativar o nível',
-        })
+        toast.error(result.error || 'Não foi possível desativar o nível')
       }
     } catch (err) {
-      console.error('[handleDeleteLevel] Erro:', err)
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Erro inesperado ao desativar nível',
-      })
+      const appError = handleError(err, 'database')
+      toast.error(appError)
     } finally {
       setIsSubmitting(false)
     }
@@ -287,27 +244,17 @@ export default function NiveisPage() {
       })
 
       if (result.success) {
-        toast({
-          title: '🦖 Status atualizado!',
-          description: `Nível ${!currentStatus ? 'ativado' : 'desativado'} com sucesso.`,
-        })
+        const action = !currentStatus ? 'ativado' : 'desativado'
+        toast.successDino(`Nível ${action} com sucesso!`)
 
         // Recarrega dados
         await loadNiveis()
       } else {
-        toast({
-          variant: 'destructive',
-          title: 'Erro ao atualizar status',
-          description: result.error || 'Não foi possível atualizar o status',
-        })
+        toast.error(result.error || 'Não foi possível atualizar o status')
       }
     } catch (err) {
-      console.error('[handleToggleStatus] Erro:', err)
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Erro inesperado ao atualizar status',
-      })
+      const appError = handleError(err, 'database')
+      toast.error(appError)
     }
   }
 

@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/middleware'
 import { NivelRepository, CargoRepository } from '@/lib/repositories'
 import type { NivelInsert, NivelUpdate } from '@/lib/types'
+import { handleError } from '@/lib/errors/error-handler'
 
 // =============================================================================
 // TYPES
@@ -98,10 +99,10 @@ export async function getNiveisComEstatisticas(): Promise<ActionResult<NivelComE
       data: niveisComStats,
     }
   } catch (error) {
-    console.error('[getNiveisComEstatisticas] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar níveis',
+      error: appError.message,
     }
   }
 }
@@ -158,10 +159,10 @@ export async function getNivelById(id: string): Promise<ActionResult<NivelComEst
       },
     }
   } catch (error) {
-    console.error('[getNivelById] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar nível',
+      error: appError.message,
     }
   }
 }
@@ -222,10 +223,10 @@ export async function createNivel(dados: NivelInsert): Promise<ActionResult<stri
       data: novoNivel.id,
     }
   } catch (error) {
-    console.error('[createNivel] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao criar nível',
+      error: appError.message,
     }
   }
 }
@@ -283,10 +284,10 @@ export async function updateNivel(id: string, dados: NivelUpdate): Promise<Actio
       success: true,
     }
   } catch (error) {
-    console.error('[updateNivel] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao atualizar nível',
+      error: appError.message,
     }
   }
 }
@@ -349,10 +350,10 @@ export async function softDeleteNivel(id: string): Promise<ActionResult> {
       success: true,
     }
   } catch (error) {
-    console.error('[softDeleteNivel] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao desativar nível',
+      error: appError.message,
     }
   }
 }
@@ -401,10 +402,10 @@ export async function deleteNivel(id: string): Promise<ActionResult> {
       success: true,
     }
   } catch (error) {
-    console.error('[deleteNivel] Erro:', error)
+    const appError = handleError(error, 'database')
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Erro ao deletar nível',
+      error: appError.message,
     }
   }
 }
