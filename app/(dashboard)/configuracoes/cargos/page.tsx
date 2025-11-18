@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,8 +39,21 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronDown, ChevronUp, Users, Edit, Copy, Trash2, X, ShieldAlert } from 'lucide-react'
+import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronDown, ChevronUp, Users, Edit, Copy, Trash2, X, ShieldAlert, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from '@/lib/ui/toast-config'
+import { handleError, validateRequired } from '@/lib/errors/error-handler'
+import {
+  getCargosComEstatisticas,
+  createCargo,
+  updateCargo,
+  softDeleteCargo,
+  deleteCargo,
+  getTrilhasParaFiltro,
+  getNiveisParaFiltro,
+  type CargoComEstatisticas
+} from '@/app/actions/cargos.actions'
+import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 
 // Mock data
 const mockPositions = [
@@ -117,26 +130,35 @@ const mockPeople = [
 ]
 
 export default function CargosPage() {
+  // Data state
+  const [cargos, setCargos] = useState<CargoComEstatisticas[]>([])
+  const [trilhas, setTrilhas] = useState<Array<{ id: string; nome: string }>>([])
+  const [niveis, setNiveis] = useState<Array<{ id: string; nome: string }>>([])
+  const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [currentUser, setCurrentUser] = useState<string | null>(null)
+
+  // UI state
   const [view, setView] = useState<'table' | 'grid'>('table')
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRows, setSelectedRows] = useState<string[]>([])
-  
+
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [viewPeopleModalOpen, setViewPeopleModalOpen] = useState(false)
-  const [selectedPosition, setSelectedPosition] = useState<any>(null)
-  
+  const [selectedPosition, setSelectedPosition] = useState<CargoComEstatisticas | null>(null)
+
   // Form state
   const [formData, setFormData] = useState({
     nome: '',
-    trilha: '',
-    nivel: '',
+    trilha_id: '',
+    nivel_id: '',
     ativo: true,
   })
-  
+
   // Filters
   const [filters, setFilters] = useState({
     trilhas: [] as string[],
@@ -145,36 +167,215 @@ export default function CargosPage() {
     sortBy: 'nome',
   })
 
-  const handleCreatePosition = () => {
-    console.log('Creating position:', formData)
-    setCreateModalOpen(false)
-    setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
-    // Toast notification would go here
+  // Mutation state
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Load data and check permissions on mount
+  useEffect(() => {
+    loadCargos()
+    loadTrilhas()
+    loadNiveis()
+    checkPermissions()
+  }, [])
+
+  async function checkPermissions() {
+    try {
+      const user = await getCurrentUser()
+      if (user) {
+        setCurrentUser(user.nome)
+        const adminStatus = await checkIsAdmin()
+        setIsAdmin(adminStatus)
+
+        if (!adminStatus) {
+          const error = {
+            type: 'permission' as const,
+            message: 'Ops! Você não tem permissão para gerenciar cargos.',
+          }
+          toast.error(error)
+        }
+      }
+    } catch (error) {
+      console.error('[Cargos] Erro ao verificar permissões:', error)
+    }
   }
 
-  const handleEditPosition = () => {
-    console.log('Editing position:', selectedPosition?.id, formData)
-    setEditModalOpen(false)
-    setSelectedPosition(null)
+  async function loadCargos() {
+    try {
+      setLoading(true)
+      const result = await getCargosComEstatisticas()
+
+      if (result.success && result.data) {
+        setCargos(result.data)
+      } else {
+        toast.error(result.error || 'Erro ao carregar cargos')
+      }
+    } catch (error) {
+      console.error('[Cargos] Erro ao carregar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDuplicatePosition = (position: any) => {
+  async function loadTrilhas() {
+    try {
+      const result = await getTrilhasParaFiltro()
+      if (result.success && result.data) {
+        setTrilhas(result.data)
+      }
+    } catch (error) {
+      console.error('[Cargos] Erro ao carregar trilhas:', error)
+    }
+  }
+
+  async function loadNiveis() {
+    try {
+      const result = await getNiveisParaFiltro()
+      if (result.success && result.data) {
+        setNiveis(result.data)
+      }
+    } catch (error) {
+      console.error('[Cargos] Erro ao carregar níveis:', error)
+    }
+  }
+
+  const handleCreatePosition = async () => {
+    // Validações
+    const nomeError = validateRequired(formData.nome, 'Nome')
+    if (nomeError) {
+      toast.error(nomeError)
+      return
+    }
+
+    const trilhaError = validateRequired(formData.trilha_id, 'Trilha')
+    if (trilhaError) {
+      toast.error(trilhaError)
+      return
+    }
+
+    const nivelError = validateRequired(formData.nivel_id, 'Nível')
+    if (nivelError) {
+      toast.error(nivelError)
+      return
+    }
+
+    if (!isAdmin) {
+      toast.error('Você não tem permissão para criar cargos')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await createCargo({
+        nome: formData.nome,
+        trilha_id: formData.trilha_id,
+        nivel_id: formData.nivel_id,
+        ativo: formData.ativo,
+      })
+
+      if (result.success) {
+        toast.successDino('Cargo criado com sucesso!')
+        setCreateModalOpen(false)
+        setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
+        loadCargos() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao criar cargo')
+      }
+    } catch (error) {
+      console.error('[Cargos] Erro ao criar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleEditPosition = async () => {
+    if (!selectedPosition) return
+
+    // Validações
+    const nomeError = validateRequired(formData.nome, 'Nome')
+    if (nomeError) {
+      toast.error(nomeError)
+      return
+    }
+
+    if (!isAdmin) {
+      toast.error('Você não tem permissão para editar cargos')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await updateCargo(selectedPosition.id, {
+        nome: formData.nome,
+        trilha_id: formData.trilha_id || undefined,
+        nivel_id: formData.nivel_id || undefined,
+        ativo: formData.ativo,
+      })
+
+      if (result.success) {
+        toast.successDino('Cargo atualizado com sucesso!')
+        setEditModalOpen(false)
+        setSelectedPosition(null)
+        setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
+        loadCargos() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao atualizar cargo')
+      }
+    } catch (error) {
+      console.error('[Cargos] Erro ao atualizar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeletePosition = async () => {
+    if (!selectedPosition) return
+
+    if (!isAdmin) {
+      toast.error('Você não tem permissão para deletar cargos')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+
+      const result = await softDeleteCargo(selectedPosition.id)
+
+      if (result.success) {
+        toast.successDino('Cargo desativado com sucesso!')
+        setDeleteModalOpen(false)
+        setSelectedPosition(null)
+        loadCargos() // Recarregar lista
+      } else {
+        toast.error(result.error || 'Erro ao desativar cargo')
+      }
+    } catch (error) {
+      console.error('[Cargos] Erro ao desativar:', error)
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDuplicatePosition = (position: CargoComEstatisticas) => {
     setFormData({
       nome: `${position.nome} (cópia)`,
-      trilha: position.trilha,
-      nivel: position.nivel,
+      trilha_id: position.trilha_id,
+      nivel_id: position.nivel_id,
       ativo: true,
     })
     setCreateModalOpen(true)
   }
 
-  const handleDeletePosition = () => {
-    console.log('Deleting position:', selectedPosition?.id)
-    setDeleteModalOpen(false)
-    setSelectedPosition(null)
-  }
-
-  const handleViewPeople = (position: any) => {
+  const handleViewPeople = (position: CargoComEstatisticas) => {
     setSelectedPosition(position)
     setViewPeopleModalOpen(true)
   }
@@ -183,29 +384,43 @@ export default function CargosPage() {
     console.log('Toggling status for position:', positionId)
   }
 
-  const filteredPositions = mockPositions.filter((pos) => {
-    if (searchQuery && !pos.nome.toLowerCase().includes(searchQuery.toLowerCase())) {
+  const filteredPositions = cargos.filter((cargo) => {
+    if (searchQuery && !cargo.nome.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false
     }
-    if (filters.trilhas.length > 0 && !filters.trilhas.includes(pos.trilha)) {
+    if (filters.trilhas.length > 0 && !filters.trilhas.includes(cargo.trilha?.nome || '')) {
       return false
     }
-    if (filters.niveis.length > 0 && !filters.niveis.includes(pos.nivel)) {
+    if (filters.niveis.length > 0 && !filters.niveis.includes(cargo.nivel?.nome || '')) {
       return false
     }
-    if (filters.status === 'ativos' && !pos.ativo) return false
-    if (filters.status === 'inativos' && pos.ativo) return false
+    if (filters.status === 'ativos' && !cargo.ativo) return false
+    if (filters.status === 'inativos' && cargo.ativo) return false
     return true
   })
 
   const stats = {
-    total: mockPositions.length,
-    ativos: mockPositions.filter((p) => p.ativo).length,
-    inativos: mockPositions.filter((p) => !p.ativo).length,
-    trilhas: new Set(mockPositions.map((p) => p.trilha)).size,
+    total: cargos.length,
+    ativos: cargos.filter((p) => p.ativo).length,
+    inativos: cargos.filter((p) => !p.ativo).length,
+    trilhas: new Set(cargos.map((p) => p.trilha?.nome).filter(Boolean)).size,
     niveisMin: 'L1',
     niveisMax: 'L8',
     totalNiveis: 8,
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <DashboardShell>
+        <div className="flex items-center justify-center h-[60vh]">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando cargos...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (
