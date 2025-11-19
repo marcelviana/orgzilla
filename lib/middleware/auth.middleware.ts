@@ -243,6 +243,10 @@ export interface UsuarioLogado extends Usuario {
     cargo?: {
       id: string
       nome: string
+      nivel?: {
+        id: string
+        nome: string
+      } | null
     } | null
     time?: {
       id: string

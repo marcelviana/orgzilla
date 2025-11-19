@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardShell } from "@/components/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,30 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { AlertCircle, Calendar, Check, Clock, ExternalLink, Eye, EyeOff, Info, Lock, User } from 'lucide-react'
+import { AlertCircle, Calendar, Check, Clock, ExternalLink, Eye, EyeOff, Info, Lock, User, Loader2 } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
+import { toast as sonnerToast } from 'sonner'
 import Link from "next/link"
-
-// Mock current user data
-const mockUser = {
-  id: "u1",
-  nome: "João Silva",
-  email: "joao@orgzilla.com",
-  tipoPerfil: "admin" as "admin" | "gestor" | "visualizador",
-  ativo: true,
-  dataCriacao: "2024-01-15",
-  ultimoAcesso: "2024-11-16 14:30",
-  ultimaTrocaSenha: "2024-09-01",
-  avatar: "/avatar-joao.jpg",
-  pessoaVinculada: {
-    id: "p1",
-    nome: "João Silva",
-    cargo: "Engineering Manager",
-    nivel: "L6",
-    time: "Engenharia",
-    avatar: "/avatar-joao.jpg"
-  }
-}
+import { getUsuarioLogado, type UsuarioLogado } from "@/lib/middleware/auth.middleware"
+import { updateUsuario } from "@/app/actions/usuarios.actions"
 
 const getProfileBadgeColor = (tipo: string) => {
   switch (tipo) {
@@ -70,13 +52,19 @@ const getTimeSinceDate = (dateString: string) => {
 
 export default function ProfilePage() {
   const { toast } = useToast()
+
+  // Data state
+  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<UsuarioLogado | null>(null)
+
+  // Form state
   const [formData, setFormData] = useState({
-    nome: mockUser.nome,
-    email: mockUser.email
+    nome: "",
+    email: ""
   })
   const [isDirty, setIsDirty] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  
+
   // Password modal state
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
   const [passwordData, setPasswordData] = useState({
@@ -89,20 +77,47 @@ export default function ProfilePage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
+  // Load user data on mount
+  useEffect(() => {
+    loadUserData()
+  }, [])
+
+  async function loadUserData() {
+    setIsLoading(true)
+    try {
+      const userData = await getUsuarioLogado()
+      if (userData) {
+        setUser(userData)
+        setFormData({
+          nome: userData.nome,
+          email: userData.email
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do usuário:', error)
+      sonnerToast.error('Erro ao carregar perfil')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setIsDirty(true)
   }
 
   const handleCancel = () => {
+    if (!user) return
     setFormData({
-      nome: mockUser.nome,
-      email: mockUser.email
+      nome: user.nome,
+      email: user.email
     })
     setIsDirty(false)
   }
 
   const handleSave = async () => {
+    if (!user) return
+
     // Validation
     if (formData.nome.length < 3) {
       toast({
@@ -124,17 +139,33 @@ export default function ProfilePage() {
     }
 
     setIsSaving(true)
-    console.log("[v0] Saving profile data:", formData)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    setIsSaving(false)
-    setIsDirty(false)
-    toast({
-      title: "Perfil atualizado com sucesso!",
-      description: "🦖 Suas informações foram salvas"
-    })
+
+    try {
+      const result = await updateUsuario(user.id, {
+        nome: formData.nome
+      })
+
+      if (result.success) {
+        sonnerToast.success("🦖 Perfil atualizado com sucesso!")
+        setIsDirty(false)
+        await loadUserData()
+      } else {
+        toast({
+          title: "Erro ao atualizar perfil",
+          description: result.error,
+          variant: "destructive"
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao salvar perfil:', error)
+      toast({
+        title: "Erro inesperado",
+        description: "Ocorreu um erro ao salvar o perfil",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const getPasswordStrength = (password: string) => {
@@ -176,6 +207,34 @@ export default function ProfilePage() {
     })
   }
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando perfil...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
+
+  // No user data
+  if (!user) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <AlertCircle className="h-8 w-8 text-error mx-auto" />
+            <p className="text-muted-foreground">Erro ao carregar dados do usuário</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
+
   return (
     <DashboardShell>
       <div className="mx-auto w-full max-w-[600px] space-y-6">
@@ -189,17 +248,17 @@ export default function ProfilePage() {
         {/* Header Section */}
         <div className="flex flex-col items-center gap-4 pb-6 text-center">
           <Avatar className="h-[120px] w-[120px] border-4 border-accent">
-            <AvatarImage src={mockUser.avatar || "/placeholder.svg"} alt={mockUser.nome} />
+            <AvatarImage src="/placeholder.svg" alt={user.nome} />
             <AvatarFallback className="bg-primary text-4xl font-bold text-white">
-              {mockUser.nome.split(' ').map(n => n[0]).join('')}
+              {user.nome.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-3xl font-bold text-secondary">{mockUser.nome}</h1>
-            <Badge className={`mt-2 ${getProfileBadgeColor(mockUser.tipoPerfil)}`}>
-              {getProfileLabel(mockUser.tipoPerfil)}
+            <h1 className="text-3xl font-bold text-secondary">{user.nome}</h1>
+            <Badge className={`mt-2 ${getProfileBadgeColor(user.tipo_perfil)}`}>
+              {getProfileLabel(user.tipo_perfil)}
             </Badge>
-            <p className="mt-2 text-sm text-muted-foreground">{mockUser.email}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{user.email}</p>
           </div>
         </div>
 
@@ -273,8 +332,8 @@ export default function ProfilePage() {
             <div>
               <Label className="text-muted-foreground">Perfil de Acesso</Label>
               <div className="mt-2">
-                <Badge className={getProfileBadgeColor(mockUser.tipoPerfil)}>
-                  {getProfileLabel(mockUser.tipoPerfil)}
+                <Badge className={getProfileBadgeColor(user.tipo_perfil)}>
+                  {getProfileLabel(user.tipo_perfil)}
                 </Badge>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Apenas administradores podem alterar perfis de acesso
@@ -285,8 +344,8 @@ export default function ProfilePage() {
             <div>
               <Label className="text-muted-foreground">Status</Label>
               <div className="mt-2">
-                <Badge className={mockUser.ativo ? "bg-green-500 text-white" : "bg-gray-500 text-white"}>
-                  {mockUser.ativo ? "Ativo" : "Inativo"}
+                <Badge className={user.ativo ? "bg-green-500 text-white" : "bg-gray-500 text-white"}>
+                  {user.ativo ? "Ativo" : "Inativo"}
                 </Badge>
               </div>
             </div>
@@ -295,22 +354,14 @@ export default function ProfilePage() {
               <Label className="text-muted-foreground">Membro desde</Label>
               <div className="mt-2 flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Janeiro de 2024</span>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-muted-foreground">Último acesso</Label>
-              <div className="mt-2 flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>16/11/2024 às 14:30 (há 2 horas)</span>
+                <span>{new Date(user.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Section 3: Organizational Link */}
-        {mockUser.pessoaVinculada ? (
+        {user.pessoa ? (
           <Card>
             <CardHeader>
               <CardTitle>Dados Organizacionais</CardTitle>
@@ -325,20 +376,28 @@ export default function ProfilePage() {
 
               <div className="flex items-center gap-4 rounded-lg border p-4">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={mockUser.pessoaVinculada.avatar || "/placeholder.svg"} />
+                  <AvatarImage src="/placeholder.svg" />
                   <AvatarFallback className="bg-primary text-white">
-                    {mockUser.pessoaVinculada.nome.split(' ').map(n => n[0]).join('')}
+                    {user.pessoa.nome.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <p className="text-lg font-semibold">{mockUser.pessoaVinculada.nome}</p>
+                  <p className="text-lg font-semibold">{user.pessoa.nome}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary" className="text-white">{mockUser.pessoaVinculada.cargo}</Badge>
-                    <Badge className="bg-primary text-white">{mockUser.pessoaVinculada.nivel}</Badge>
+                    {user.pessoa.cargo && (
+                      <>
+                        <Badge variant="secondary" className="text-white">{user.pessoa.cargo.nome}</Badge>
+                        {user.pessoa.cargo.nivel && (
+                          <Badge className="bg-primary text-white">{user.pessoa.cargo.nivel.nome}</Badge>
+                        )}
+                      </>
+                    )}
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{mockUser.pessoaVinculada.time}</p>
+                  {user.pessoa.time && (
+                    <p className="mt-1 text-sm text-muted-foreground">{user.pessoa.time.nome}</p>
+                  )}
                 </div>
-                <Link href={`/pessoas/${mockUser.pessoaVinculada.id}`}>
+                <Link href={`/pessoas/${user.pessoa.id}`}>
                   <Button variant="ghost" size="sm">
                     Ver Perfil Completo
                     <ExternalLink className="ml-2 h-4 w-4" />
@@ -385,7 +444,7 @@ export default function ProfilePage() {
                 <div>
                   <p className="font-medium">Senha</p>
                   <p className="text-sm text-muted-foreground">
-                    Última alteração {getTimeSinceDate(mockUser.ultimaTrocaSenha)}
+                    Altere sua senha regularmente para manter sua conta segura
                   </p>
                 </div>
               </div>

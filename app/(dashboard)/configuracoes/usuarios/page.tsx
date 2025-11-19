@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardShell } from "@/components/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -40,10 +40,21 @@ import {
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
-import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Key, Trash2, CheckCircle2, XCircle, Download, X } from 'lucide-react'
+import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Key, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
 import Link from "next/link"
+import {
+  getUsuarios,
+  createUsuario,
+  updateUsuario,
+  softDeleteUsuario,
+  reactivateUsuario,
+  getPessoasSemUsuario,
+  type UsuarioListItem
+} from '@/app/actions/usuarios.actions'
+import { toast as sonnerToast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 
-// Mock data
+// Mock data (will be replaced with real data)
 const mockUsers = [
   {
     id: "u1",
@@ -213,7 +224,14 @@ function formatRelativeTime(dateString: string) {
 }
 
 export default function UsuariosPage() {
-  const [users, setUsers] = useState(mockUsers)
+  const { toast } = useToast()
+
+  // Data state
+  const [isLoading, setIsLoading] = useState(true)
+  const [users, setUsers] = useState<UsuarioListItem[]>([])
+  const [availablePessoas, setAvailablePessoas] = useState<Array<{ id: string; nome: string; email_corporativo: string | null }>>([])
+
+  // UI state
   const [searchQuery, setSearchQuery] = useState("")
   const [showFilters, setShowFilters] = useState(false)
   const [filterProfile, setFilterProfile] = useState("todos")
@@ -230,18 +248,50 @@ export default function UsuariosPage() {
   const [unlinkModalOpen, setUnlinkModalOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<UsuarioListItem | null>(null)
+  const [selectedPessoaId, setSelectedPessoaId] = useState<string | null>(null)
 
   // Form state
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
-    tipoPerfil: "visualizador",
+    tipoPerfil: "visualizador" as "admin" | "gestor" | "visualizador",
     senha: "",
     ativo: true,
   })
   const [showPassword, setShowPassword] = useState(false)
   const [deleteConfirmed, setDeleteConfirmed] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Load data on mount
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    setIsLoading(true)
+    try {
+      const [usuariosResult, pessoasResult] = await Promise.all([
+        getUsuarios(),
+        getPessoasSemUsuario()
+      ])
+
+      if (usuariosResult.success && usuariosResult.data) {
+        setUsers(usuariosResult.data)
+      } else {
+        sonnerToast.error(usuariosResult.error || 'Erro ao carregar usuários')
+      }
+
+      if (pessoasResult.success && pessoasResult.data) {
+        setAvailablePessoas(pessoasResult.data)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      sonnerToast.error('Erro inesperado ao carregar usuários')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Filter and search users
   const filteredUsers = users.filter((user) => {
@@ -250,7 +300,7 @@ export default function UsuariosPage() {
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesProfile =
-      filterProfile === "todos" || user.tipoPerfil === filterProfile
+      filterProfile === "todos" || user.tipo_perfil === filterProfile
 
     const matchesStatus =
       filterStatus === "todos" ||
@@ -259,8 +309,8 @@ export default function UsuariosPage() {
 
     const matchesLinked =
       filterLinked === "todos" ||
-      (filterLinked === "vinculados" && user.pessoaVinculada !== null) ||
-      (filterLinked === "sem-vinculo" && user.pessoaVinculada === null)
+      (filterLinked === "vinculados" && user.pessoa !== undefined && user.pessoa !== null) ||
+      (filterLinked === "sem-vinculo" && (user.pessoa === undefined || user.pessoa === null))
 
     return matchesSearch && matchesProfile && matchesStatus && matchesLinked
   })
@@ -275,43 +325,210 @@ export default function UsuariosPage() {
   const totalUsers = users.length
   const activeUsers = users.filter((u) => u.ativo).length
   const inactiveUsers = users.filter((u) => !u.ativo).length
-  const admins = users.filter((u) => u.tipoPerfil === "admin").length
-  const gestores = users.filter((u) => u.tipoPerfil === "gestor").length
+  const admins = users.filter((u) => u.tipo_perfil === "admin").length
+  const gestores = users.filter((u) => u.tipo_perfil === "gestor").length
 
-  const handleToggleStatus = (userId: string) => {
-    console.log("[v0] Toggling status for user:", userId)
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, ativo: !u.ativo } : u))
-    )
+  const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
+    try {
+      const result = currentStatus
+        ? await softDeleteUsuario(userId)
+        : await reactivateUsuario(userId)
+
+      if (result.success) {
+        sonnerToast.success(currentStatus ? 'Usuário desativado' : 'Usuário reativado')
+        await loadData()
+      } else {
+        toast({
+          title: 'Erro',
+          description: result.error,
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao alterar status:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro ao alterar o status do usuário',
+        variant: 'destructive'
+      })
+    }
   }
 
-  const handleCreateUser = () => {
-    console.log("[v0] Creating user:", formData)
-    setCreateModalOpen(false)
-    setFormData({
-      nome: "",
-      email: "",
-      tipoPerfil: "visualizador",
-      senha: "",
-      ativo: true,
-    })
+  const handleCreateUser = async () => {
+    if (!formData.nome || !formData.email) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Preencha nome e email',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const result = await createUsuario({
+        email: formData.email,
+        nome: formData.nome,
+        tipo_perfil: formData.tipoPerfil,
+        pessoa_id: selectedPessoaId,
+        ativo: formData.ativo
+      })
+
+      if (result.success) {
+        sonnerToast.success('🦖 Usuário criado com sucesso!')
+        setCreateModalOpen(false)
+        setFormData({
+          nome: "",
+          email: "",
+          tipoPerfil: "visualizador",
+          senha: "",
+          ativo: true,
+        })
+        setSelectedPessoaId(null)
+        await loadData()
+      } else {
+        toast({
+          title: 'Erro ao criar usuário',
+          description: result.error,
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro ao criar o usuário',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const handleEditUser = () => {
-    console.log("[v0] Editing user:", currentUser?.id, formData)
-    setEditModalOpen(false)
+  const handleEditUser = async () => {
+    if (!currentUser) return
+
+    setIsSaving(true)
+    try {
+      const result = await updateUsuario(currentUser.id, {
+        nome: formData.nome,
+        tipo_perfil: formData.tipoPerfil,
+        ativo: formData.ativo
+      })
+
+      if (result.success) {
+        sonnerToast.success('🦖 Usuário atualizado com sucesso!')
+        setEditModalOpen(false)
+        await loadData()
+      } else {
+        toast({
+          title: 'Erro ao atualizar usuário',
+          description: result.error,
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro ao atualizar o usuário',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const handleDeleteUser = () => {
-    if (!deleteConfirmed) return
-    console.log("[v0] Deleting user:", currentUser?.id)
-    setUsers((prev) => prev.filter((u) => u.id !== currentUser?.id))
-    setDeleteModalOpen(false)
-    setDeleteConfirmed(false)
+  const handleDeleteUser = async () => {
+    if (!deleteConfirmed || !currentUser) return
+
+    try {
+      const result = await softDeleteUsuario(currentUser.id)
+
+      if (result.success) {
+        sonnerToast.success('Usuário desativado com sucesso')
+        setDeleteModalOpen(false)
+        setDeleteConfirmed(false)
+        await loadData()
+      } else {
+        toast({
+          title: 'Erro ao desativar usuário',
+          description: result.error,
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao desativar usuário:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro ao desativar o usuário',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const handleLinkPessoa = async () => {
+    if (!currentUser || !selectedPessoaId) return
+
+    try {
+      const result = await updateUsuario(currentUser.id, {
+        pessoa_id: selectedPessoaId
+      })
+
+      if (result.success) {
+        sonnerToast.success('Pessoa vinculada com sucesso')
+        setLinkModalOpen(false)
+        setSelectedPessoaId(null)
+        await loadData()
+      } else {
+        toast({
+          title: 'Erro ao vincular pessoa',
+          description: result.error,
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao vincular pessoa:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro ao vincular a pessoa',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const handleUnlinkPessoa = async () => {
+    if (!currentUser) return
+
+    try {
+      const result = await updateUsuario(currentUser.id, {
+        pessoa_id: null
+      })
+
+      if (result.success) {
+        sonnerToast.success('Pessoa desvinculada com sucesso')
+        setUnlinkModalOpen(false)
+        await loadData()
+      } else {
+        toast({
+          title: 'Erro ao desvincular pessoa',
+          description: result.error,
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao desvincular pessoa:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro ao desvincular a pessoa',
+        variant: 'destructive'
+      })
+    }
   }
 
   const handleBulkAction = (action: string) => {
-    console.log("[v0] Bulk action:", action, "for users:", selectedUsers)
+    console.log("Bulk action:", action, "for users:", selectedUsers)
+    sonnerToast.info('Ação em massa: ' + action)
     setSelectedUsers([])
   }
 
@@ -336,6 +553,20 @@ export default function UsuariosPage() {
           </Badge>
         )
     }
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando usuários...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (
@@ -566,14 +797,14 @@ export default function UsuariosPage() {
                   <TableCell className="text-muted-foreground">
                     {user.email}
                   </TableCell>
-                  <TableCell>{getProfileBadge(user.tipoPerfil)}</TableCell>
+                  <TableCell>{getProfileBadge(user.tipo_perfil)}</TableCell>
                   <TableCell>
-                    {user.pessoaVinculada ? (
+                    {user.pessoa ? (
                       <Link
-                        href={`/pessoas/${user.pessoaVinculada.id}`}
+                        href={`/pessoas/${user.pessoa.id}`}
                         className="text-primary hover:underline"
                       >
-                        {user.pessoaVinculada.nome}
+                        {user.pessoa.nome}
                       </Link>
                     ) : (
                       <span className="text-muted-foreground">Sem vínculo</span>
@@ -582,11 +813,11 @@ export default function UsuariosPage() {
                   <TableCell>
                     <Switch
                       checked={user.ativo}
-                      onCheckedChange={() => handleToggleStatus(user.id)}
+                      onCheckedChange={() => handleToggleStatus(user.id, user.ativo)}
                     />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {formatRelativeTime(user.ultimoAcesso)}
+                    {formatRelativeTime(user.created_at)}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -602,7 +833,7 @@ export default function UsuariosPage() {
                             setFormData({
                               nome: user.nome,
                               email: user.email,
-                              tipoPerfil: user.tipoPerfil,
+                              tipoPerfil: user.tipo_perfil,
                               senha: "",
                               ativo: user.ativo,
                             })
@@ -611,16 +842,7 @@ export default function UsuariosPage() {
                         >
                           Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setCurrentUser(user)
-                            setPasswordModalOpen(true)
-                          }}
-                        >
-                          <Key className="mr-2 h-4 w-4" />
-                          Alterar Senha
-                        </DropdownMenuItem>
-                        {user.pessoaVinculada ? (
+                        {user.pessoa ? (
                           <DropdownMenuItem
                             onClick={() => {
                               setCurrentUser(user)
@@ -990,8 +1212,16 @@ export default function UsuariosPage() {
                 <Button
                   onClick={createModalOpen ? handleCreateUser : handleEditUser}
                   className="bg-primary hover:bg-primary/90 text-white"
+                  disabled={isSaving}
                 >
-                  Salvar Usuário
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    'Salvar Usuário'
+                  )}
                 </Button>
               </DialogFooter>
             </div>
@@ -1016,9 +1246,9 @@ export default function UsuariosPage() {
               <DialogDescription>
                 Esta ação não pode ser desfeita. O usuário perderá acesso ao
                 sistema.
-                {currentUser?.pessoaVinculada && (
+                {currentUser?.pessoa && (
                   <span className="mt-2 block">
-                    A pessoa {currentUser.pessoaVinculada.nome} permanecerá no
+                    A pessoa {currentUser.pessoa.nome} permanecerá no
                     sistema, apenas o acesso será removido.
                   </span>
                 )}
@@ -1060,9 +1290,63 @@ export default function UsuariosPage() {
           </DialogContent>
         </Dialog>
 
+        {/* Link Person Modal */}
+        <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
+          <DialogContent
+            className="sm:max-w-md"
+            onInteractOutside={() => {
+              setLinkModalOpen(false)
+              setSelectedPessoaId(null)
+            }}
+            onEscapeKeyDown={() => {
+              setLinkModalOpen(false)
+              setSelectedPessoaId(null)
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Vincular Pessoa</DialogTitle>
+              <DialogDescription>
+                Selecione a pessoa para vincular ao usuário {currentUser?.nome}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Label>Pessoa</Label>
+              <Select value={selectedPessoaId || ''} onValueChange={setSelectedPessoaId}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Selecione uma pessoa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availablePessoas.map((pessoa) => (
+                    <SelectItem key={pessoa.id} value={pessoa.id}>
+                      {pessoa.nome} {pessoa.email_corporativo ? `(${pessoa.email_corporativo})` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setLinkModalOpen(false)
+                  setSelectedPessoaId(null)
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleLinkPessoa}
+                disabled={!selectedPessoaId}
+              >
+                Vincular
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Unlink Person Modal */}
         <Dialog open={unlinkModalOpen} onOpenChange={setUnlinkModalOpen}>
-          <DialogContent 
+          <DialogContent
             className="sm:max-w-md"
             onInteractOutside={() => setUnlinkModalOpen(false)}
             onEscapeKeyDown={() => setUnlinkModalOpen(false)}
@@ -1071,86 +1355,15 @@ export default function UsuariosPage() {
               <DialogTitle>Desvincular Pessoa?</DialogTitle>
               <DialogDescription>
                 Usuário continuará existindo mas sem vínculo com a pessoa{" "}
-                {currentUser?.pessoaVinculada?.nome}
+                {currentUser?.pessoa?.nome}
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setUnlinkModalOpen(false)}>
                 Cancelar
               </Button>
-              <Button
-                onClick={() => {
-                  console.log("[v0] Unlinking person from user:", currentUser?.id)
-                  setUnlinkModalOpen(false)
-                }}
-              >
+              <Button onClick={handleUnlinkPessoa}>
                 Desvincular
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Change Password Modal */}
-        <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
-          <DialogContent 
-            className="sm:max-w-md"
-            onInteractOutside={() => setPasswordModalOpen(false)}
-            onEscapeKeyDown={() => setPasswordModalOpen(false)}
-          >
-            <DialogHeader>
-              <DialogTitle>Alterar Senha</DialogTitle>
-              <DialogDescription>
-                Defina uma nova senha para {currentUser?.nome}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label htmlFor="newPassword">Nova Senha</Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="newPassword"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Mínimo 8 caracteres"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Digite novamente"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setPasswordModalOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => {
-                  console.log("[v0] Changing password for user:", currentUser?.id)
-                  setPasswordModalOpen(false)
-                }}
-              >
-                Alterar Senha
               </Button>
             </DialogFooter>
           </DialogContent>

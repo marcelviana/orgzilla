@@ -38,11 +38,9 @@ export default function NovoTimePage() {
     status: 'ativo'
   })
 
-  const [showPersonSelector, setShowPersonSelector] = useState(false)
   const [showParentSelect, setShowParentSelect] = useState(false)
   const [showManagerSelect, setShowManagerSelect] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
-  const [selectedPeople, setSelectedPeople] = useState([] as string[])
   const [selectedGestor, setSelectedGestor] = useState<{ id: string; nome: string; cargo: string | null; time: string | null } | null>(null)
 
   // Load data on mount
@@ -492,63 +490,6 @@ export default function NovoTimePage() {
                 </p>
               )}
             </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Person Selector Modal */}
-        <Dialog open={showPersonSelector} onOpenChange={setShowPersonSelector}>
-          <DialogContent className="p-6">
-            <DialogHeader>
-              <DialogTitle>Adicionar Pessoas ao Time</DialogTitle>
-              <DialogDescription>Selecione as pessoas que deseja adicionar</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Buscar pessoas..." className="pl-9" />
-              </div>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                {availablePeople.map(person => (
-                  <label
-                    key={person.id}
-                    className="flex items-center gap-3 p-3 border rounded-md hover:bg-accent transition-colors cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedPeople.includes(person.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedPeople(prev => [...prev, person.id])
-                        } else {
-                          setSelectedPeople(prev => prev.filter(id => id !== person.id))
-                        }
-                      }}
-                      className="w-4 h-4"
-                    />
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={person.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>{person.nome[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="font-medium">{person.nome}</div>
-                      <div className="text-xs text-muted-foreground">{person.cargo} - {person.time}</div>
-                    </div>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowPersonSelector(false)}>
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleAddPeople}
-                disabled={selectedPeople.length === 0}
-                className="bg-primary hover:bg-primary/90"
-              >
-                Adicionar {selectedPeople.length > 0 ? selectedPeople.length : ''} pessoa{selectedPeople.length !== 1 ? 's' : ''}
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
