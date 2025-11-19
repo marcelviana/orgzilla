@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -10,18 +10,48 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Briefcase, Calendar, Users, Lock, MessageSquare, ChevronRight, Home } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Briefcase, Calendar, Users, Lock, MessageSquare, ChevronRight, Home, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { getPessoaById } from '@/app/actions/pessoas.actions'
 
-// Mock data for the person
-const PERSON_DATA = {
+// Type for person data
+type PessoaData = {
+  id: string
+  nome: string
+  nome_social: string | null
+  email_corporativo: string
+  email_pessoal: string | null
+  telefone: string | null
+  foto_url: string | null
+  cargo: {
+    nome: string
+    trilha?: { nome: string }
+    nivel?: { nome: string }
+  } | null
+  time: {
+    id: string
+    nome: string
+    gestor?: { id: string; nome: string } | null
+  } | null
+  data_entrada: string | null
+  data_inicio_cargo_atual: string | null
+  status: string
+  salario_atual?: number | null
+  data_ultimo_reajuste?: string | null
+  motivo_ultimo_reajuste?: string | null
+  ativo: boolean
+  created_at: string
+}
+
+// Keep mock data for now for items not yet implemented
+const PERSON_DATA_MOCK = {
   id: 'p1',
   nome: 'Maria Santos',
   nomeSocial: null,
@@ -99,13 +129,45 @@ const MOCK_NOTES = [
 
 export default function PersonProfilePage() {
   const router = useRouter()
+  const params = useParams()
+  const pessoaId = params.id as string
+
   const [activeTab, setActiveTab] = useState('geral')
-  const [isManager] = useState(true) // Mock: user is manager
+  const [isLoading, setIsLoading] = useState(true)
+  const [pessoa, setPessoa] = useState<PessoaData | null>(null)
+  const [canViewSalary, setCanViewSalary] = useState(false)
   const [notes, setNotes] = useState(MOCK_NOTES)
   const [newNote, setNewNote] = useState('')
 
-  const calculateTimeInCompany = () => {
-    const start = new Date(PERSON_DATA.dataEntrada)
+  // Load person data on mount
+  useEffect(() => {
+    async function loadPessoa() {
+      setIsLoading(true)
+      try {
+        const result = await getPessoaById(pessoaId)
+        if (result.success && result.data) {
+          setPessoa(result.data as PessoaData)
+          // Check if salary data is present (means user has permission)
+          setCanViewSalary('salario_atual' in result.data)
+        } else {
+          toast.error(result.error || 'Erro ao carregar pessoa')
+          router.push('/pessoas')
+        }
+      } catch (error) {
+        console.error('Erro ao carregar pessoa:', error)
+        toast.error('Erro inesperado ao carregar pessoa')
+        router.push('/pessoas')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadPessoa()
+  }, [pessoaId, router])
+
+  const calculateTimeInCompany = (dataEntrada: string | null) => {
+    if (!dataEntrada) return '-'
+    const start = new Date(dataEntrada)
     const now = new Date()
     const months = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth())
     const years = Math.floor(months / 12)
@@ -172,6 +234,34 @@ export default function PersonProfilePage() {
     }
   }
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando dados...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
+
+  // Error state (pessoa not found)
+  if (!pessoa) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <p className="text-lg font-semibold">Pessoa não encontrada</p>
+            <Button onClick={() => router.push('/pessoas')}>Voltar para a lista</Button>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
+
   return (
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8">
@@ -181,7 +271,7 @@ export default function PersonProfilePage() {
           <ChevronRight className="h-4 w-4" />
           <Link href="/pessoas" className="hover:text-foreground">Pessoas</Link>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-foreground font-medium">{PERSON_DATA.nome}</span>
+          <span className="text-foreground font-medium">{pessoa.nome}</span>
         </div>
 
         {/* Header Section */}
@@ -195,39 +285,41 @@ export default function PersonProfilePage() {
             {/* Avatar */}
             <div className="relative group">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={PERSON_DATA.avatar || "/placeholder.svg"} alt={PERSON_DATA.nome} />
+                <AvatarImage src={pessoa.foto_url || "/placeholder.svg"} alt={pessoa.nome} />
                 <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-accent text-white">
-                  {PERSON_DATA.nome.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  {pessoa.nome.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
             </div>
 
             {/* Name and Status */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-[#1A2734]">{PERSON_DATA.nome}</h1>
-              {PERSON_DATA.nomeSocial && (
-                <p className="text-sm text-muted-foreground mt-1">(Nome social: {PERSON_DATA.nomeSocial})</p>
+              <h1 className="text-3xl font-bold text-[#1A2734]">{pessoa.nome}</h1>
+              {pessoa.nome_social && (
+                <p className="text-sm text-muted-foreground mt-1">(Nome social: {pessoa.nome_social})</p>
               )}
-              <Badge className={`mt-2 ${getStatusColor(PERSON_DATA.status)}`}>
-                {PERSON_DATA.status}
+              <Badge className={`mt-2 ${getStatusColor(pessoa.status)}`}>
+                {pessoa.status}
               </Badge>
             </div>
 
             {/* Contact Info */}
             <div className="flex flex-col gap-2 text-sm">
-              <a href={`mailto:${PERSON_DATA.emailCorporativo}`} className="flex items-center gap-2 text-accent hover:underline">
+              <a href={`mailto:${pessoa.email_corporativo}`} className="flex items-center gap-2 text-accent hover:underline">
                 <Mail className="h-4 w-4" />
-                {PERSON_DATA.emailCorporativo}
+                {pessoa.email_corporativo}
               </a>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                {PERSON_DATA.telefone}
-              </div>
+              {pessoa.telefone && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Phone className="h-4 w-4" />
+                  {pessoa.telefone}
+                </div>
+              )}
             </div>
 
             {/* Actions */}
             <div className="flex items-center gap-2">
-              <Link href={`/pessoas/${PERSON_DATA.id}/editar`}>
+              <Link href={`/pessoas/${pessoa.id}/editar`}>
                 <Button>
                   <Pencil className="h-4 w-4 mr-2" />
                   Editar
@@ -264,43 +356,64 @@ export default function PersonProfilePage() {
             {/* Position */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Posição Atual</p>
-              <div className="flex items-center gap-2">
-                <p className="text-lg font-semibold">{PERSON_DATA.cargo.nome}</p>
-                <Badge variant="secondary" className="bg-primary text-white">
-                  {PERSON_DATA.cargo.nivel}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Desde {formatDateShort(PERSON_DATA.cargo.dataInicio)}
-              </p>
+              {pessoa.cargo ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <p className="text-lg font-semibold">{pessoa.cargo.nome}</p>
+                    {pessoa.cargo.nivel && (
+                      <Badge variant="secondary" className="bg-primary text-white">
+                        {pessoa.cargo.nivel.nome}
+                      </Badge>
+                    )}
+                  </div>
+                  {pessoa.data_inicio_cargo_atual && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Desde {formatDateShort(pessoa.data_inicio_cargo_atual)}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sem cargo definido</p>
+              )}
             </div>
 
             {/* Team */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Time</p>
-              <p className="text-lg font-semibold">{PERSON_DATA.time.nome}</p>
-              <Link href={`/times/${PERSON_DATA.time.id}`} className="text-xs text-accent hover:underline">
-                Ver time
-              </Link>
-              <p className="text-xs text-muted-foreground mt-1">{PERSON_DATA.time.breadcrumb}</p>
+              {pessoa.time ? (
+                <>
+                  <p className="text-lg font-semibold">{pessoa.time.nome}</p>
+                  <Link href={`/times/${pessoa.time.id}`} className="text-xs text-accent hover:underline">
+                    Ver time
+                  </Link>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sem time definido</p>
+              )}
             </div>
 
             {/* Time in Company */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Tempo de Casa</p>
-              <p className="text-lg font-semibold">{calculateTimeInCompany()}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Entrada: {formatDateShort(PERSON_DATA.dataEntrada)}
-              </p>
+              <p className="text-lg font-semibold">{calculateTimeInCompany(pessoa.data_entrada)}</p>
+              {pessoa.data_entrada && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Entrada: {formatDateShort(pessoa.data_entrada)}
+                </p>
+              )}
             </div>
 
             {/* Career Track */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Trilha</p>
-              <div className="flex items-center gap-2">
-                <p className="text-lg">{PERSON_DATA.cargo.trilha}</p>
-                <TrendingUp className="h-4 w-4 text-green-600" />
-              </div>
+              {pessoa.cargo?.trilha ? (
+                <div className="flex items-center gap-2">
+                  <p className="text-lg">{pessoa.cargo.trilha.nome}</p>
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sem trilha definida</p>
+              )}
             </div>
           </div>
         </Card>
@@ -323,25 +436,25 @@ export default function PersonProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Nome Completo</p>
-                  <p className="font-medium">{PERSON_DATA.nome}</p>
+                  <p className="font-medium">{pessoa.nome}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Nome Social</p>
-                  <p className="font-medium">{PERSON_DATA.nomeSocial || '-'}</p>
+                  <p className="font-medium">{pessoa.nome_social || '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Email Corporativo</p>
-                  <a href={`mailto:${PERSON_DATA.emailCorporativo}`} className="font-medium text-accent hover:underline">
-                    {PERSON_DATA.emailCorporativo}
+                  <a href={`mailto:${pessoa.email_corporativo}`} className="font-medium text-accent hover:underline">
+                    {pessoa.email_corporativo}
                   </a>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Email Pessoal</p>
-                  <p className="font-medium">{PERSON_DATA.emailPessoal}</p>
+                  <p className="font-medium">{pessoa.email_pessoal || '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Telefone</p>
-                  <p className="font-medium">{PERSON_DATA.telefone}</p>
+                  <p className="font-medium">{pessoa.telefone || '-'}</p>
                 </div>
               </div>
             </Card>
@@ -352,45 +465,56 @@ export default function PersonProfilePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Cargo Atual</p>
-                  <p className="font-medium">{PERSON_DATA.cargo.nome}</p>
+                  <p className="font-medium">{pessoa.cargo?.nome || 'Sem cargo definido'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Nível</p>
-                  <Badge variant="secondary" className="bg-primary text-white">{PERSON_DATA.cargo.nivel}</Badge>
+                  {pessoa.cargo?.nivel ? (
+                    <Badge variant="secondary" className="bg-primary text-white">{pessoa.cargo.nivel.nome}</Badge>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">-</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Trilha de Carreira</p>
-                  <p className="font-medium">{PERSON_DATA.cargo.trilha}</p>
+                  <p className="font-medium">{pessoa.cargo?.trilha?.nome || 'Sem trilha definida'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Time</p>
-                  <Link href={`/times/${PERSON_DATA.time.id}`} className="font-medium text-accent hover:underline">
-                    {PERSON_DATA.time.nome}
-                  </Link>
+                  {pessoa.time ? (
+                    <Link href={`/times/${pessoa.time.id}`} className="font-medium text-accent hover:underline">
+                      {pessoa.time.nome}
+                    </Link>
+                  ) : (
+                    <p className="font-medium">Sem time definido</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Gestor Direto</p>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={PERSON_DATA.gestorDireto.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>{PERSON_DATA.gestorDireto.nome[0]}</AvatarFallback>
-                    </Avatar>
-                    <Link href={`/pessoas/${PERSON_DATA.gestorDireto.id}`} className="font-medium text-accent hover:underline">
-                      {PERSON_DATA.gestorDireto.nome}
-                    </Link>
-                  </div>
+                  {pessoa.time?.gestor ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback>{pessoa.time.gestor.nome[0]}</AvatarFallback>
+                      </Avatar>
+                      <Link href={`/pessoas/${pessoa.time.gestor.id}`} className="font-medium text-accent hover:underline">
+                        {pessoa.time.gestor.nome}
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="font-medium">-</p>
+                  )}
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Data de Entrada</p>
-                  <p className="font-medium">{formatDate(PERSON_DATA.dataEntrada)}</p>
+                  <p className="font-medium">{pessoa.data_entrada ? formatDate(pessoa.data_entrada) : '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Data Início Cargo Atual</p>
-                  <p className="font-medium">{formatDate(PERSON_DATA.cargo.dataInicio)}</p>
+                  <p className="font-medium">{pessoa.data_inicio_cargo_atual ? formatDate(pessoa.data_inicio_cargo_atual) : '-'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge className={getStatusColor(PERSON_DATA.status)}>{PERSON_DATA.status}</Badge>
+                  <Badge className={getStatusColor(pessoa.status)}>{pessoa.status}</Badge>
                 </div>
               </div>
             </Card>
@@ -471,7 +595,7 @@ export default function PersonProfilePage() {
 
           {/* TAB 3: Salary History */}
           <TabsContent value="salarial">
-            {!isManager ? (
+            {!canViewSalary ? (
               <Card className="p-12">
                 <div className="text-center space-y-4">
                   <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
@@ -487,72 +611,29 @@ export default function PersonProfilePage() {
                 <Card className="bg-gray-50 p-6">
                   <p className="text-sm text-muted-foreground mb-2">Salário Atual</p>
                   <p className="text-3xl font-bold">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(PERSON_DATA.salarioAtual)}
+                    {pessoa.salario_atual
+                      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pessoa.salario_atual)
+                      : 'Não informado'
+                    }
                   </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Último reajuste: há 5 meses ({formatDateShort(PERSON_DATA.dataUltimoReajuste)})
-                  </p>
-                  <p className="text-sm font-medium mt-1">{PERSON_DATA.motivoUltimoReajuste}</p>
+                  {pessoa.data_ultimo_reajuste && (
+                    <>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Último reajuste: {formatDateShort(pessoa.data_ultimo_reajuste)}
+                      </p>
+                      {pessoa.motivo_ultimo_reajuste && (
+                        <p className="text-sm font-medium mt-1">{pessoa.motivo_ultimo_reajuste}</p>
+                      )}
+                    </>
+                  )}
                 </Card>
 
-                {/* Salary Chart */}
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Evolução Salarial</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={SALARY_CHART_DATA}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="mes" />
-                      <YAxis />
-                      <Tooltip 
-                        formatter={(value: number) => 
-                          new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
-                        }
-                      />
-                      <Line type="monotone" dataKey="salario" stroke="#FF7A00" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </Card>
-
-                {/* Salary History Table */}
+                {/* Placeholder for future history */}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Histórico de Reajustes</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="border-b">
-                        <tr className="text-left text-sm text-muted-foreground">
-                          <th className="pb-3">Data</th>
-                          <th className="pb-3">Salário Anterior</th>
-                          <th className="pb-3">Salário Novo</th>
-                          <th className="pb-3">Variação</th>
-                          <th className="pb-3">Motivo</th>
-                          <th className="pb-3">Registrado por</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {SALARY_HISTORY.map((item, index) => (
-                          <tr key={index} className="border-b last:border-0">
-                            <td className="py-3">{formatDateShort(item.data)}</td>
-                            <td className="py-3">
-                              {item.anterior > 0 
-                                ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.anterior)
-                                : '-'
-                              }
-                            </td>
-                            <td className="py-3">
-                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.novo)}
-                            </td>
-                            <td className="py-3">
-                              <span className={item.variacao !== 'Inicial' ? 'text-green-600 font-medium' : ''}>
-                                {item.variacao} {item.variacaoValor !== '-' && `(${item.variacaoValor})`}
-                              </span>
-                            </td>
-                            <td className="py-3">{item.motivo}</td>
-                            <td className="py-3">{item.registradoPor}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Histórico de reajustes será implementado em breve
+                  </p>
                 </Card>
               </div>
             )}

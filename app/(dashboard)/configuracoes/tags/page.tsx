@@ -176,10 +176,10 @@ export default function TagsPage() {
   const totalTags = tags.length
   const usedTags = tags.filter((t) => t.pessoas > 0).length
   const unusedTags = tags.filter((t) => t.pessoas === 0).length
-  const mostUsedTag = tags.reduce((prev, current) =>
-    prev.pessoas > current.pessoas ? prev : current
-  )
-  const totalPeopleWithTags = 89
+  const mostUsedTag = tags.length > 0
+    ? tags.reduce((prev, current) => prev.pessoas > current.pessoas ? prev : current)
+    : null
+  const totalPeopleWithTags = tags.reduce((sum, tag) => sum + tag.pessoas, 0)
 
   // Filtering and sorting
   const filteredAndSortedTags = tags
@@ -456,9 +456,9 @@ export default function TagsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Mais Usada</p>
-                <p className="text-3xl font-bold mt-1">{mostUsedTag.nome}</p>
+                <p className="text-3xl font-bold mt-1">{mostUsedTag?.nome || 'N/A'}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  em {mostUsedTag.pessoas} pessoas
+                  em {mostUsedTag?.pessoas || 0} pessoas
                 </p>
               </div>
               <div className="h-12 w-12 rounded-full bg-[#00C8FF]/10 flex items-center justify-center">

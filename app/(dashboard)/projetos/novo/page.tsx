@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
@@ -8,9 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   Dialog,
   DialogContent,
@@ -19,27 +17,61 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Home, ChevronRight, Plus, X, Search } from 'lucide-react'
+import { Home, ChevronRight, Plus, X, Search, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-
-const availablePeople = [
-  { id: 'p1', nome: 'Maria Santos', avatar: '/diverse-woman-portrait.png', cargo: 'Tech Lead', time: 'Engenharia' },
-  { id: 'p2', nome: 'João Silva', avatar: '/man.jpg', cargo: 'Backend Developer', time: 'Engenharia' },
-  { id: 'p3', nome: 'Ana Costa', avatar: '/tech-woman.png', cargo: 'Frontend Developer', time: 'Frontend' },
-  { id: 'p4', nome: 'Pedro Lima', avatar: '/engineer-man.png', cargo: 'Designer', time: 'Design' },
-  { id: 'p5', nome: 'Carla Mendes', avatar: '/developer-woman.png', cargo: 'QA Engineer', time: 'Qualidade' },
-]
+import { toast as sonnerToast } from 'sonner'
+import { createProjeto, addPessoaAoProjeto } from '@/app/actions/projetos.actions'
+import { getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
 export default function NovoProjeto() {
   const router = useRouter()
   const { toast } = useToast()
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
+
+  // Form data
   const [nome, setNome] = useState('')
-  const [observacoes, setObservacoes] = useState('')
-  const [status, setStatus] = useState<'Ativo' | 'Inativo'>('Ativo')
-  const [pessoasAlocadas, setPessoasAlocadas] = useState<typeof availablePeople>([])
+  const [pessoasAlocadas, setPessoasAlocadas] = useState<Array<{
+    id: string
+    nome: string
+    cargo: string | null
+    time: string | null
+    dataInicio: Date
+  }>>([])
+
+  // Available pessoas from database
+  const [availablePeople, setAvailablePeople] = useState<Array<{
+    id: string
+    nome: string
+    cargo: string | null
+    time: string | null
+  }>>([])
+
+  // Modal state
   const [addPeopleModalOpen, setAddPeopleModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedPeople, setSelectedPeople] = useState<string[]>([])
+  const [selectedPeopleIds, setSelectedPeopleIds] = useState<string[]>([])
+
+  // Load pessoas on mount
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    try {
+      const pessoasResult = await getPessoasParaGestor()
+
+      if (pessoasResult.success && pessoasResult.data) {
+        setAvailablePeople(pessoasResult.data)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      sonnerToast.error('Erro ao carregar formulário')
+    } finally {
+      setDataLoading(false)
+    }
+  }
 
   const availableToAdd = availablePeople.filter(
     (p) => !pessoasAlocadas.find((pa) => pa.id === p.id)
@@ -50,9 +82,15 @@ export default function NovoProjeto() {
   )
 
   const handleAddPeople = () => {
-    const peopleToAdd = availablePeople.filter((p) => selectedPeople.includes(p.id))
+    const peopleToAdd = availablePeople
+      .filter((p) => selectedPeopleIds.includes(p.id))
+      .map(p => ({
+        ...p,
+        dataInicio: new Date(),
+      }))
+
     setPessoasAlocadas([...pessoasAlocadas, ...peopleToAdd])
-    setSelectedPeople([])
+    setSelectedPeopleIds([])
     setSearchTerm('')
     setAddPeopleModalOpen(false)
     toast({
@@ -69,7 +107,7 @@ export default function NovoProjeto() {
     })
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!nome.trim()) {
       toast({
         title: 'Erro',
@@ -79,12 +117,67 @@ export default function NovoProjeto() {
       return
     }
 
-    console.log('Salvando projeto:', { nome, status, observacoes, pessoasAlocadas })
-    toast({
-      title: 'Projeto criado!',
-      description: `${nome} foi criado com sucesso`,
-    })
-    router.push('/projetos')
+    setIsLoading(true)
+
+    try {
+      // 1. Create project
+      const projetoResult = await createProjeto({
+        nome: nome.trim(),
+        ativo: true,
+      })
+
+      if (!projetoResult.success) {
+        toast({
+          title: 'Erro ao criar projeto',
+          description: projetoResult.error,
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const projetoId = projetoResult.data!
+
+      // 2. Add pessoas to project
+      if (pessoasAlocadas.length > 0) {
+        const alocacoes = pessoasAlocadas.map(pessoa =>
+          addPessoaAoProjeto({
+            pessoa_id: pessoa.id,
+            projeto_produto_id: projetoId,
+            data_inicio: pessoa.dataInicio.toISOString().split('T')[0],
+            data_fim: null,
+            ativo: true,
+          })
+        )
+
+        await Promise.all(alocacoes)
+      }
+
+      sonnerToast.success('🦖 Projeto criado com sucesso!')
+      router.push('/projetos')
+    } catch (error) {
+      console.error('Erro ao salvar projeto:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro ao salvar o projeto',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Loading state
+  if (dataLoading) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando formulário...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (
@@ -100,88 +193,73 @@ export default function NovoProjeto() {
           <span className="text-gray-900 font-medium">Novo Projeto</span>
         </div>
 
-        {/* Page Title */}
+        {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Novo Projeto</h1>
-          <p className="text-gray-600 mt-1">Preencha as informações do projeto</p>
+          <h1 className="text-3xl font-bold">Novo Projeto</h1>
+          <p className="text-gray-500 mt-1">Crie um novo projeto e aloque pessoas</p>
         </div>
 
         {/* Form Card */}
-        <Card className="max-w-4xl mx-auto">
-          <div className="p-8 space-y-6">
-            {/* Nome */}
+        <Card className="p-6 max-w-3xl">
+          <div className="space-y-6">
+            {/* Nome do Projeto */}
             <div className="space-y-2">
               <Label htmlFor="nome">Nome do Projeto *</Label>
               <Input
                 id="nome"
-                placeholder="Ex: Plataforma de Analytics"
+                placeholder="Ex: Projeto Alpha, Sistema Core, App Mobile..."
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 maxLength={100}
-                className="h-11"
               />
-              <p className="text-sm text-gray-500 text-right">{nome.length}/100 caracteres</p>
+              <p className="text-xs text-muted-foreground text-right">{nome.length}/100 caracteres</p>
             </div>
 
-            {/* Status */}
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={status === 'Ativo'}
-                    onChange={() => setStatus('Ativo')}
-                    className="w-4 h-4 text-green-600"
-                  />
-                  <Badge className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={status === 'Inativo'}
-                    onChange={() => setStatus('Inativo')}
-                    className="w-4 h-4 text-gray-600"
-                  />
-                  <Badge className="bg-gray-100 text-gray-800 border-gray-200">Inativo</Badge>
-                </label>
-              </div>
-              <p className="text-sm text-gray-500">Projetos inativos não aparecem em filtros por padrão</p>
-            </div>
-
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Alocação de Equipe</h3>
-            </div>
-
-            {/* Team Allocation */}
-            <div className="space-y-3">
+            {/* Pessoas Alocadas */}
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label>Pessoas Alocadas</Label>
-                <Badge variant="outline">{pessoasAlocadas.length} pessoas</Badge>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAddPeopleModalOpen(true)}
+                  disabled={availableToAdd.length === 0}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Pessoas
+                </Button>
               </div>
 
-              {pessoasAlocadas.length > 0 ? (
-                <div className="border rounded-lg divide-y">
+              {pessoasAlocadas.length === 0 ? (
+                <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                  <p className="text-gray-500">Nenhuma pessoa alocada ainda</p>
+                  <p className="text-sm text-gray-400 mt-1">
+                    Clique em "Adicionar Pessoas" para começar
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
                   {pessoasAlocadas.map((pessoa) => (
-                    <div key={pessoa.id} className="flex items-center justify-between p-3 hover:bg-gray-50">
+                    <div
+                      key={pessoa.id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                    >
                       <div className="flex items-center gap-3">
                         <Avatar className="w-10 h-10">
-                          <AvatarImage src={pessoa.avatar || "/placeholder.svg"} alt={pessoa.nome} />
-                          <AvatarFallback className="bg-orange-100 text-orange-700">
-                            {pessoa.nome.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
+                          <AvatarFallback>{pessoa.nome[0]}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-gray-900">{pessoa.nome}</p>
-                          <p className="text-sm text-gray-600">{pessoa.cargo}</p>
+                          <p className="font-medium">{pessoa.nome}</p>
+                          <p className="text-sm text-gray-500">
+                            {pessoa.cargo || 'Sem cargo'} {pessoa.time ? `• ${pessoa.time}` : ''}
+                          </p>
                         </div>
-                        <Badge variant="outline" className="ml-2">{pessoa.time}</Badge>
                       </div>
                       <Button
+                        type="button"
                         variant="ghost"
-                        size="icon"
+                        size="sm"
                         onClick={() => handleRemovePerson(pessoa.id)}
                       >
                         <X className="w-4 h-4" />
@@ -189,125 +267,113 @@ export default function NovoProjeto() {
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="border rounded-lg p-8 text-center">
-                  <p className="text-gray-500 mb-4">Nenhuma pessoa alocada</p>
-                </div>
               )}
+            </div>
 
+            {/* Actions */}
+            <div className="flex items-center justify-between pt-4 border-t">
               <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setAddPeopleModalOpen(true)}
+                type="button"
+                variant="ghost"
+                onClick={() => router.push('/projetos')}
+                disabled={isLoading}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar Pessoas
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={isLoading}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  'Criar Projeto'
+                )}
               </Button>
             </div>
-
-            {/* Observações */}
-            <div className="space-y-2">
-              <Label htmlFor="observacoes">Observações (opcional)</Label>
-              <Textarea
-                id="observacoes"
-                placeholder="Notas adicionais sobre o projeto (opcional)"
-                value={observacoes}
-                onChange={(e) => setObservacoes(e.target.value)}
-                rows={3}
-                maxLength={500}
-              />
-              <p className="text-sm text-gray-500 text-right">{observacoes.length}/500 caracteres</p>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="border-t p-6 flex items-center justify-between">
-            <Link href="/projetos">
-              <Button variant="outline">Cancelar</Button>
-            </Link>
-            <Button onClick={handleSave} className="bg-orange-500 hover:bg-orange-600">
-              Salvar Projeto
-            </Button>
           </div>
         </Card>
+
+        {/* Add People Modal */}
+        <Dialog open={addPeopleModalOpen} onOpenChange={setAddPeopleModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Adicionar Pessoas ao Projeto</DialogTitle>
+              <DialogDescription>
+                Selecione as pessoas que deseja alocar neste projeto
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por nome..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* People List */}
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {filteredAvailable.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">
+                    {searchTerm ? 'Nenhuma pessoa encontrada' : 'Todas as pessoas já foram alocadas'}
+                  </p>
+                ) : (
+                  filteredAvailable.map((pessoa) => (
+                    <label
+                      key={pessoa.id}
+                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPeopleIds.includes(pessoa.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedPeopleIds([...selectedPeopleIds, pessoa.id])
+                          } else {
+                            setSelectedPeopleIds(selectedPeopleIds.filter((id) => id !== pessoa.id))
+                          }
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback>{pessoa.nome[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium">{pessoa.nome}</p>
+                        <p className="text-sm text-gray-500">
+                          {pessoa.cargo || 'Sem cargo'} {pessoa.time ? `• ${pessoa.time}` : ''}
+                        </p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddPeopleModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleAddPeople}
+                disabled={selectedPeopleIds.length === 0}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Adicionar {selectedPeopleIds.length > 0 ? `(${selectedPeopleIds.length})` : ''}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Add People Modal */}
-      <Dialog open={addPeopleModalOpen} onOpenChange={setAddPeopleModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Adicionar Pessoas ao Projeto</DialogTitle>
-            <DialogDescription>
-              Selecione as pessoas que deseja adicionar ao projeto
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Buscar pessoas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <div className="border rounded-lg max-h-96 overflow-y-auto">
-              {filteredAvailable.map((pessoa) => (
-                <label
-                  key={pessoa.id}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedPeople.includes(pessoa.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedPeople([...selectedPeople, pessoa.id])
-                      } else {
-                        setSelectedPeople(selectedPeople.filter((id) => id !== pessoa.id))
-                      }
-                    }}
-                    className="w-4 h-4 text-orange-500 rounded"
-                  />
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={pessoa.avatar || "/placeholder.svg"} alt={pessoa.nome} />
-                    <AvatarFallback className="bg-orange-100 text-orange-700">
-                      {pessoa.nome.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{pessoa.nome}</p>
-                    <p className="text-sm text-gray-600">{pessoa.cargo} • {pessoa.time}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-
-            {selectedPeople.length > 0 && (
-              <p className="text-sm text-gray-600">{selectedPeople.length} pessoa(s) selecionada(s)</p>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setAddPeopleModalOpen(false)
-              setSelectedPeople([])
-              setSearchTerm('')
-            }}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleAddPeople}
-              disabled={selectedPeople.length === 0}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              Adicionar {selectedPeople.length > 0 && `(${selectedPeople.length})`}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardShell>
   )
 }

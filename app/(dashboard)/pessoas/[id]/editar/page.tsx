@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,7 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getPessoaById, updatePessoa, getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
 
 interface Project {
   id: string
@@ -25,68 +27,101 @@ interface Project {
   dataFim: Date | undefined
 }
 
-const MOCK_TEAMS = ['Engenharia', 'Produto', 'Design', 'Dados', 'Marketing']
-const MOCK_CARGOS = ['Engineer I', 'Engineer II', 'Senior Engineer', 'Staff Engineer', 'Product Manager', 'Product Designer', 'Data Analyst', 'Marketing Manager']
 const MOCK_PROJECTS = ['Projeto Alpha', 'Projeto Beta', 'Sistema Core', 'App Mobile']
 const MOCK_TAGS = ['Frontend', 'Backend', 'Full Stack', 'Leadership', 'Mentor', 'React', 'Node.js', 'Python', 'DevOps', 'Mobile']
 
-const CARGO_TO_NIVEL: Record<string, string> = {
-  'Engineer I': 'L1',
-  'Engineer II': 'L2',
-  'Senior Engineer': 'L3',
-  'Staff Engineer': 'L4',
-  'Product Manager': 'L3',
-  'Product Designer': 'L3',
-  'Data Analyst': 'L2',
-  'Marketing Manager': 'L3',
-}
-
-const MOCK_DATA = {
-  nome: 'Maria Santos',
-  nomeSocial: '',
-  emailCorporativo: 'maria@orgzilla.com',
-  emailPessoal: 'maria.santos@gmail.com',
-  telefone: '(11) 98765-4321',
-  time: 'Engenharia',
-  cargo: 'Senior Engineer',
-  dataEntrada: new Date('2023-01-15'),
-  dataInicioCargo: new Date('2024-06-01'),
-  status: 'Ativo',
-  salarioAtual: 'R$ 15.000,00',
-  projetos: [
-    { id: '1', nome: 'Projeto Alpha', dataInicio: new Date('2024-01-01'), dataFim: undefined },
-    { id: '2', nome: 'Sistema Core', dataInicio: new Date('2023-06-01'), dataFim: new Date('2023-12-31') }
-  ],
-  tags: ['Frontend', 'React', 'Leadership']
-}
-
 export default function EditPessoaPage() {
+  const router = useRouter()
+  const params = useParams()
+  const pessoaId = params.id as string
+
   const [isLoading, setIsLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [activeTab, setActiveTab] = useState('pessoais')
 
-  // Form fields initialized with MOCK_DATA
-  const [nome, setNome] = useState(MOCK_DATA.nome)
-  const [nomeSocial, setNomeSocial] = useState(MOCK_DATA.nomeSocial)
-  const [emailCorporativo, setEmailCorporativo] = useState(MOCK_DATA.emailCorporativo)
-  const [emailPessoal, setEmailPessoal] = useState(MOCK_DATA.emailPessoal)
-  const [telefone, setTelefone] = useState(MOCK_DATA.telefone)
-  const [time, setTime] = useState(MOCK_DATA.time)
-  const [cargo, setCargo] = useState(MOCK_DATA.cargo)
-  const [dataEntrada, setDataEntrada] = useState<Date | undefined>(MOCK_DATA.dataEntrada)
-  const [dataInicioCargo, setDataInicioCargo] = useState<Date | undefined>(MOCK_DATA.dataInicioCargo)
-  const [status, setStatus] = useState(MOCK_DATA.status)
+  // Dynamic data
+  const [times, setTimes] = useState<Array<{ id: string; nome: string }>>([])
+  const [cargos, setCargos] = useState<Array<{ id: string; nome: string }>>([])
+
+  // Form fields - will be loaded from database
+  const [nome, setNome] = useState('')
+  const [nomeSocial, setNomeSocial] = useState('')
+  const [emailCorporativo, setEmailCorporativo] = useState('')
+  const [emailPessoal, setEmailPessoal] = useState('')
+  const [telefone, setTelefone] = useState('')
+  const [time, setTime] = useState('')
+  const [cargo, setCargo] = useState('')
+  const [dataEntrada, setDataEntrada] = useState<Date | undefined>(undefined)
+  const [dataInicioCargo, setDataInicioCargo] = useState<Date | undefined>(undefined)
+  const [status, setStatus] = useState('Ativo')
   const [dataDesligamento, setDataDesligamento] = useState<Date | undefined>(undefined)
-  const [salario, setSalario] = useState(MOCK_DATA.salarioAtual)
-  const [projects, setProjects] = useState<Project[]>(MOCK_DATA.projetos)
-  const [selectedTags, setSelectedTags] = useState<string[]>(MOCK_DATA.tags)
+  const [salario, setSalario] = useState('')
+  const [projects, setProjects] = useState<Project[]>([])
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState('')
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const nivel = cargo ? CARGO_TO_NIVEL[cargo] || '-' : '-'
+  // Load data on mount
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    try {
+      const [pessoaResult, timesResult, cargosResult] = await Promise.all([
+        getPessoaById(pessoaId),
+        getTimesParaFiltro(),
+        getCargosParaFiltro(),
+      ])
+
+      // Load pessoa data
+      if (pessoaResult.success && pessoaResult.data) {
+        const p = pessoaResult.data as any
+        setNome(p.nome || '')
+        setNomeSocial(p.nome_social || '')
+        setEmailCorporativo(p.email_corporativo || '')
+        setEmailPessoal(p.email_pessoal || '')
+        setTelefone(p.telefone || '')
+        setTime(p.time_id || '')
+        setCargo(p.cargo_id || '')
+        setDataEntrada(p.data_entrada ? new Date(p.data_entrada) : undefined)
+        setDataInicioCargo(p.data_inicio_cargo_atual ? new Date(p.data_inicio_cargo_atual) : undefined)
+        setStatus(p.status || 'Ativo')
+        setDataDesligamento(p.data_desligamento ? new Date(p.data_desligamento) : undefined)
+
+        // Handle salary - format as currency
+        if (p.salario_atual) {
+          const formatted = new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }).format(p.salario_atual)
+          setSalario(formatted)
+        }
+      } else {
+        toast.error(pessoaResult.error || 'Erro ao carregar pessoa')
+        router.push('/pessoas')
+        return
+      }
+
+      // Load dropdown data
+      if (timesResult.success && timesResult.data) {
+        setTimes(timesResult.data)
+      }
+      if (cargosResult.success && cargosResult.data) {
+        setCargos(cargosResult.data)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      toast.error('Erro inesperado ao carregar dados')
+      router.push('/pessoas')
+    } finally {
+      setDataLoading(false)
+    }
+  }
 
   const handlePhoneMask = (value: string) => {
     const cleaned = value.replace(/\D/g, '')
@@ -145,39 +180,46 @@ export default function EditPessoaPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) {
       toast.error('Por favor, corrija os erros no formulário')
       return
     }
 
     setIsLoading(true)
-    
-    const formData = {
-      nome,
-      nomeSocial,
-      emailCorporativo,
-      emailPessoal,
-      telefone,
-      time,
-      cargo,
-      nivel,
-      dataEntrada,
-      dataInicioCargo,
-      status,
-      dataDesligamento,
-      salario,
-      projects,
-      tags: selectedTags,
-    }
 
-    console.log('[v0] Form data:', formData)
+    try {
+      const pessoaData = {
+        nome: nome.trim(),
+        nome_social: nomeSocial.trim() || null,
+        email_corporativo: emailCorporativo.trim(),
+        email_pessoal: emailPessoal.trim() || null,
+        telefone: telefone || null,
+        time_id: time || null,
+        cargo_id: cargo || null,
+        data_entrada: dataEntrada ? dataEntrada.toISOString().split('T')[0] : null,
+        data_inicio_cargo_atual: dataInicioCargo ? dataInicioCargo.toISOString().split('T')[0] : null,
+        status: status.toLowerCase() as 'ativo' | 'ferias' | 'licenca' | 'afastamento' | 'desligado',
+        data_desligamento: dataDesligamento ? dataDesligamento.toISOString().split('T')[0] : null,
+        salario_atual: salario ? parseFloat(salario.replace(/[^\d,]/g, '').replace(',', '.')) : null,
+        ativo: true,
+      }
 
-    setTimeout(() => {
+      const result = await updatePessoa(pessoaId, pessoaData)
+
+      if (result.success) {
+        toast.success('🦖 Pessoa atualizada com sucesso!')
+        setIsDirty(false)
+        router.push(`/pessoas/${pessoaId}`)
+      } else {
+        toast.error(result.error || 'Erro ao atualizar pessoa')
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar pessoa:', error)
+      toast.error('Erro inesperado ao atualizar pessoa')
+    } finally {
       setIsLoading(false)
-      toast.success('🦖 Pessoa atualizada com sucesso!')
-      setIsDirty(false)
-    }, 1500)
+    }
   }
 
   const handleCancel = () => {
@@ -225,6 +267,20 @@ export default function EditPessoaPage() {
       setNewTag('')
       setIsDirty(true)
     }
+  }
+
+  // Loading state
+  if (dataLoading) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando dados...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (
@@ -389,8 +445,8 @@ export default function EditPessoaPage() {
                     <SelectValue placeholder="Selecione o time" />
                   </SelectTrigger>
                   <SelectContent>
-                    {MOCK_TEAMS.map(team => (
-                      <SelectItem key={team} value={team}>{team}</SelectItem>
+                    {times.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -407,8 +463,8 @@ export default function EditPessoaPage() {
                     <SelectValue placeholder="Selecione o cargo" />
                   </SelectTrigger>
                   <SelectContent>
-                    {MOCK_CARGOS.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    {cargos.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -418,9 +474,20 @@ export default function EditPessoaPage() {
               <div>
                 <Label>Nível</Label>
                 <div className="mt-2">
-                  <Badge variant="secondary" className="text-base px-4 py-1 text-white">
-                    {nivel}
-                  </Badge>
+                  {cargo ? (
+                    (() => {
+                      const cargoSelecionado = cargos.find(c => c.id === cargo)
+                      return (
+                        <Badge variant="secondary" className="text-base px-4 py-1 text-white">
+                          {cargoSelecionado?.nome || 'N/A'}
+                        </Badge>
+                      )
+                    })()
+                  ) : (
+                    <Badge variant="outline" className="text-base px-4 py-1">
+                      Selecione um cargo
+                    </Badge>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">Preenchido automaticamente baseado no cargo</p>
                 </div>
               </div>

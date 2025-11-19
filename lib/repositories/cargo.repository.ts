@@ -28,8 +28,8 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
       .from('cargo')
       .select(`
         *,
-        trilha:trilha_id (*),
-        nivel:nivel_id (*)
+        trilha:trilha_carreira!cargo_trilha_id_fkey(*),
+        nivel:nivel!cargo_nivel_id_fkey(*)
       `)
       .eq('id', id)
       .single()
@@ -48,20 +48,26 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
    * Busca todos os cargos com trilha e nível
    */
   async findAllWithRelationships(): Promise<CargoComRelacionamentos[]> {
-    const { data, error } = await this.supabase
-      .from('cargo')
-      .select(`
-        *,
-        trilha:trilha_id (*),
-        nivel:nivel_id (*)
-      `)
-      .order('created_at', { ascending: false })
+    try {
+      const { data, error } = await this.supabase
+        .from('cargo')
+        .select(`
+          *,
+          trilha:trilha_carreira!cargo_trilha_id_fkey(*),
+          nivel:nivel!cargo_nivel_id_fkey(*)
+        `)
+        .order('created_at', { ascending: false })
 
-    if (error) {
-      throw new RepositoryError('Erro ao buscar cargos com relacionamentos', error)
+      if (error) {
+        console.error('[CargoRepository] Erro na query:', error)
+        throw new RepositoryError('Erro ao buscar cargos com relacionamentos', error)
+      }
+
+      return (data || []) as CargoComRelacionamentos[]
+    } catch (err) {
+      console.error('[CargoRepository] Erro inesperado:', err)
+      throw err
     }
-
-    return (data || []) as CargoComRelacionamentos[]
   }
 
   /**

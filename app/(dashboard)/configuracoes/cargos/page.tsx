@@ -675,12 +675,12 @@ export default function CargosPage() {
                     </TableCell>
                     <TableCell className="font-medium">{position.nome}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className={trackColors[position.trilha]}>
-                        {position.trilha}
+                      <Badge variant="secondary" className={trackColors[position.trilha?.nome || '']}>
+                        {position.trilha?.nome || 'N/A'}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{position.nivel}</Badge>
+                      <Badge variant="outline">{position.nivel?.nome || 'N/A'}</Badge>
                     </TableCell>
                     <TableCell>
                       {position.pessoas > 0 ? (
@@ -717,8 +717,8 @@ export default function CargosPage() {
                               setSelectedPosition(position)
                               setFormData({
                                 nome: position.nome,
-                                trilha: position.trilha,
-                                nivel: position.nivel,
+                                trilha_id: position.trilha_id,
+                                nivel_id: position.nivel_id,
                                 ativo: position.ativo,
                               })
                               setEditModalOpen(true)
@@ -777,8 +777,8 @@ export default function CargosPage() {
                             setSelectedPosition(position)
                             setFormData({
                               nome: position.nome,
-                              trilha: position.trilha,
-                              nivel: position.nivel,
+                              trilha_id: position.trilha_id,
+                              nivel_id: position.nivel_id,
                               ativo: position.ativo,
                             })
                             setEditModalOpen(true)
@@ -808,10 +808,10 @@ export default function CargosPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <Badge variant="secondary" className={trackColors[position.trilha]}>
-                      {position.trilha}
+                    <Badge variant="secondary" className={trackColors[position.trilha?.nome || '']}>
+                      {position.trilha?.nome || 'N/A'}
                     </Badge>
-                    <Badge variant="outline">{position.nivel}</Badge>
+                    <Badge variant="outline">{position.nivel?.nome || 'N/A'}</Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -876,31 +876,30 @@ export default function CargosPage() {
 
               <div>
                 <Label htmlFor="trilha">Trilha de Carreira *</Label>
-                <Select value={formData.trilha} onValueChange={(value) => setFormData({ ...formData, trilha: value })}>
+                <Select value={formData.trilha_id} onValueChange={(value) => setFormData({ ...formData, trilha_id: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a trilha" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Engenharia de Software">Engenharia de Software</SelectItem>
-                    <SelectItem value="Produto">Produto</SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Dados">Dados</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Operações">Operações</SelectItem>
+                    {trilhas.map((trilha) => (
+                      <SelectItem key={trilha.id} value={trilha.id}>
+                        {trilha.nome}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
                 <Label htmlFor="nivel">Nível *</Label>
-                <Select value={formData.nivel} onValueChange={(value) => setFormData({ ...formData, nivel: value })}>
+                <Select value={formData.nivel_id} onValueChange={(value) => setFormData({ ...formData, nivel_id: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o nível" />
                   </SelectTrigger>
                   <SelectContent>
-                    {['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8'].map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
+                    {niveis.map((nivel) => (
+                      <SelectItem key={nivel.id} value={nivel.id}>
+                        {nivel.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -921,19 +920,23 @@ export default function CargosPage() {
                 />
               </div>
 
-              {formData.nome && formData.trilha && formData.nivel && (
-                <Card className="p-4 bg-muted">
-                  <p className="text-sm font-medium mb-2">Preview</p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className={trackColors[formData.trilha]}>
-                      {formData.trilha}
-                    </Badge>
-                    <span className="font-medium">
-                      {formData.nome} ({formData.nivel})
-                    </span>
-                  </div>
-                </Card>
-              )}
+              {formData.nome && formData.trilha_id && formData.nivel_id && (() => {
+                const trilhaSelecionada = trilhas.find(t => t.id === formData.trilha_id)
+                const nivelSelecionado = niveis.find(n => n.id === formData.nivel_id)
+                return (
+                  <Card className="p-4 bg-muted">
+                    <p className="text-sm font-medium mb-2">Preview</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className={trackColors[trilhaSelecionada?.nome || '']}>
+                        {trilhaSelecionada?.nome || 'N/A'}
+                      </Badge>
+                      <span className="font-medium">
+                        {formData.nome} ({nivelSelecionado?.nome || 'N/A'})
+                      </span>
+                    </div>
+                  </Card>
+                )
+              })()}
             </div>
 
             <DialogFooter>
@@ -950,7 +953,7 @@ export default function CargosPage() {
               <Button
                 onClick={editModalOpen ? handleEditPosition : handleCreatePosition}
                 className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
-                disabled={!formData.nome || !formData.trilha || !formData.nivel}
+                disabled={!formData.nome || !formData.trilha_id || !formData.nivel_id}
               >
                 {editModalOpen ? 'Salvar Alterações' : 'Salvar Cargo'}
               </Button>

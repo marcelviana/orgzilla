@@ -6,6 +6,7 @@ import {
   getTimeDistribution,
   getRecentActivities
 } from "@/app/actions/dashboard.actions"
+import { getCurrentUser } from "@/app/actions/auth.actions"
 
 /**
  * Dashboard Principal
@@ -17,13 +18,15 @@ import {
 export const revalidate = 60 // Revalidar a cada 60 segundos
 
 export default async function Page() {
-  // Buscar dados do dashboard em paralelo
+  // Buscar usuário atual e dados do dashboard em paralelo
   const [
+    usuario,
     metricsResult,
     nivelDistResult,
     timeDistResult,
     activitiesResult,
   ] = await Promise.all([
+    getCurrentUser(),
     getDashboardMetrics(),
     getNivelDistribution(),
     getTimeDistribution(),
@@ -47,7 +50,7 @@ export default async function Page() {
   const recentActivities = activitiesResult.success ? activitiesResult.data! : []
 
   // Nome do usuário para saudação
-  const nomeExibicao = usuario.pessoa?.nome || usuario.nome || 'Usuário'
+  const nomeExibicao = usuario?.pessoa?.nome || usuario?.nome || 'Usuário'
   const primeiroNome = nomeExibicao.split(' ')[0]
 
   // Data atual formatada

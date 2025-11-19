@@ -32,30 +32,30 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       .from('pessoa')
       .select(`
         *,
-        cargo:cargo_id (
+        cargo:cargo!cargo_id(
           *,
-          trilha:trilha_id (*),
-          nivel:nivel_id (*)
+          trilha:trilha_carreira!trilha_id(*),
+          nivel:nivel!nivel_id(*)
         ),
-        time:time_id (
+        time:time!time_id(
           *,
-          gestor:gestor_id (*),
-          time_pai:time_pai_id (*)
+          gestor:pessoa!gestor_id(*),
+          time_pai:time!time_pai_id(*)
         ),
-        tags:pessoa_tag (
-          tag:tag_id (*)
+        tags:pessoa_tag(
+          tag:tag!tag_id(*)
         ),
-        projetos:pessoa_projeto_produto (
+        projetos:pessoa_projeto_produto(
           *,
-          projeto_produto:projeto_produto_id (*)
+          projeto_produto:projeto_produto!projeto_produto_id(*)
         ),
-        historico_cargos:historico_cargo (
+        historico_cargos:historico_cargo(
           *,
-          cargo:cargo_id (*)
+          cargo:cargo!cargo_id(*)
         ),
-        historico_times:historico_time (
+        historico_times:historico_time(
           *,
-          time:time_id (*)
+          time:time!time_id(*)
         )
       `)
       .eq('id', id)
@@ -79,14 +79,14 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       .from('pessoa')
       .select(`
         *,
-        cargo:cargo_id (
+        cargo:cargo!cargo_id(
           *,
-          trilha:trilha_id (*),
-          nivel:nivel_id (*)
+          trilha:trilha_carreira!trilha_id(*),
+          nivel:nivel!nivel_id(*)
         ),
-        time:time_id (*),
-        tags:pessoa_tag (
-          tag:tag_id (*)
+        time:time!time_id(*),
+        tags:pessoa_tag(
+          tag:tag!tag_id(*)
         )
       `)
       .eq('id', id)
@@ -164,7 +164,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
   async findByProjetoId(projetoId: string): Promise<Pessoa[]> {
     const { data, error } = await this.supabase
       .from('pessoa_projeto_produto')
-      .select('pessoa:pessoa_id (*)')
+      .select('pessoa:pessoa!pessoa_id(*)')
       .eq('projeto_produto_id', projetoId)
       .eq('ativo', true)
 
@@ -181,7 +181,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
   async findByTagId(tagId: string): Promise<Pessoa[]> {
     const { data, error } = await this.supabase
       .from('pessoa_tag')
-      .select('pessoa:pessoa_id (*)')
+      .select('pessoa:pessoa!pessoa_id(*)')
       .eq('tag_id', tagId)
 
     if (error) {

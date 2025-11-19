@@ -18,14 +18,14 @@ import { getCurrentUser } from '@/app/actions/auth.actions'
 export const revalidate = 30 // Revalidar a cada 30 segundos
 
 type PageProps = {
-  searchParams: {
+  searchParams: Promise<{
     search?: string
     timeId?: string
     cargoId?: string
     status?: string
     page?: string
     itemsPerPage?: string
-  }
+  }>
 }
 
 export default async function PessoasPage({ searchParams }: PageProps) {
@@ -37,17 +37,20 @@ export default async function PessoasPage({ searchParams }: PageProps) {
     throw new Error('Usuário não autenticado')
   }
 
+  // Aguardar searchParams (Next.js 15+)
+  const params = await searchParams
+
   // Parsear filtros da URL
   const filters = {
-    search: searchParams.search,
-    timeId: searchParams.timeId,
-    cargoId: searchParams.cargoId,
-    status: searchParams.status,
+    search: params.search,
+    timeId: params.timeId,
+    cargoId: params.cargoId,
+    status: params.status,
   }
 
   const pagination = {
-    page: searchParams.page ? parseInt(searchParams.page) : 1,
-    itemsPerPage: searchParams.itemsPerPage ? parseInt(searchParams.itemsPerPage) : 10,
+    page: params.page ? parseInt(params.page) : 1,
+    itemsPerPage: params.itemsPerPage ? parseInt(params.itemsPerPage) : 10,
   }
 
   // Buscar dados em paralelo

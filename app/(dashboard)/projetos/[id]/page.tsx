@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -23,389 +23,453 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Home, ChevronRight, ArrowLeft, Pencil, MoreVertical, Plus, Grid3x3, Table, Search, Users, Briefcase } from 'lucide-react'
+import { Home, ChevronRight, MoreVertical, Plus, Search, Users, Loader2, Calendar } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-
-const mockProject = {
-  id: 1,
-  nome: 'Projeto Alpha',
-  status: 'Ativo' as const,
-  observacoes: 'Projeto estratégico da área de engenharia com foco em escalabilidade',
-  dataCriacao: '15 de Janeiro, 2024',
-  ultimaAtualizacao: '2 dias',
-  pessoasAlocadas: [
-    { id: 'p1', nome: 'Maria Santos', avatar: '/diverse-woman-portrait.png', cargo: 'Tech Lead', nivel: 'L6', time: 'Engenharia', timeColor: '#FF7A00' },
-    { id: 'p2', nome: 'João Silva', avatar: '/man.jpg', cargo: 'Backend Developer', nivel: 'L3', time: 'Backend', timeColor: '#00C8FF' },
-    { id: 'p3', nome: 'Ana Costa', avatar: '/tech-woman.png', cargo: 'Frontend Developer', nivel: 'L3', time: 'Frontend', timeColor: '#00C8FF' },
-    { id: 'p4', nome: 'Pedro Lima', avatar: '/engineer-man.png', cargo: 'Senior Designer', nivel: 'L4', time: 'Design', timeColor: '#9333EA' },
-    { id: 'p5', nome: 'Carla Mendes', avatar: '/developer-woman.png', cargo: 'QA Engineer', nivel: 'L3', time: 'Qualidade', timeColor: '#10B981' },
-    { id: 'p6', nome: 'Roberto Alves', avatar: '/executive-man.png', cargo: 'Product Manager', nivel: 'L5', time: 'Produto', timeColor: '#F59E0B' },
-    { id: 'p7', nome: 'Julia Mendes', avatar: '/data-scientist-woman.jpg', cargo: 'Data Analyst', nivel: 'L2', time: 'Dados', timeColor: '#8B5CF6' },
-    { id: 'p8', nome: 'Lucas Oliveira', avatar: '/young-developer.png', cargo: 'DevOps Engineer', nivel: 'L4', time: 'Infraestrutura', timeColor: '#EF4444' },
-  ],
-}
+import { toast as sonnerToast } from 'sonner'
+import { getProjetoById, removePessoaDoProjeto, addPessoaAoProjeto, softDeleteProjeto } from '@/app/actions/projetos.actions'
+import { getPessoasParaGestor } from '@/app/actions/pessoas.actions'
+import type { ProjetoDetail } from '@/app/actions/projetos.actions'
 
 export default function ProjetoDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { toast } = useToast()
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [removePersonModal, setRemovePersonModal] = useState<{ open: boolean; person: typeof mockProject.pessoasAlocadas[0] | null }>({
-    open: false,
-    person: null,
-  })
-  const [deleteProjectModal, setDeleteProjectModal] = useState(false)
+  const projetoId = params.id as string
 
-  const filteredPeople = mockProject.pessoasAlocadas.filter((p) =>
-    p.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  const [isLoading, setIsLoading] = useState(true)
+  const [projeto, setProjeto] = useState<ProjetoDetail | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Add people modal
+  const [addPeopleModalOpen, setAddPeopleModalOpen] = useState(false)
+  const [availablePeople, setAvailablePeople] = useState<Array<{
+    id: string
+    nome: string
+    cargo: string | null
+    time: string | null
+  }>>([])
+  const [selectedPeopleIds, setSelectedPeopleIds] = useState<string[]>([])
+
+  // Remove person modal
+  const [removePersonModal, setRemovePersonModal] = useState<{
+    open: boolean
+    alocacaoId: string | null
+    pessoaNome: string | null
+  }>({
+    open: false,
+    alocacaoId: null,
+    pessoaNome: null,
+  })
+
+  useEffect(() => {
+    loadProjeto()
+  }, [projetoId])
+
+  async function loadProjeto() {
+    setIsLoading(true)
+    try {
+      const result = await getProjetoById(projetoId)
+      if (result.success && result.data) {
+        setProjeto(result.data)
+      } else {
+        sonnerToast.error(result.error || 'Erro ao carregar projeto')
+        router.push('/projetos')
+      }
+    } catch (error) {
+      console.error('Erro ao carregar projeto:', error)
+      sonnerToast.error('Erro inesperado ao carregar projeto')
+      router.push('/projetos')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function loadAvailablePeople() {
+    const result = await getPessoasParaGestor()
+    if (result.success && result.data) {
+      // Filter out people already allocated
+      const alocadosIds = projeto?.alocacoes.filter(a => a.ativo && !a.data_fim).map(a => a.pessoa.id) || []
+      setAvailablePeople(result.data.filter(p => !alocadosIds.includes(p.id)))
+    }
+  }
+
+  const handleOpenAddPeopleModal = () => {
+    loadAvailablePeople()
+    setAddPeopleModalOpen(true)
+  }
+
+  const handleAddPeople = async () => {
+    if (!projeto || selectedPeopleIds.length === 0) return
+
+    try {
+      const hoje = new Date().toISOString().split('T')[0]
+
+      const alocacoes = selectedPeopleIds.map(pessoaId =>
+        addPessoaAoProjeto({
+          pessoa_id: pessoaId,
+          projeto_produto_id: projeto.id,
+          data_inicio: hoje,
+          data_fim: null,
+          ativo: true,
+        })
+      )
+
+      await Promise.all(alocacoes)
+
+      sonnerToast.success(`${selectedPeopleIds.length} pessoa(s) adicionada(s) ao projeto`)
+      setSelectedPeopleIds([])
+      setAddPeopleModalOpen(false)
+      await loadProjeto()
+    } catch (error) {
+      console.error('Erro ao adicionar pessoas:', error)
+      toast({
+        title: 'Erro ao adicionar pessoas',
+        description: 'Ocorreu um erro ao adicionar pessoas ao projeto',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleRemovePerson = async () => {
+    if (!removePersonModal.alocacaoId) return
+
+    try {
+      const hoje = new Date().toISOString().split('T')[0]
+      const result = await removePessoaDoProjeto(removePersonModal.alocacaoId, hoje)
+
+      if (result.success) {
+        sonnerToast.success('Pessoa removida do projeto')
+        setRemovePersonModal({ open: false, alocacaoId: null, pessoaNome: null })
+        await loadProjeto()
+      } else {
+        toast({
+          title: 'Erro ao remover pessoa',
+          description: result.error,
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao remover pessoa:', error)
+      toast({
+        title: 'Erro ao remover pessoa',
+        description: 'Ocorreu um erro ao remover pessoa do projeto',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDeleteProject = async () => {
+    try {
+      const result = await softDeleteProjeto(projetoId)
+      if (result.success) {
+        sonnerToast.success('🦖 Projeto desativado com sucesso!')
+        router.push('/projetos')
+      } else {
+        toast({
+          title: 'Erro ao desativar projeto',
+          description: result.error,
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao desativar projeto:', error)
+      toast({
+        title: 'Erro ao desativar projeto',
+        description: 'Ocorreu um erro ao desativar o projeto',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando projeto...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
+
+  // Error state
+  if (!projeto) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <p className="text-lg font-semibold">Projeto não encontrado</p>
+            <Button onClick={() => router.push('/projetos')}>Voltar para a lista</Button>
+          </div>
+        </div>
+      </DashboardShell>
+    )
+  }
+
+  const alocacoesAtivas = projeto.alocacoes.filter(a => a.ativo && !a.data_fim)
+  const filteredPeople = alocacoesAtivas.filter((a) =>
+    a.pessoa.nome.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const uniqueTeams = Array.from(new Set(mockProject.pessoasAlocadas.map(p => p.time))).length
-  const levels = mockProject.pessoasAlocadas.map(p => parseInt(p.nivel.substring(1)))
-  const minLevel = Math.min(...levels)
-  const maxLevel = Math.max(...levels)
+  const availableToAdd = availablePeople.filter(p =>
+    !alocacoesAtivas.find(a => a.pessoa.id === p.id)
+  )
 
-  const handleRemovePerson = () => {
-    console.log('Removendo pessoa:', removePersonModal.person?.nome)
-    toast({
-      title: 'Pessoa removida',
-      description: `${removePersonModal.person?.nome} foi removida do projeto`,
-    })
-    setRemovePersonModal({ open: false, person: null })
-  }
-
-  const handleDeleteProject = () => {
-    console.log('Excluindo projeto:', mockProject.nome)
-    toast({
-      title: 'Projeto excluído',
-      description: 'O projeto foi excluído com sucesso',
-    })
-    router.push('/projetos')
-  }
+  const filteredAvailableToAdd = availableToAdd.filter(p =>
+    p.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <DashboardShell>
       <div className="p-6 space-y-6">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <Home className="w-4 h-4" />
+          <Link href="/" className="hover:text-gray-900">Dashboard</Link>
+          <ChevronRight className="w-4 h-4" />
+          <Link href="/projetos" className="hover:text-gray-900">Projetos</Link>
+          <ChevronRight className="w-4 h-4" />
+          <span className="text-gray-900 font-medium">{projeto.nome}</span>
+        </div>
+
         {/* Header */}
-        <div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-            <Home className="w-4 h-4" />
-            <Link href="/" className="hover:text-gray-900">Dashboard</Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link href="/projetos" className="hover:text-gray-900">Projetos</Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium">{mockProject.nome}</span>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#1A2734]">{projeto.nome}</h1>
+            <Badge className={projeto.ativo ? 'bg-green-100 text-green-800 mt-2' : 'bg-gray-100 text-gray-800 mt-2'}>
+              {projeto.ativo ? 'Ativo' : 'Inativo'}
+            </Badge>
           </div>
 
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/projetos">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => router.push(`/projetos/${projeto.id}/editar`)}>
+              Editar
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
-                  <ArrowLeft className="w-4 h-4" />
+                  <MoreVertical className="w-4 h-4" />
                 </Button>
-              </Link>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">{mockProject.nome}</h1>
-                <Badge className="bg-green-100 text-green-800 border-green-200 mt-2">
-                  {mockProject.status}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Link href={`/projetos/${params.id}/editar`}>
-                <Button variant="outline">
-                  <Pencil className="w-4 h-4 mr-2" />
-                  Editar Projeto
-                </Button>
-              </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => console.log('Adicionar pessoas')}>
-                    Adicionar Pessoas
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Duplicar projeto')}>
-                    Duplicar Projeto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Ativar/Desativar')}>
-                    {mockProject.status === 'Ativo' ? 'Desativar' : 'Ativar'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-red-600"
-                    onClick={() => setDeleteProjectModal(true)}
-                  >
-                    Excluir Projeto
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleOpenAddPeopleModal}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar Pessoas
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDeleteProject} className="text-red-600">
+                  Desativar Projeto
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {/* Project Info Card */}
-        {mockProject.observacoes && (
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-6">
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-semibold text-gray-700 mb-1">Observações</p>
-                <p className="text-gray-600">{mockProject.observacoes}</p>
-              </div>
-              <div className="flex gap-8 text-sm">
-                <div>
-                  <span className="text-gray-600">Criado em </span>
-                  <span className="font-medium">{mockProject.dataCriacao}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Última atualização </span>
-                  <span className="font-medium">há {mockProject.ultimaAtualizacao}</span>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 mb-2">
+              <Users className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold">Pessoas Alocadas</h3>
             </div>
+            <p className="text-3xl font-bold">{alocacoesAtivas.length}</p>
+            <p className="text-sm text-muted-foreground mt-1">atualmente no projeto</p>
           </Card>
-        )}
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Total Pessoas</p>
-                <p className="text-3xl font-bold text-gray-900">{mockProject.pessoasAlocadas.length}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <Users className="w-6 h-6 text-orange-500" />
-              </div>
+            <div className="flex items-center gap-3 mb-2">
+              <Calendar className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold">Criado em</h3>
             </div>
+            <p className="text-lg font-semibold">{formatDate(projeto.created_at)}</p>
           </Card>
+
           <Card className="p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Times Representados</p>
-                <p className="text-3xl font-bold text-gray-900">{uniqueTeams}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <Briefcase className="w-6 h-6 text-orange-500" />
-              </div>
+            <div className="flex items-center gap-3 mb-2">
+              <Users className="w-5 h-5 text-primary" />
+              <h3 className="font-semibold">Total Histórico</h3>
             </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Níveis</p>
-                <p className="text-3xl font-bold text-gray-900">L{minLevel} ao L{maxLevel}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <Users className="w-6 h-6 text-orange-500" />
-              </div>
-            </div>
+            <p className="text-3xl font-bold">{projeto.alocacoes.length}</p>
+            <p className="text-sm text-muted-foreground mt-1">todas as alocações</p>
           </Card>
         </div>
 
-        {/* Team Section */}
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-gray-900">Equipe Alocada</h2>
-              <Badge variant="outline">{mockProject.pessoasAlocadas.length} pessoas</Badge>
-            </div>
-            <div className="flex items-center gap-3">
+        {/* People List */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Pessoas no Projeto</h2>
+            <div className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar por nome..."
+                  placeholder="Buscar pessoa..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+                  className="pl-9 w-64"
                 />
               </div>
-              <div className="flex items-center gap-1 border rounded-lg p-1">
-                <Button
-                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('cards')}
-                >
-                  <Grid3x3 className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'table' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('table')}
-                >
-                  <Table className="w-4 h-4" />
-                </Button>
-              </div>
-              <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => console.log('Adicionar pessoas')}>
+              <Button onClick={handleOpenAddPeopleModal}>
                 <Plus className="w-4 h-4 mr-2" />
-                Adicionar Pessoas
+                Adicionar
               </Button>
             </div>
           </div>
 
-          {/* Cards View */}
-          {viewMode === 'cards' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredPeople.map((pessoa) => (
-                <Card
-                  key={pessoa.id}
-                  className="p-6 hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer relative"
-                  onClick={() => router.push(`/pessoas/${pessoa.id}`)}
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setRemovePersonModal({ open: true, person: pessoa })
-                    }}
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                  <div className="flex flex-col items-center text-center">
-                    <Avatar className="w-16 h-16 mb-3">
-                      <AvatarImage src={pessoa.avatar || "/placeholder.svg"} alt={pessoa.nome} />
-                      <AvatarFallback className="bg-orange-100 text-orange-700 text-lg">
-                        {pessoa.nome.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <h3 className="font-semibold text-gray-900 mb-1">{pessoa.nome}</h3>
-                    <p className="text-sm text-gray-600 mb-3">{pessoa.cargo}</p>
-                    <Badge
-                      variant="outline"
-                      style={{ backgroundColor: `${pessoa.timeColor}20`, borderColor: pessoa.timeColor, color: pessoa.timeColor }}
-                    >
-                      {pessoa.time}
-                    </Badge>
-                  </div>
-                </Card>
-              ))}
+          {filteredPeople.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <p>{searchTerm ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa alocada ainda'}</p>
+              {!searchTerm && (
+                <Button className="mt-4" onClick={handleOpenAddPeopleModal}>
+                  Adicionar Primeira Pessoa
+                </Button>
+              )}
             </div>
           ) : (
-            /* Table View */
-            <Card>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b bg-gray-50">
-                    <tr>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Nome</th>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Cargo</th>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Nível</th>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Time Atual</th>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPeople.map((pessoa) => (
-                      <tr
-                        key={pessoa.id}
-                        className="border-b hover:bg-gray-50 cursor-pointer"
-                        onClick={() => router.push(`/pessoas/${pessoa.id}`)}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredPeople.map((alocacao) => (
+                <div
+                  key={alocacao.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-12 h-12">
+                      <AvatarFallback>{alocacao.pessoa.nome[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Link
+                        href={`/pessoas/${alocacao.pessoa.id}`}
+                        className="font-semibold hover:text-primary"
                       >
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-10 h-10">
-                              <AvatarImage src={pessoa.avatar || "/placeholder.svg"} alt={pessoa.nome} />
-                              <AvatarFallback className="bg-orange-100 text-orange-700">
-                                {pessoa.nome.split(' ').map(n => n[0]).join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="font-medium">{pessoa.nome}</span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-gray-600">{pessoa.cargo}</td>
-                        <td className="p-4">
-                          <Badge variant="outline">{pessoa.nivel}</Badge>
-                        </td>
-                        <td className="p-4">
-                          <Badge
-                            variant="outline"
-                            style={{ backgroundColor: `${pessoa.timeColor}20`, borderColor: pessoa.timeColor, color: pessoa.timeColor }}
-                          >
-                            {pessoa.time}
-                          </Badge>
-                        </td>
-                        <td className="p-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="sm">
-                                Ações
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => router.push(`/pessoas/${pessoa.id}`)}>
-                                Ver Perfil
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() => setRemovePersonModal({ open: true, person: pessoa })}
-                              >
-                                Remover do Projeto
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
+                        {alocacao.pessoa.nome}
+                      </Link>
+                      <p className="text-sm text-gray-500">
+                        {alocacao.pessoa.cargo?.nome || 'Sem cargo'}
+                        {alocacao.pessoa.time?.nome && ` • ${alocacao.pessoa.time.nome}`}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Desde {formatDate(alocacao.data_inicio)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setRemovePersonModal({
+                        open: true,
+                        alocacaoId: alocacao.id,
+                        pessoaNome: alocacao.pessoa.nome,
+                      })
+                    }
+                  >
+                    Remover
+                  </Button>
+                </div>
+              ))}
+            </div>
           )}
-        </div>
+        </Card>
+
+        {/* Add People Modal */}
+        <Dialog open={addPeopleModalOpen} onOpenChange={setAddPeopleModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Adicionar Pessoas ao Projeto</DialogTitle>
+              <DialogDescription>
+                Selecione as pessoas que deseja alocar neste projeto
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar por nome..."
+                  className="pl-9"
+                />
+              </div>
+
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {filteredAvailableToAdd.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">
+                    Todas as pessoas já foram alocadas
+                  </p>
+                ) : (
+                  filteredAvailableToAdd.map((pessoa) => (
+                    <label
+                      key={pessoa.id}
+                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedPeopleIds.includes(pessoa.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedPeopleIds([...selectedPeopleIds, pessoa.id])
+                          } else {
+                            setSelectedPeopleIds(selectedPeopleIds.filter((id) => id !== pessoa.id))
+                          }
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback>{pessoa.nome[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium">{pessoa.nome}</p>
+                        <p className="text-sm text-gray-500">
+                          {pessoa.cargo || 'Sem cargo'} {pessoa.time ? `• ${pessoa.time}` : ''}
+                        </p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddPeopleModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleAddPeople}
+                disabled={selectedPeopleIds.length === 0}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Adicionar {selectedPeopleIds.length > 0 ? `(${selectedPeopleIds.length})` : ''}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Remove Person Modal */}
+        <Dialog open={removePersonModal.open} onOpenChange={(open) => setRemovePersonModal({ open, alocacaoId: null, pessoaNome: null })}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Remover Pessoa do Projeto</DialogTitle>
+              <DialogDescription>
+                Tem certeza que deseja remover {removePersonModal.pessoaNome} deste projeto?
+                A data de fim será registrada como hoje.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRemovePersonModal({ open: false, alocacaoId: null, pessoaNome: null })}>
+                Cancelar
+              </Button>
+              <Button onClick={handleRemovePerson} variant="destructive">
+                Remover
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      {/* Remove Person Modal */}
-      <Dialog open={removePersonModal.open} onOpenChange={(open) => setRemovePersonModal({ open, person: null })}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Remover {removePersonModal.person?.nome}?</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja remover esta pessoa do projeto?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRemovePersonModal({ open: false, person: null })}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleRemovePerson}>
-              Remover
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Project Modal */}
-      <Dialog open={deleteProjectModal} onOpenChange={setDeleteProjectModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Excluir Projeto?</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir este projeto?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-orange-600 font-medium">
-              {mockProject.pessoasAlocadas.length} pessoas estão alocadas e serão desalocadas
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteProjectModal(false)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteProject}>
-              Excluir Projeto
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </DashboardShell>
   )
 }

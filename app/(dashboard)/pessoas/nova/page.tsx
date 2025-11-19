@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,8 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { createPessoa } from '@/app/actions/pessoas.actions'
+import { getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
 
 interface Project {
   id: string
@@ -25,24 +28,17 @@ interface Project {
   dataFim: Date | undefined
 }
 
-const MOCK_TEAMS = ['Engenharia', 'Produto', 'Design', 'Dados', 'Marketing']
-const MOCK_CARGOS = ['Engineer I', 'Engineer II', 'Senior Engineer', 'Staff Engineer', 'Product Manager', 'Product Designer', 'Data Analyst', 'Marketing Manager']
 const MOCK_PROJECTS = ['Projeto Alpha', 'Projeto Beta', 'Sistema Core', 'App Mobile']
 const MOCK_TAGS = ['Frontend', 'Backend', 'Full Stack', 'Leadership', 'Mentor', 'React', 'Node.js', 'Python', 'DevOps', 'Mobile']
 
-const CARGO_TO_NIVEL: Record<string, string> = {
-  'Engineer I': 'L1',
-  'Engineer II': 'L2',
-  'Senior Engineer': 'L3',
-  'Staff Engineer': 'L4',
-  'Product Manager': 'L3',
-  'Product Designer': 'L3',
-  'Data Analyst': 'L2',
-  'Marketing Manager': 'L3',
-}
-
 export default function NovasPessoasPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
+
+  // Dados dinâmicos
+  const [times, setTimes] = useState<Array<{ id: string; nome: string }>>([])
+  const [cargos, setCargos] = useState<Array<{ id: string; nome: string }>>([])
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [activeTab, setActiveTab] = useState('pessoais')
@@ -67,7 +63,32 @@ export default function NovasPessoasPage() {
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const nivel = cargo ? CARGO_TO_NIVEL[cargo] || '-' : '-'
+  // Carregar dados ao montar
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  async function loadData() {
+    try {
+      const [timesResult, cargosResult] = await Promise.all([
+        getTimesParaFiltro(),
+        getCargosParaFiltro(),
+      ])
+
+      if (timesResult.success && timesResult.data) {
+        setTimes(timesResult.data)
+      }
+
+      if (cargosResult.success && cargosResult.data) {
+        setCargos(cargosResult.data)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      toast.error('Erro ao carregar formulário')
+    } finally {
+      setDataLoading(false)
+    }
+  }
 
   const handlePhoneMask = (value: string) => {
     const cleaned = value.replace(/\D/g, '')
@@ -127,39 +148,48 @@ export default function NovasPessoasPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateForm()) {
       toast.error('Por favor, corrija os erros no formulário')
       return
     }
 
     setIsLoading(true)
-    
-    const formData = {
-      nome,
-      nomeSocial,
-      emailCorporativo,
-      emailPessoal,
-      telefone,
-      time,
-      cargo,
-      nivel,
-      dataEntrada,
-      dataInicioCargo,
-      status,
-      dataDesligamento,
-      salario,
-      projects,
-      tags: selectedTags,
-    }
 
-    console.log('[v0] Form data:', formData)
+    try {
+      // Preparar dados para a API
+      const pessoaData = {
+        nome: nome.trim(),
+        nome_social: nomeSocial.trim() || null,
+        email_corporativo: emailCorporativo.trim(),
+        email_pessoal: emailPessoal.trim() || null,
+        telefone: telefone || null,
+        time_id: time || null,
+        cargo_id: cargo || null,
+        data_entrada: dataEntrada ? dataEntrada.toISOString().split('T')[0] : null,
+        data_inicio_cargo_atual: dataInicioCargo ? dataInicioCargo.toISOString().split('T')[0] : null,
+        status: status.toLowerCase() as 'ativo' | 'ferias' | 'licenca' | 'afastamento' | 'desligado',
+        data_desligamento: dataDesligamento ? dataDesligamento.toISOString().split('T')[0] : null,
+        salario_atual: salario ? parseFloat(salario.replace(/[^\d,]/g, '').replace(',', '.')) : null,
+        ativo: true,
+      }
 
-    setTimeout(() => {
+      const result = await createPessoa(pessoaData)
+
+      if (result.success) {
+        toast.success('🦖 Pessoa criada com sucesso!')
+        setIsDirty(false)
+        // Redirecionar para a lista ou detalhe
+        router.push('/pessoas')
+      } else {
+        toast.error(result.error || 'Erro ao criar pessoa')
+      }
+    } catch (error) {
+      console.error('Erro ao salvar pessoa:', error)
+      toast.error('Erro inesperado ao salvar pessoa')
+    } finally {
       setIsLoading(false)
-      toast.success('🦖 Pessoa salva com sucesso!')
-      setIsDirty(false)
-    }, 1500)
+    }
   }
 
   const handleCancel = () => {
@@ -227,8 +257,14 @@ export default function NovasPessoasPage() {
           <p className="text-muted-foreground mt-1">Preencha os dados para adicionar uma nova pessoa ao time</p>
         </div>
 
-        {/* Tabbed Form */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        {dataLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-3 text-muted-foreground">Carregando formulário...</span>
+          </div>
+        ) : (
+          /* Tabbed Form */
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="pessoais">Dados Pessoais</TabsTrigger>
             <TabsTrigger value="profissionais">Dados Profissionais</TabsTrigger>
@@ -366,13 +402,13 @@ export default function NovasPessoasPage() {
                 <Select value={time} onValueChange={(value) => {
                   setTime(value)
                   handleFieldChange('time', value)
-                }}>
+                }} disabled={dataLoading}>
                   <SelectTrigger className={cn(errors.time && 'border-error focus:ring-error')}>
-                    <SelectValue placeholder="Selecione o time" />
+                    <SelectValue placeholder={dataLoading ? "Carregando..." : "Selecione o time"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {MOCK_TEAMS.map(team => (
-                      <SelectItem key={team} value={team}>{team}</SelectItem>
+                    {times.map(t => (
+                      <SelectItem key={t.id} value={t.id}>{t.nome}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -384,13 +420,13 @@ export default function NovasPessoasPage() {
                 <Select value={cargo} onValueChange={(value) => {
                   setCargo(value)
                   handleFieldChange('cargo', value)
-                }}>
+                }} disabled={dataLoading}>
                   <SelectTrigger className={cn(errors.cargo && 'border-error focus:ring-error')}>
-                    <SelectValue placeholder="Selecione o cargo" />
+                    <SelectValue placeholder={dataLoading ? "Carregando..." : "Selecione o cargo"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {MOCK_CARGOS.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    {cargos.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -400,9 +436,20 @@ export default function NovasPessoasPage() {
               <div>
                 <Label>Nível</Label>
                 <div className="mt-2">
-                  <Badge variant="secondary" className="text-base px-4 py-1 text-white">
-                    {nivel}
-                  </Badge>
+                  {cargo ? (
+                    (() => {
+                      const cargoSelecionado = cargos.find(c => c.id === cargo)
+                      return (
+                        <Badge variant="secondary" className="text-base px-4 py-1 text-white">
+                          {cargoSelecionado?.nome || 'N/A'}
+                        </Badge>
+                      )
+                    })()
+                  ) : (
+                    <Badge variant="outline" className="text-base px-4 py-1">
+                      Selecione um cargo
+                    </Badge>
+                  )}
                   <p className="text-xs text-muted-foreground mt-1">Preenchido automaticamente baseado no cargo</p>
                 </div>
               </div>
@@ -709,6 +756,7 @@ export default function NovasPessoasPage() {
             </div>
           </TabsContent>
         </Tabs>
+        )}
       </div>
 
       {/* Sticky Bottom Action Bar */}

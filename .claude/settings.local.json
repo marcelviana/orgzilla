@@ -6,7 +6,8 @@
       "Bash(findstr:*)",
       "Bash(ls:*)",
       "WebFetch(domain:supabase.com)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

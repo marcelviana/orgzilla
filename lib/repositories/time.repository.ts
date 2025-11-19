@@ -25,19 +25,19 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
       .from('time')
       .select(`
         *,
-        gestor:gestor_id (*),
-        time_pai:time_pai_id (*),
-        times_filhos:time!time_pai_id (*),
-        membros:pessoa (
+        gestor:pessoa!gestor_id(*),
+        time_pai:time!time_pai_id(*),
+        times_filhos:time!time_pai_id(*),
+        membros:pessoa(
           *,
-          cargo:cargo_id (*)
+          cargo:cargo!cargo_id(*)
         ),
-        vagas:vaga_time (
+        vagas:vaga_time(
           *,
-          cargo:cargo_id (
+          cargo:cargo!cargo_id(
             *,
-            trilha:trilha_id (*),
-            nivel:nivel_id (*)
+            trilha:trilha_carreira!trilha_id(*),
+            nivel:nivel!nivel_id(*)
           )
         )
       `)
@@ -62,9 +62,9 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
       .from('time')
       .select(`
         *,
-        gestor:gestor_id (*),
-        time_pai:time_pai_id (*),
-        times_filhos:time!time_pai_id (*)
+        gestor:pessoa!gestor_id(*),
+        time_pai:time!time_pai_id(*),
+        times_filhos:time!time_pai_id(*)
       `)
       .eq('id', id)
       .single()

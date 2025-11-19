@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,54 +11,71 @@ import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { ChevronRight, Info, Plus, X, Search, Users } from 'lucide-react'
+import { ChevronRight, Info, Plus, X, Search, Users, Loader2 } from 'lucide-react'
+import { createTime } from '@/app/actions/times.actions'
+import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
+import { toast as sonnerToast } from 'sonner'
 
 export default function NovoTimePage() {
   const { toast } = useToast()
+  const router = useRouter()
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
+
+  // Real data from database
+  const [availableTeams, setAvailableTeams] = useState<Array<{ id: string; nome: string }>>([])
+  const [availableManagers, setAvailableManagers] = useState<Array<{ id: string; nome: string; cargo: string | null; time: string | null }>>([])
+  const [availablePositions, setAvailablePositions] = useState<Array<{ id: string; nome: string }>>([])
+
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
-    timePai: null as any,
-    gestor: null as any,
+    timePaiId: null as string | null,
+    gestorId: null as string | null,
     temVagas: false,
     vagas: [] as any[],
     status: 'ativo'
   })
-  
+
   const [showPersonSelector, setShowPersonSelector] = useState(false)
   const [showParentSelect, setShowParentSelect] = useState(false)
   const [showManagerSelect, setShowManagerSelect] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [selectedPeople, setSelectedPeople] = useState([] as string[])
+  const [selectedGestor, setSelectedGestor] = useState<{ id: string; nome: string; cargo: string | null; time: string | null } | null>(null)
 
-  // Mock data
-  const availableTeams = [
-    { id: 1, nome: 'Tecnologia', nivel: 0, path: 'Tecnologia' },
-    { id: 3, nome: 'Dados', nivel: 1, path: 'Tecnologia > Dados', paiId: 1 },
-    { id: 4, nome: 'Produto', nivel: 0, path: 'Produto' },
-    { id: 5, nome: 'Design', nivel: 1, path: 'Produto > Design', paiId: 4 },
-    { id: 6, nome: 'Marketing', nivel: 0, path: 'Marketing' },
-  ]
+  // Load data on mount
+  useEffect(() => {
+    loadData()
+  }, [])
 
-  const availableManagers = [
-    { id: 'g1', nome: 'Maria Santos', cargo: 'Senior Engineer', time: 'Engenharia', avatar: '/diverse-woman-portrait.png' },
-    { id: 'g2', nome: 'João Silva', cargo: 'Product Manager', time: 'Produto', avatar: '/man.jpg' },
-    { id: 'g3', nome: 'Ana Costa', cargo: 'Designer', time: 'Design', avatar: '/tech-woman.png' },
-    { id: 'g4', nome: 'Pedro Lima', cargo: 'Tech Lead', time: 'Backend', avatar: '/engineer-man.png' },
-    { id: 'g5', nome: 'Carla Mendes', cargo: 'Marketing Lead', time: 'Marketing', avatar: '/developer-woman.png' },
-  ]
+  async function loadData() {
+    try {
+      const [timesResult, pessoasResult, cargosResult] = await Promise.all([
+        getTimesParaFiltro(),
+        getPessoasParaGestor(),
+        getCargosParaFiltro(),
+      ])
 
-  const availablePositions = [
-    'Engineer I', 'Engineer II', 'Senior Engineer', 'Tech Lead', 
-    'Product Manager', 'Designer', 'Marketing Analyst'
-  ]
+      if (timesResult.success && timesResult.data) {
+        setAvailableTeams(timesResult.data)
+      }
 
-  const availablePeople = [
-    { id: 'p1', nome: 'Alice Johnson', cargo: 'Software Engineer', time: 'Tecnologia', avatar: '/software-engineer.png' },
-    { id: 'p2', nome: 'Bob Smith', cargo: 'Product Designer', time: 'Produto', avatar: '/product-designer.png' },
-    { id: 'p3', nome: 'Charlie Brown', cargo: 'Data Analyst', time: 'Dados', avatar: '/data-analyst.png' },
-    { id: 'p4', nome: 'Diana Prince', cargo: 'Marketing Specialist', time: 'Marketing', avatar: '/marketing-specialist.png' },
-  ]
+      if (pessoasResult.success && pessoasResult.data) {
+        setAvailableManagers(pessoasResult.data)
+      }
+
+      if (cargosResult.success && cargosResult.data) {
+        setAvailablePositions(cargosResult.data)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      sonnerToast.error('Erro ao carregar formulário')
+    } finally {
+      setDataLoading(false)
+    }
+  }
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -88,8 +106,8 @@ export default function NovoTimePage() {
     setIsDirty(true)
   }
 
-  const handleSave = () => {
-    if (!formData.nome || !formData.gestor) {
+  const handleSave = async () => {
+    if (!formData.nome || !formData.gestorId) {
       toast({
         title: 'Campos obrigatórios',
         description: 'Preencha todos os campos obrigatórios (*)',
@@ -98,12 +116,40 @@ export default function NovoTimePage() {
       return
     }
 
-    console.log('Saving team:', formData)
-    toast({
-      title: '🦖 Time salvo com sucesso!',
-      description: `O time "${formData.nome}" foi criado.`
-    })
-    setIsDirty(false)
+    setIsLoading(true)
+
+    try {
+      const timeData = {
+        nome: formData.nome.trim(),
+        descricao: formData.descricao.trim() || null,
+        time_pai_id: formData.timePaiId,
+        gestor_id: formData.gestorId,
+        ativo: true,
+      }
+
+      const result = await createTime(timeData)
+
+      if (result.success) {
+        sonnerToast.success('🦖 Time criado com sucesso!')
+        setIsDirty(false)
+        router.push('/times')
+      } else {
+        toast({
+          title: 'Erro ao criar time',
+          description: result.error || 'Ocorreu um erro ao criar o time',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Erro ao criar time:', error)
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro inesperado ao criar o time',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleCancel = () => {
@@ -120,6 +166,20 @@ export default function NovoTimePage() {
     // Logic to add selected people to the team
     console.log('Adding people to team:', selectedPeople)
     setShowPersonSelector(false)
+  }
+
+  // Loading state
+  if (dataLoading) {
+    return (
+      <DashboardShell>
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+            <p className="text-muted-foreground">Carregando formulário...</p>
+          </div>
+        </div>
+      </DashboardShell>
+    )
   }
 
   return (
@@ -200,24 +260,23 @@ export default function NovoTimePage() {
                 onClick={() => setShowManagerSelect(true)}
                 className="w-full h-11 px-3 text-left border rounded-md hover:border-primary transition-colors flex items-center justify-between"
               >
-                {formData.gestor ? (
+                {selectedGestor ? (
                   <div className="flex items-center gap-3">
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={formData.gestor.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>{formData.gestor.nome[0]}</AvatarFallback>
+                      <AvatarFallback>{selectedGestor.nome[0]}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">
-                      <span className="text-foreground text-sm">{formData.gestor.nome}</span>
-                      <span className="text-xs text-muted-foreground">{formData.gestor.cargo}</span>
+                      <span className="text-foreground text-sm">{selectedGestor.nome}</span>
+                      <span className="text-xs text-muted-foreground">{selectedGestor.cargo || 'Sem cargo'}</span>
                     </div>
                   </div>
                 ) : (
-                  <span className="text-muted-foreground">Busque por nome ou email</span>
+                  <span className="text-muted-foreground">Selecione o gestor do time</span>
                 )}
                 <ChevronRight className="w-4 h-4" />
               </button>
-              {formData.gestor && (
-                <p className="text-xs text-muted-foreground">Atualmente em: {formData.gestor.time}</p>
+              {selectedGestor && selectedGestor.time && (
+                <p className="text-xs text-muted-foreground">Atualmente em: {selectedGestor.time}</p>
               )}
             </div>
           </div>
@@ -257,7 +316,7 @@ export default function NovoTimePage() {
                       >
                         <option value="">Selecione um cargo</option>
                         {availablePositions.map(pos => (
-                          <option key={pos} value={pos}>{pos}</option>
+                          <option key={pos.id} value={pos.id}>{pos.nome}</option>
                         ))}
                       </select>
                     </div>
@@ -346,11 +405,18 @@ export default function NovoTimePage() {
           </div>
 
           <div className="flex items-center justify-between pt-6 border-t">
-            <Button variant="ghost" onClick={handleCancel}>
+            <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button onClick={handleSave} className="bg-primary hover:bg-primary/90">
-              Salvar Time
+            <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                'Salvar Time'
+              )}
             </Button>
           </div>
         </div>
@@ -398,25 +464,33 @@ export default function NovoTimePage() {
               <DialogDescription>Escolha o gestor do time</DialogDescription>
             </DialogHeader>
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {availableManagers.map(manager => (
-                <button
-                  key={manager.id}
-                  onClick={() => {
-                    handleInputChange('gestor', manager)
-                    setShowManagerSelect(false)
-                  }}
-                  className="w-full p-3 text-left border rounded-md hover:bg-accent transition-colors flex items-center gap-3"
-                >
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={manager.avatar || "/placeholder.svg"} />
-                    <AvatarFallback>{manager.nome[0]}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-medium">{manager.nome}</div>
-                    <div className="text-xs text-muted-foreground">{manager.cargo} - {manager.time}</div>
-                  </div>
-                </button>
-              ))}
+              {availableManagers.length > 0 ? (
+                availableManagers.map(manager => (
+                  <button
+                    key={manager.id}
+                    onClick={() => {
+                      handleInputChange('gestorId', manager.id)
+                      setSelectedGestor(manager)
+                      setShowManagerSelect(false)
+                    }}
+                    className="w-full p-3 text-left border rounded-md hover:bg-accent transition-colors flex items-center gap-3"
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarFallback>{manager.nome[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium">{manager.nome}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {manager.cargo || 'Sem cargo'} {manager.time ? `- ${manager.time}` : ''}
+                      </div>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Nenhuma pessoa disponível para seleção
+                </p>
+              )}
             </div>
           </DialogContent>
         </Dialog>

@@ -141,8 +141,8 @@ export interface TimeComRelacionamentos extends Time {
  * Cargo com relacionamentos expandidos
  */
 export interface CargoComRelacionamentos extends Cargo {
-  trilha: TrilhaCarreira
-  nivel: Nivel
+  trilha: TrilhaCarreira | null
+  nivel: Nivel | null
 }
 
 /**
