@@ -15,7 +15,7 @@ import { getCurrentUser } from '@/app/actions/auth.actions'
  * - Autenticação é verificada no layout
  * - Revalida cache a cada 30 segundos
  */
-export const revalidate = 30 // Revalidar a cada 30 segundos
+export const dynamic = 'force-dynamic'
 
 type PageProps = {
   searchParams: Promise<{

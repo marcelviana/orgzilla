@@ -15,7 +15,7 @@ import { getCurrentUser } from "@/app/actions/auth.actions"
  * - Autenticação é verificada no layout
  * - Revalida cache a cada 60 segundos
  */
-export const revalidate = 60 // Revalidar a cada 60 segundos
+export const dynamic = 'force-dynamic'
 
 export default async function Page() {
   // Buscar usuário atual e dados do dashboard em paralelo

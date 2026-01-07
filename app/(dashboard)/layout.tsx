@@ -11,6 +11,8 @@ import { UserProvider } from '@/components/providers/user-provider'
  * Fornece dados do usuário autenticado via Context (UserProvider)
  * para todos os componentes filhos.
  */
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardLayout({
   children,
 }: {
