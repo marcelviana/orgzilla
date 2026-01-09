@@ -353,6 +353,9 @@ function LoginForm() {
   )
 }
 
+// Force dynamic rendering to prevent hydration mismatches from browser extensions
+export const dynamic = 'force-dynamic'
+
 export default function LoginPage() {
   return (
     <Suspense fallback={
