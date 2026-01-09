@@ -63,12 +63,40 @@ import { cookies } from 'next/headers'
  * }
  * ```
  */
+/**
+ * Gets the Supabase API key for server-side operations.
+ * 
+ * According to Supabase docs (https://supabase.com/docs/guides/api/api-keys):
+ * - Publishable keys (sb_publishable_...) are the NEW recommended way
+ * - Anon keys (JWT-based) are the LEGACY way
+ * - Both serve the same purpose (low privilege, client-safe)
+ * 
+ * This function prefers the publishable key but falls back to anon key for backward compatibility.
+ */
+function getSupabaseApiKey(): string {
+  // Prefer publishable key (new, recommended)
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  if (publishableKey) {
+    return publishableKey
+  }
+  
+  // Fallback to anon key (legacy, still supported)
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (anonKey) {
+    return anonKey
+  }
+  
+  throw new Error(
+    'Missing Supabase API key. Set either NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (recommended) or NEXT_PUBLIC_SUPABASE_ANON_KEY (legacy).'
+  )
+}
+
 export async function createClient() {
   const cookieStore = await cookies()
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseApiKey(),
     {
       cookies: {
         getAll() {

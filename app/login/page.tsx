@@ -84,7 +84,9 @@ function LoginForm() {
       console.log('[Login] Iniciando autenticação...')
 
       // Verificar se Supabase está configurado
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      // Support both publishable key (new, recommended) and anon key (legacy)
+      const hasApiKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !hasApiKey) {
         toast.error('⚠️ Supabase não configurado. Veja o arquivo CONFIGURAR-SUPABASE.md')
         console.error('[Login] Variáveis de ambiente do Supabase não configuradas!')
         setIsLoading(false)

@@ -22,9 +22,21 @@ export async function proxy(request: NextRequest) {
     request,
   })
 
+  // Validar variáveis de ambiente
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  // Prefer publishable key (new, recommended) but fallback to anon key (legacy)
+  const supabaseApiKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseApiKey) {
+    // Se não estiver configurado, permitir acesso mas sem autenticação
+    // Isso permite desenvolvimento local sem Supabase configurado
+    console.warn('[Proxy] Supabase não configurado. Variáveis de ambiente ausentes.')
+    return supabaseResponse
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseApiKey,
     {
       cookies: {
         getAll() {
