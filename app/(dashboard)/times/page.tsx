@@ -188,7 +188,12 @@ export default function TimesPage() {
     setExpandedTeams(newExpanded)
   }
 
-  const filterTeams = (teams: Team[], query: string): Team[] => {
+  const filterTeams = (teams: Team[] | undefined, query: string): Team[] => {
+    // Guard against undefined or null
+    if (!teams || !Array.isArray(teams)) {
+      return []
+    }
+
     return teams.filter((team) => {
       const gestorNome = team.gestor?.nome || ''
       const matchesSearch = team.nome.toLowerCase().includes(query.toLowerCase()) ||
@@ -202,7 +207,7 @@ export default function TimesPage() {
         return true
       }
 
-      // Check children recursively
+      // Check children recursively (handle undefined timesFilhos)
       const filteredChildren = filterTeams(team.timesFilhos, query)
       return filteredChildren.length > 0
     }).map((team) => ({
@@ -213,7 +218,12 @@ export default function TimesPage() {
 
   const filteredTeams = filterTeams(teams, searchQuery)
 
-  const flattenTeams = (teams: Team[], level = 0): Array<Team & { level: number }> => {
+  const flattenTeams = (teams: Team[] | undefined, level = 0): Array<Team & { level: number }> => {
+    // Guard against undefined or null
+    if (!teams || !Array.isArray(teams)) {
+      return []
+    }
+
     return teams.flatMap((team) => [
       { ...team, level },
       ...flattenTeams(team.timesFilhos, level + 1),
