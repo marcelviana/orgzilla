@@ -46,6 +46,7 @@ import {
   getGestoresParaFiltro,
   softDeleteTime,
   type TimeComEstatisticas,
+  type TimeHierarquico,
 } from '@/app/actions/times.actions'
 import Link from 'next/link'
 
@@ -55,6 +56,19 @@ type Team = TimeComEstatisticas & {
   vagasAbertas: number
   projetos: number
   timesFilhos: Team[]
+}
+
+function mapTimeHierarquicoToTeam(h: TimeHierarquico): Team {
+  return {
+    ...h,
+    gestor: h.gestor
+      ? { nome: h.gestor.nome, avatar: null }
+      : null,
+    numeroPessoas: h.membros,
+    vagasAbertas: h.vagas,
+    projetos: 0,
+    timesFilhos: h.filhos.map(mapTimeHierarquicoToTeam),
+  } as Team
 }
 
 type ViewMode = 'cards' | 'tree' | 'table'
@@ -115,7 +129,7 @@ export default function TimesPage() {
     try {
       const result = await getTimesHierarquia()
       if (result.success && result.data) {
-        setTeams(result.data as Team[])
+        setTeams(result.data.map(mapTimeHierarquicoToTeam))
       } else {
         toast({
           title: 'Erro ao carregar times',
