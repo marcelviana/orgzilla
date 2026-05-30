@@ -2,11 +2,23 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser, checkIsAdmin } from './auth.actions'
-import { requireAdmin } from '@/lib/middleware'
-import { PessoaRepository } from '@/lib/repositories'
-import type { PessoaInsert, PessoaUpdate } from '@/lib/types'
+import { getCurrentUser } from './auth.actions'
+import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
+import { PessoaRepository, PessoaRemuneracaoRepository } from '@/lib/repositories'
+import { PessoaService, PermissaoService } from '@/lib/services'
+import type { PessoaInsert, PessoaUpdate, PessoaRemuneracao } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
+
+/**
+ * Campos de remuneração coletados pelos formulários (SENSÍVEL - LGPD).
+ * São separados de PessoaInsert/PessoaUpdate e gravados em pessoa_remuneracao
+ * apenas no fluxo do gestor, via PessoaService.
+ */
+type RemuneracaoFields = {
+  salario_atual?: number | null
+  data_ultimo_reajuste?: string | null
+  motivo_ultimo_reajuste?: string | null
+}
 
 export type PessoaListItem = {
   id: string
@@ -88,8 +100,6 @@ export async function getPessoasComFiltros(
     }
 
     const isGestor = usuario.tipo_perfil === 'gestor'
-    const isAdmin = usuario.tipo_perfil === 'admin'
-    const podeVerSalarios = isGestor // Apenas gestores veem salários
     const timeId = usuario.pessoa?.time?.id
 
     // Para gestores, buscar IDs de todos os times da hierarquia
@@ -98,8 +108,8 @@ export async function getPessoasComFiltros(
       timeIdsHierarquia = await getTimeHierarchyIds(timeId)
     }
 
-    // Campos base (sem salários)
-    let selectFields = `
+    // Campos base (sem salários — remuneração vive em pessoa_remuneracao)
+    const selectFields = `
       id,
       nome,
       nome_social,
@@ -108,6 +118,7 @@ export async function getPessoasComFiltros(
       foto_url,
       status,
       data_entrada,
+      time_id,
       cargo:cargo_id (
         id,
         nome,
@@ -130,43 +141,6 @@ export async function getPessoasComFiltros(
         )
       )
     `
-
-    // Adicionar campos de salário apenas para gestores
-    if (podeVerSalarios) {
-      selectFields = `
-        id,
-        nome,
-        nome_social,
-        email_corporativo,
-        email_pessoal,
-        foto_url,
-        status,
-        data_entrada,
-        salario_atual,
-        data_ultimo_reajuste,
-        cargo:cargo_id (
-          id,
-          nome,
-          nivel:nivel_id (
-            nome
-          ),
-          trilha:trilha_id (
-            nome
-          )
-        ),
-        time:time_id (
-          id,
-          nome
-        ),
-        tags:pessoa_tag (
-          tag:tag_id (
-            id,
-            nome,
-            cor
-          )
-        )
-      `
-    }
 
     // Query base
     let query = supabase
@@ -213,10 +187,18 @@ export async function getPessoasComFiltros(
 
     const totalPages = Math.ceil((count || 0) / pagination.itemsPerPage)
 
+    let pessoasList = ((pessoas as any[]) || []) as PessoaListItem[]
+
+    // Remuneração (SENSÍVEL - LGPD): apenas gestores, e somente para pessoas da
+    // sua hierarquia. Admin e visualizador nunca recebem salário.
+    if (isGestor) {
+      pessoasList = await anexarRemuneracaoLista(supabase, pessoasList)
+    }
+
     return {
       success: true,
       data: {
-        pessoas: (pessoas as PessoaListItem[]) || [],
+        pessoas: pessoasList,
         total: count || 0,
         page: pagination.page,
         totalPages,
@@ -397,6 +379,56 @@ async function getTimeHierarchyIds(timeId: string): Promise<string[]> {
 }
 
 /**
+ * Anexa a remuneração (SENSÍVEL - LGPD) aos itens da lista, somente para gestores
+ * e somente para pessoas dentro da hierarquia do gestor (regra reutilizada de
+ * PermissaoService). Admin e visualizador nunca chegam aqui.
+ */
+async function anexarRemuneracaoLista(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  pessoas: PessoaListItem[]
+): Promise<PessoaListItem[]> {
+  if (pessoas.length === 0) {
+    return pessoas
+  }
+
+  const usuario = await getUsuarioLogado()
+  if (!usuario || usuario.tipo_perfil !== 'gestor') {
+    return pessoas
+  }
+
+  const permissaoService = new PermissaoService(supabase)
+  const hierarquiaIds = await permissaoService.getTimesHierarquia(usuario)
+  if (hierarquiaIds.length === 0) {
+    return pessoas
+  }
+
+  // Apenas pessoas dentro da hierarquia do gestor podem ter salário exposto
+  const idsComSalario = pessoas
+    .filter((p) => p.time?.id && hierarquiaIds.includes(p.time.id))
+    .map((p) => p.id)
+
+  if (idsComSalario.length === 0) {
+    return pessoas
+  }
+
+  const remuneracaoRepo = new PessoaRemuneracaoRepository(supabase)
+  const remuneracoes = await remuneracaoRepo.findByPessoaIds(idsComSalario)
+  const mapa = new Map(remuneracoes.map((r) => [r.pessoa_id, r]))
+
+  return pessoas.map((p) => {
+    const rem = mapa.get(p.id)
+    if (!rem) {
+      return p
+    }
+    return {
+      ...p,
+      salario_atual: rem.salario_atual,
+      data_ultimo_reajuste: rem.data_ultimo_reajuste,
+    }
+  })
+}
+
+/**
  * Exporta pessoas para CSV
  */
 export async function exportPessoasCSV(
@@ -474,11 +506,19 @@ export async function getPessoaById(id: string): Promise<ActionResult<any>> {
       }
     }
 
-    // Filtrar salário se não for gestor
-    const podeVerSalarios = usuario.tipo_perfil === 'gestor'
-    if (!podeVerSalarios) {
-      const { salario_atual, data_ultimo_reajuste, motivo_ultimo_reajuste, ...pessoaSemSalario } = pessoa as any
-      return { success: true, data: pessoaSemSalario }
+    // Remuneração (SENSÍVEL - LGPD): vive em pessoa_remuneracao e só é anexada
+    // quando o usuário pode ver salário (gestor da hierarquia). A decisão fica
+    // no Service; admin e visualizador nunca recebem a chave `remuneracao`.
+    const usuarioCompleto = await getUsuarioLogado()
+    if (usuarioCompleto) {
+      const permissaoService = new PermissaoService(supabase)
+      const podeVerSalario = await permissaoService.podeVerSalario(usuarioCompleto, id)
+
+      if (podeVerSalario) {
+        const pessoaService = new PessoaService(supabase)
+        const remuneracao = await pessoaService.buscarRemuneracao(usuarioCompleto, id)
+        return { success: true, data: { ...pessoa, remuneracao: remuneracao ?? null } }
+      }
     }
 
     return { success: true, data: pessoa }
@@ -492,7 +532,7 @@ export async function getPessoaById(id: string): Promise<ActionResult<any>> {
  * Cria uma nova pessoa
  * Permissões: Admin ou Gestor (gestor só cria em sua hierarquia)
  */
-export async function createPessoa(dados: PessoaInsert): Promise<ActionResult<string>> {
+export async function createPessoa(dados: PessoaInsert & RemuneracaoFields): Promise<ActionResult<string>> {
   try {
     const supabase = await createClient()
     const usuario = await getCurrentUser()
@@ -509,11 +549,14 @@ export async function createPessoa(dados: PessoaInsert): Promise<ActionResult<st
       return { success: false, error: 'Sem permissão para criar pessoas' }
     }
 
+    // Separar remuneração (SENSÍVEL - LGPD) dos dados da pessoa
+    const { salario_atual, data_ultimo_reajuste, motivo_ultimo_reajuste, ...dadosPessoa } = dados
+
     // Gestor só pode criar em times da sua hierarquia
-    if (isGestor && dados.time_id && usuario.pessoa?.time?.id) {
+    if (isGestor && dadosPessoa.time_id && usuario.pessoa?.time?.id) {
       const timeIdsHierarquia = await getTimeHierarchyIds(usuario.pessoa.time.id)
 
-      if (!timeIdsHierarquia.includes(dados.time_id)) {
+      if (!timeIdsHierarquia.includes(dadosPessoa.time_id)) {
         return { success: false, error: 'Sem permissão para criar pessoa neste time' }
       }
     }
@@ -521,20 +564,39 @@ export async function createPessoa(dados: PessoaInsert): Promise<ActionResult<st
     const pessoaRepo = new PessoaRepository(supabase)
 
     // Validar email corporativo único
-    if (dados.email_corporativo) {
-      const emailExists = await pessoaRepo.findByEmailCorporativo(dados.email_corporativo)
+    if (dadosPessoa.email_corporativo) {
+      const emailExists = await pessoaRepo.findByEmailCorporativo(dadosPessoa.email_corporativo)
       if (emailExists) {
         return { success: false, error: 'Email corporativo já está em uso' }
       }
     }
 
-    // Criar pessoa
-    const novaPessoa = await pessoaRepo.create(dados)
+    // Criar pessoa (sem salário)
+    const novaPessoa = await pessoaRepo.create(dadosPessoa)
+
+    // Remuneração: gravada APENAS no fluxo do gestor. O fluxo do admin nunca
+    // toca remuneração. A decisão de permissão fica no PessoaService.
+    const temRemuneracao =
+      salario_atual != null || data_ultimo_reajuste != null || motivo_ultimo_reajuste != null
+    if (isGestor && temRemuneracao) {
+      const usuarioCompleto = await getUsuarioLogado()
+      if (usuarioCompleto) {
+        const pessoaService = new PessoaService(supabase)
+        const remResult = await pessoaService.salvarRemuneracao(usuarioCompleto, novaPessoa.id, {
+          salario_atual,
+          data_ultimo_reajuste,
+          motivo_ultimo_reajuste,
+        })
+        if (!remResult.success) {
+          console.error('[createPessoa] Remuneração não gravada:', remResult.error)
+        }
+      }
+    }
 
     // Revalidar páginas
     revalidatePath('/pessoas')
-    if (dados.time_id) {
-      revalidatePath(`/times/${dados.time_id}`)
+    if (dadosPessoa.time_id) {
+      revalidatePath(`/times/${dadosPessoa.time_id}`)
     }
 
     return { success: true, data: novaPessoa.id }
@@ -548,7 +610,7 @@ export async function createPessoa(dados: PessoaInsert): Promise<ActionResult<st
  * Atualiza uma pessoa existente
  * Permissões: Admin ou Gestor (gestor só atualiza em sua hierarquia)
  */
-export async function updatePessoa(id: string, dados: PessoaUpdate): Promise<ActionResult> {
+export async function updatePessoa(id: string, dados: PessoaUpdate & RemuneracaoFields): Promise<ActionResult> {
   try {
     const supabase = await createClient()
     const usuario = await getCurrentUser()
@@ -564,6 +626,9 @@ export async function updatePessoa(id: string, dados: PessoaUpdate): Promise<Act
     if (!isAdmin && !isGestor) {
       return { success: false, error: 'Sem permissão para atualizar pessoas' }
     }
+
+    // Separar remuneração (SENSÍVEL - LGPD) dos dados da pessoa
+    const { salario_atual, data_ultimo_reajuste, motivo_ultimo_reajuste, ...dadosPessoa } = dados
 
     const pessoaRepo = new PessoaRepository(supabase)
 
@@ -582,21 +647,40 @@ export async function updatePessoa(id: string, dados: PessoaUpdate): Promise<Act
       }
 
       // Se está mudando de time, verificar se o novo time está na hierarquia
-      if (dados.time_id && !timeIdsHierarquia.includes(dados.time_id)) {
+      if (dadosPessoa.time_id && !timeIdsHierarquia.includes(dadosPessoa.time_id)) {
         return { success: false, error: 'Sem permissão para mover pessoa para este time' }
       }
     }
 
     // Validar email corporativo único (se alterado)
-    if (dados.email_corporativo && dados.email_corporativo !== pessoaAtual.email_corporativo) {
-      const emailExists = await pessoaRepo.findByEmailCorporativo(dados.email_corporativo)
+    if (dadosPessoa.email_corporativo && dadosPessoa.email_corporativo !== pessoaAtual.email_corporativo) {
+      const emailExists = await pessoaRepo.findByEmailCorporativo(dadosPessoa.email_corporativo)
       if (emailExists) {
         return { success: false, error: 'Email corporativo já está em uso' }
       }
     }
 
-    // Atualizar pessoa
-    await pessoaRepo.update(id, dados)
+    // Atualizar pessoa (sem salário)
+    await pessoaRepo.update(id, dadosPessoa)
+
+    // Remuneração: gravada APENAS no fluxo do gestor. O fluxo do admin nunca
+    // toca remuneração. A decisão de permissão fica no PessoaService.
+    const temRemuneracao =
+      salario_atual != null || data_ultimo_reajuste != null || motivo_ultimo_reajuste != null
+    if (isGestor && temRemuneracao) {
+      const usuarioCompleto = await getUsuarioLogado()
+      if (usuarioCompleto) {
+        const pessoaService = new PessoaService(supabase)
+        const remResult = await pessoaService.salvarRemuneracao(usuarioCompleto, id, {
+          salario_atual,
+          data_ultimo_reajuste,
+          motivo_ultimo_reajuste,
+        })
+        if (!remResult.success) {
+          console.error('[updatePessoa] Remuneração não gravada:', remResult.error)
+        }
+      }
+    }
 
     // Revalidar páginas
     revalidatePath('/pessoas')
@@ -604,8 +688,8 @@ export async function updatePessoa(id: string, dados: PessoaUpdate): Promise<Act
     if (pessoaAtual.time_id) {
       revalidatePath(`/times/${pessoaAtual.time_id}`)
     }
-    if (dados.time_id && dados.time_id !== pessoaAtual.time_id) {
-      revalidatePath(`/times/${dados.time_id}`)
+    if (dadosPessoa.time_id && dadosPessoa.time_id !== pessoaAtual.time_id) {
+      revalidatePath(`/times/${dadosPessoa.time_id}`)
     }
 
     return { success: true }

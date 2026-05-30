@@ -1,6 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Pessoa, PessoaInsert, PessoaUpdate, Usuario, StatusPessoa } from '@/lib/types'
-import { PessoaRepository } from '@/lib/repositories'
+import type {
+  Database,
+  Pessoa,
+  PessoaInsert,
+  PessoaUpdate,
+  PessoaRemuneracao,
+  Usuario,
+  StatusPessoa,
+} from '@/lib/types'
+import { PessoaRepository, PessoaRemuneracaoRepository } from '@/lib/repositories'
 import { AuditoriaService } from './auditoria.service'
 import { HistoricoService } from './historico.service'
 import { PermissaoService } from './permissao.service'
@@ -20,6 +28,7 @@ import { PermissaoService } from './permissao.service'
 export class PessoaService {
   private supabase: SupabaseClient<Database>
   private pessoaRepo: PessoaRepository
+  private remuneracaoRepo: PessoaRemuneracaoRepository
   private auditoriaService: AuditoriaService
   private historicoService: HistoricoService
   private permissaoService: PermissaoService
@@ -27,6 +36,7 @@ export class PessoaService {
   constructor(supabase: SupabaseClient<Database>) {
     this.supabase = supabase
     this.pessoaRepo = new PessoaRepository(supabase)
+    this.remuneracaoRepo = new PessoaRemuneracaoRepository(supabase)
     this.auditoriaService = new AuditoriaService(supabase)
     this.historicoService = new HistoricoService(supabase)
     this.permissaoService = new PermissaoService(supabase)
@@ -82,16 +92,8 @@ export class PessoaService {
         await this.historicoService.criarHistoricoTime(pessoa.id, pessoa.time_id, dados.data_entrada || hoje)
       }
 
-      // Histórico de reajuste (se salário informado)
-      if (pessoa.salario_atual) {
-        await this.historicoService.criarHistoricoReajuste(
-          pessoa.id,
-          null, // sem salário anterior
-          pessoa.salario_atual,
-          dados.data_ultimo_reajuste || hoje,
-          dados.motivo_ultimo_reajuste || 'Salário inicial'
-        )
-      }
+      // NOTA: a remuneração (salário) é gravada separadamente via salvarRemuneracao,
+      // apenas no fluxo do gestor (dado sensível LGPD em pessoa_remuneracao).
 
       // 5. AUDITORIA
       await this.auditoriaService.registrarCriacao('pessoa', pessoa.id, pessoa, usuarioLogado.id)
@@ -141,7 +143,6 @@ export class PessoaService {
       // 4. DETECTAR MUDANÇAS
       const mudouCargo = dados.cargo_id && dados.cargo_id !== pessoaAnterior.cargo_id
       const mudouTime = dados.time_id && dados.time_id !== pessoaAnterior.time_id
-      const mudouSalario = dados.salario_atual !== undefined && dados.salario_atual !== pessoaAnterior.salario_atual
 
       // 5. ATUALIZAR PESSOA
       const pessoa = await this.pessoaRepo.update(id, dados)
@@ -157,24 +158,8 @@ export class PessoaService {
         await this.historicoService.processarMudancaTime(id, dados.time_id)
       }
 
-      // Mudança de salário
-      if (mudouSalario && dados.salario_atual !== undefined) {
-        // Verifica permissão para editar salário
-        const podeEditarSalario = await this.permissaoService.podeEditarSalario(usuarioLogado, id)
-        if (!podeEditarSalario) {
-          return {
-            success: false,
-            error: 'Você não tem permissão para editar salários',
-          }
-        }
-
-        await this.historicoService.processarMudancaSalario(
-          id,
-          pessoaAnterior.salario_atual,
-          dados.salario_atual,
-          dados.motivo_ultimo_reajuste
-        )
-      }
+      // NOTA: a remuneração (salário) é atualizada separadamente via salvarRemuneracao,
+      // apenas no fluxo do gestor (dado sensível LGPD em pessoa_remuneracao).
 
       // 7. AUDITORIA
       await this.auditoriaService.registrarMudancas('pessoa', id, pessoaAnterior, pessoa, usuarioLogado.id)
@@ -340,12 +325,83 @@ export class PessoaService {
       }
     }
 
-    // Validar salário (se informado)
-    if (dados.salario_atual !== undefined && dados.salario_atual !== null && dados.salario_atual < 0) {
-      return { valido: false, erro: 'Salário não pode ser negativo' }
+    return { valido: true }
+  }
+
+  // ==========================================================================
+  // REMUNERAÇÃO (SENSÍVEL - LGPD)
+  // ==========================================================================
+  //
+  // A decisão de QUEM pode ver/editar salário fica aqui (Service), reutilizando
+  // a regra de hierarquia já existente em PermissaoService. O Repository apenas
+  // acessa dados. Em profundidade, o banco ainda protege pessoa_remuneracao via
+  // RLS (apenas perfil 'gestor').
+
+  /**
+   * Busca a remuneração de uma pessoa, respeitando permissões.
+   *
+   * - Gestor: recebe a remuneração apenas de pessoas da sua hierarquia.
+   * - Admin e Visualizador: nunca recebem (retorna null).
+   */
+  async buscarRemuneracao(usuarioLogado: Usuario, pessoaId: string): Promise<PessoaRemuneracao | null> {
+    const podeVer = await this.permissaoService.podeVerSalario(usuarioLogado, pessoaId)
+    if (!podeVer) {
+      return null
     }
 
-    return { valido: true }
+    return await this.remuneracaoRepo.findByPessoaId(pessoaId)
+  }
+
+  /**
+   * Salva (cria/atualiza) a remuneração de uma pessoa, respeitando permissões.
+   *
+   * Apenas gestores da hierarquia podem gravar. Quando o salário muda, registra
+   * o histórico de reajuste (SENSÍVEL - LGPD).
+   */
+  async salvarRemuneracao(
+    usuarioLogado: Usuario,
+    pessoaId: string,
+    dados: RemuneracaoInput
+  ): Promise<ServiceResult<PessoaRemuneracao>> {
+    try {
+      // PERMISSÃO: só gestor da hierarquia edita salário
+      const podeEditar = await this.permissaoService.podeEditarSalario(usuarioLogado, pessoaId)
+      if (!podeEditar) {
+        return { success: false, error: 'Você não tem permissão para editar salários' }
+      }
+
+      // Validação básica
+      if (dados.salario_atual !== undefined && dados.salario_atual !== null && dados.salario_atual < 0) {
+        return { success: false, error: 'Salário não pode ser negativo' }
+      }
+
+      const hoje = new Date().toISOString().split('T')[0]
+      const remuneracaoAnterior = await this.remuneracaoRepo.findByPessoaId(pessoaId)
+
+      const remuneracao = await this.remuneracaoRepo.upsert({
+        pessoa_id: pessoaId,
+        salario_atual: dados.salario_atual ?? null,
+        data_ultimo_reajuste: dados.data_ultimo_reajuste ?? null,
+        motivo_ultimo_reajuste: dados.motivo_ultimo_reajuste ?? null,
+      })
+
+      // Histórico de reajuste quando o salário muda
+      const salarioAnterior = remuneracaoAnterior?.salario_atual ?? null
+      const salarioNovo = dados.salario_atual ?? null
+      if (salarioNovo !== null && salarioNovo !== salarioAnterior) {
+        await this.historicoService.processarMudancaSalario(
+          pessoaId,
+          salarioAnterior,
+          salarioNovo,
+          dados.motivo_ultimo_reajuste ?? undefined
+        )
+      }
+
+      return { success: true, data: remuneracao }
+    } catch (error) {
+      console.error('[PessoaService] Erro ao salvar remuneração:', error)
+      return { success: false, error: 'Erro ao salvar remuneração. Tente novamente.' }
+    }
   }
 }
 
@@ -357,6 +413,15 @@ export interface ServiceResult<T> {
   success: boolean
   data?: T
   error?: string
+}
+
+/**
+ * Dados de entrada para gravar remuneração (SENSÍVEL - LGPD)
+ */
+export interface RemuneracaoInput {
+  salario_atual?: number | null
+  data_ultimo_reajuste?: string | null
+  motivo_ultimo_reajuste?: string | null
 }
 
 interface ValidationResult {

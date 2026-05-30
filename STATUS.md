@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 29 de maio de 2026
+**Última atualização:** 30 de maio de 2026
 **Resumo de uma linha:** Fundação de backend construída e sólida; projeto paralisado no meio da migração mock → dados reais; documentação antiga descreve um estágio anterior ao código.
 
 ---
@@ -22,7 +22,8 @@ A documentação existente **não reflete o código atual** e é contraditória 
 
 ## 1. O que está construído e funcional
 
-- **Tipos** (`lib/types/database.ts`): 16 tabelas tipadas, com campos sensíveis marcados (`salario_atual // SENSITIVE - LGPD`).
+- **Tipos** (`lib/types/database.ts`): 17 tabelas tipadas. Os campos sensíveis de salário **saíram de `pessoa`** e vivem numa tabela 1:1 `pessoa_remuneracao` (`salario_atual`, `data_ultimo_reajuste`, `motivo_ultimo_reajuste`), marcada `// SENSITIVE - LGPD`.
+- **Separação de remuneração (concluída):** `pessoa_remuneracao` é acessada via `PessoaRemuneracaoRepository` → `PessoaService` (`buscarRemuneracao`/`salvarRemuneracao`), que centraliza a decisão de quem pode ver/editar salário reutilizando `PermissaoService` (gestor da hierarquia). Admin e visualizador nunca recebem nem gravam remuneração. UI de detalhe/criação/edição só mostra o salário para gestor.
 - **Repositories** (`lib/repositories/`): `base.repository.ts` com CRUD genérico, soft delete, contagens e existência; repositories por entidade.
 - **Services** (`lib/services/`): `AuthService`, `PermissaoService`, `AuditoriaService`, `HistoricoService`, `PessoaService`, `TimeService`, `VagaService`, com factory `createServices()`.
 - **Server Actions** reais: pessoas, times, projetos, usuários, níveis, dashboard — conectadas ao Supabase.
@@ -70,15 +71,17 @@ A arquitetura limpa documentada (Repository → Service → Action → UI) está
 
 ## 3. Riscos de segurança a confirmar/corrigir
 
-### 3.1 🔴 RLS provavelmente desligado (prioridade máxima)
-O script SQL principal em `CONFIGURAR-SUPABASE.md` cria as tabelas mas **nunca executa `ENABLE ROW LEVEL SECURITY` nem `CREATE POLICY`**. O `AUTENTICACAO.md` afirma "O Supabase protege os dados automaticamente com RLS" — **falso**: RLS é opt-in por tabela.
+### 3.1 ✅ Salário isolado em `pessoa_remuneracao` com RLS (gestor) — resolvido para salário
+O salário **não está mais na tabela `pessoa`**. Foi movido para `pessoa_remuneracao` (1:1, `ON DELETE CASCADE`), protegida por **RLS no banco que só permite acesso ao perfil `gestor`** (select/insert/update/delete). Isso resolve o problema de RLS por linha vs. por coluna: como `pessoa` continua legível por qualquer autenticado, era impossível esconder só a coluna de salário; com a tabela separada, o banco barra a leitura.
 
-Hoje a proteção de salário depende só de o código selecionar campos diferentes (`getPessoasComFiltros` monta `selectFields` sem salário para alguns perfis). **Se o RLS estiver desligado, qualquer usuário autenticado pode ler `salario_atual` direto pelo client Supabase**, ignorando essa seleção. Risco LGPD.
+Proteção em profundidade:
+- **Banco:** RLS em `pessoa_remuneracao` (apenas gestor).
+- **Aplicação:** `PessoaService` só busca/grava remuneração quando `PermissaoService.podeVerSalario/podeEditarSalario` autoriza (gestor da hierarquia). Admin e visualizador nunca recebem a chave `remuneracao` nem gravam salário.
 
-**Ação de verificação:** logar como `visualizador` e tentar `supabase.from('pessoa').select('salario_atual')`. Se retornar dado → RLS está desligado.
+⚠️ **Pendente (outras tabelas):** confirmar/ligar RLS nas demais tabelas e na `historico_reajuste` (também sensível). Corrigir a afirmação falsa "o Supabase protege automaticamente com RLS" no `AUTENTICACAO.md`.
 
-### 3.2 Regra de salário contraintuitiva
-Comentário em `pessoas.actions.ts`: Admin **não** vê salários, mas Gestor vê. Revisar se é intencional. Está codificado em comentário + seleção de campos, não numa regra central.
+### 3.2 Regra de salário — agora centralizada
+Admin **não** vê salários; Gestor vê (só da sua hierarquia); Visualizador não vê. A regra está centralizada em `PermissaoService` (`podeVerSalario`/`podeEditarSalario`) e aplicada pelo `PessoaService`, não mais em comentários + `selectFields` espalhados.
 
 ### 3.3 Auto-criação + OAuth sem restrição de domínio
 Se o login Google não estiver restrito a um domínio, qualquer conta Google se autentica e vira `visualizador` com leitura de todas as pessoas (exceto salário).
@@ -90,7 +93,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 ### 🟥 Agora — voltar a um estado sólido e confiável
 1. **Reconciliar a documentação** (este `STATUS.md` é o primeiro passo). Arquivar/atualizar `CLAUDE.md` e READMEs.
 2. **Resolver lockfiles e pins `"latest"`**: escolher npm *ou* pnpm, apagar o outro lockfile, fixar versões exatas, `install` limpo, confirmar `build`.
-3. **Verificar e ligar RLS** no banco real, com policy protegendo `salario_atual`. Corrigir a afirmação falsa no `AUTENTICACAO.md`.
+3. **Verificar e ligar RLS** no banco real. ✅ Salário já isolado em `pessoa_remuneracao` com RLS (gestor) — ver §3.1. Falta: RLS nas demais tabelas e em `historico_reajuste`; corrigir a afirmação falsa no `AUTENTICACAO.md`.
 4. **Inventário mock vs. real** (tabela da seção 2.1) e remover mocks já substituídos — começar por `mockUsers` órfão e troca de senha falsa em `perfil`.
 
 ### 🟨 Em seguida — consolidar a arquitetura

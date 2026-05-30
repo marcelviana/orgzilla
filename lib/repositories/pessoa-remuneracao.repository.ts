@@ -1,0 +1,97 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type {
+  Database,
+  PessoaRemuneracao,
+  PessoaRemuneracaoInsert,
+} from '@/lib/types'
+import { RepositoryError } from './base.repository'
+
+/**
+ * PessoaRemuneracao Repository
+ *
+ * Repository para acesso a dados da tabela 'pessoa_remuneracao' (1:1 com pessoa).
+ *
+ * ⚠️ SENSÍVEL - LGPD: a tabela é protegida por RLS no banco (apenas perfil
+ * 'gestor' consegue ler/gravar). Mesmo assim, NÃO coloque regra de permissão
+ * aqui — isso é responsabilidade do PessoaService. Este repository apenas
+ * acessa dados.
+ *
+ * NOTA: a chave primária é `pessoa_id` (não há coluna `id` nem `ativo`), por
+ * isso este repository não estende o BaseRepository.
+ */
+export class PessoaRemuneracaoRepository {
+  private readonly supabase: SupabaseClient<Database>
+  private readonly tableName = 'pessoa_remuneracao' as const
+
+  constructor(supabase: SupabaseClient<Database>) {
+    this.supabase = supabase
+  }
+
+  /**
+   * Busca a remuneração de uma pessoa
+   */
+  async findByPessoaId(pessoaId: string): Promise<PessoaRemuneracao | null> {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select('*')
+      .eq('pessoa_id', pessoaId)
+      .maybeSingle()
+
+    if (error) {
+      throw new RepositoryError('Erro ao buscar remuneração da pessoa', error)
+    }
+
+    return (data as PessoaRemuneracao) || null
+  }
+
+  /**
+   * Busca a remuneração de várias pessoas (para listas)
+   */
+  async findByPessoaIds(pessoaIds: string[]): Promise<PessoaRemuneracao[]> {
+    if (pessoaIds.length === 0) {
+      return []
+    }
+
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select('*')
+      .in('pessoa_id', pessoaIds)
+
+    if (error) {
+      throw new RepositoryError('Erro ao buscar remunerações', error)
+    }
+
+    return (data || []) as PessoaRemuneracao[]
+  }
+
+  /**
+   * Cria ou atualiza a remuneração de uma pessoa (upsert pela PK pessoa_id)
+   */
+  async upsert(dados: PessoaRemuneracaoInsert): Promise<PessoaRemuneracao> {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .upsert(dados as any, { onConflict: 'pessoa_id' })
+      .select()
+      .single()
+
+    if (error) {
+      throw new RepositoryError('Erro ao salvar remuneração', error)
+    }
+
+    return data as PessoaRemuneracao
+  }
+
+  /**
+   * Remove a remuneração de uma pessoa
+   */
+  async deleteByPessoaId(pessoaId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from(this.tableName)
+      .delete()
+      .eq('pessoa_id', pessoaId)
+
+    if (error) {
+      throw new RepositoryError('Erro ao remover remuneração', error)
+    }
+  }
+}

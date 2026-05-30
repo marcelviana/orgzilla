@@ -43,6 +43,9 @@ export type Cargo = Database['public']['Tables']['cargo']['Row']
 export type Time = Database['public']['Tables']['time']['Row']
 export type Pessoa = Database['public']['Tables']['pessoa']['Row']
 
+// Remuneração (SENSÍVEL - LGPD: tabela 1:1 com pessoa, acesso só gestor via RLS)
+export type PessoaRemuneracao = Database['public']['Tables']['pessoa_remuneracao']['Row']
+
 // Project/Product tables
 export type ProjetoProduto = Database['public']['Tables']['projeto_produto']['Row']
 export type PessoaProjetoProduto = Database['public']['Tables']['pessoa_projeto_produto']['Row']
@@ -73,6 +76,7 @@ export type TrilhaCarreiraInsert = Database['public']['Tables']['trilha_carreira
 export type CargoInsert = Database['public']['Tables']['cargo']['Insert']
 export type TimeInsert = Database['public']['Tables']['time']['Insert']
 export type PessoaInsert = Database['public']['Tables']['pessoa']['Insert']
+export type PessoaRemuneracaoInsert = Database['public']['Tables']['pessoa_remuneracao']['Insert']
 export type ProjetoProdutoInsert = Database['public']['Tables']['projeto_produto']['Insert']
 export type PessoaProjetoProdutoInsert = Database['public']['Tables']['pessoa_projeto_produto']['Insert']
 export type VagaTimeInsert = Database['public']['Tables']['vaga_time']['Insert']
@@ -90,6 +94,7 @@ export type TrilhaCarreiraUpdate = Database['public']['Tables']['trilha_carreira
 export type CargoUpdate = Database['public']['Tables']['cargo']['Update']
 export type TimeUpdate = Database['public']['Tables']['time']['Update']
 export type PessoaUpdate = Database['public']['Tables']['pessoa']['Update']
+export type PessoaRemuneracaoUpdate = Database['public']['Tables']['pessoa_remuneracao']['Update']
 export type ProjetoProdutoUpdate = Database['public']['Tables']['projeto_produto']['Update']
 export type PessoaProjetoProdutoUpdate = Database['public']['Tables']['pessoa_projeto_produto']['Update']
 export type VagaTimeUpdate = Database['public']['Tables']['vaga_time']['Update']

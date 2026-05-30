@@ -58,6 +58,10 @@ export default function EditPessoaPage() {
   const [status, setStatus] = useState('Ativo')
   const [dataDesligamento, setDataDesligamento] = useState<Date | undefined>(undefined)
   const [salario, setSalario] = useState('')
+  const [dataUltimoReajuste, setDataUltimoReajuste] = useState('')
+  const [motivoUltimoReajuste, setMotivoUltimoReajuste] = useState('')
+  // Remuneração (SENSÍVEL - LGPD): só gestor da hierarquia pode ver/editar
+  const [canViewSalary, setCanViewSalary] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState('')
@@ -93,13 +97,26 @@ export default function EditPessoaPage() {
         setStatus(p.status || 'Ativo')
         setDataDesligamento(p.data_desligamento ? new Date(p.data_desligamento) : undefined)
 
-        // Handle salary - format as currency
-        if (p.salario_atual) {
-          const formatted = new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-          }).format(p.salario_atual)
-          setSalario(formatted)
+        // Remuneração (SENSÍVEL - LGPD): só vem quando o usuário pode ver salário.
+        // A presença da chave `remuneracao` indica permissão (gestor da hierarquia).
+        const podeVerSalario = 'remuneracao' in p
+        setCanViewSalary(podeVerSalario)
+
+        if (podeVerSalario && p.remuneracao) {
+          if (p.remuneracao.salario_atual != null) {
+            setSalario(
+              new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }).format(p.remuneracao.salario_atual)
+            )
+          }
+          if (p.remuneracao.data_ultimo_reajuste) {
+            setDataUltimoReajuste(
+              new Date(p.remuneracao.data_ultimo_reajuste).toLocaleDateString('pt-BR')
+            )
+          }
+          setMotivoUltimoReajuste(p.remuneracao.motivo_ultimo_reajuste || '')
         }
       } else {
         toast.error(pessoaResult.error || 'Erro ao carregar pessoa')
@@ -201,8 +218,11 @@ export default function EditPessoaPage() {
         data_inicio_cargo_atual: dataInicioCargo ? dataInicioCargo.toISOString().split('T')[0] : null,
         status: status.toLowerCase() as 'ativo' | 'ferias' | 'licenca' | 'afastamento' | 'desligado',
         data_desligamento: dataDesligamento ? dataDesligamento.toISOString().split('T')[0] : null,
-        salario_atual: salario ? parseFloat(salario.replace(/[^\d,]/g, '').replace(',', '.')) : null,
         ativo: true,
+        // Remuneração (SENSÍVEL - LGPD): só enviada no fluxo do gestor
+        ...(canViewSalary
+          ? { salario_atual: salario ? parseFloat(salario.replace(/[^\d,]/g, '').replace(',', '.')) : null }
+          : {}),
       }
 
       const result = await updatePessoa(pessoaId, pessoaData)
@@ -303,10 +323,10 @@ export default function EditPessoaPage() {
 
         {/* Tabbed Form - Same structure as nova/page.tsx */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={cn('grid w-full', canViewSalary ? 'grid-cols-5' : 'grid-cols-4')}>
             <TabsTrigger value="pessoais">Dados Pessoais</TabsTrigger>
             <TabsTrigger value="profissionais">Dados Profissionais</TabsTrigger>
-            <TabsTrigger value="financeiros">Dados Financeiros</TabsTrigger>
+            {canViewSalary && <TabsTrigger value="financeiros">Dados Financeiros</TabsTrigger>}
             <TabsTrigger value="projetos">Projetos/Produtos</TabsTrigger>
             <TabsTrigger value="tags">Tags</TabsTrigger>
           </TabsList>
@@ -587,7 +607,8 @@ export default function EditPessoaPage() {
             </div>
           </TabsContent>
 
-          {/* TAB 3: Dados Financeiros */}
+          {/* TAB 3: Dados Financeiros (SENSÍVEL - LGPD: apenas gestor) */}
+          {canViewSalary && (
           <TabsContent value="financeiros" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
               <Lock className="h-5 w-5 text-amber-600 mt-0.5" />
@@ -613,12 +634,12 @@ export default function EditPessoaPage() {
 
               <div>
                 <Label>Data Último Reajuste</Label>
-                <Input disabled value="01/06/2024" />
+                <Input disabled value={dataUltimoReajuste} placeholder="Sem reajustes" />
               </div>
 
               <div className="md:col-span-2">
                 <Label>Motivo Último Reajuste</Label>
-                <Textarea disabled value="Promoção para Senior Engineer - reconhecimento por liderança técnica e mentoria da equipe" rows={3} />
+                <Textarea disabled value={motivoUltimoReajuste} placeholder="Nenhum reajuste registrado" rows={3} />
               </div>
             </div>
 
@@ -627,6 +648,7 @@ export default function EditPessoaPage() {
               <p className="text-sm text-blue-900">Histórico completo de reajustes disponível na visualização</p>
             </div>
           </TabsContent>
+          )}
 
           {/* TAB 4: Projetos/Produtos */}
           <TabsContent value="projetos" className="bg-white rounded-lg shadow p-6 space-y-6">

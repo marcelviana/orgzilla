@@ -249,9 +249,6 @@ export interface Database {
           foto_url: string | null
           cargo_id: string | null
           time_id: string | null
-          salario_atual: number | null // SENSITIVE - LGPD
-          data_ultimo_reajuste: string | null // SENSITIVE - LGPD
-          motivo_ultimo_reajuste: string | null // SENSITIVE - LGPD
           data_entrada: string | null
           data_inicio_cargo_atual: string | null
           data_desligamento: string | null
@@ -270,9 +267,6 @@ export interface Database {
           foto_url?: string | null
           cargo_id?: string | null
           time_id?: string | null
-          salario_atual?: number | null
-          data_ultimo_reajuste?: string | null
-          motivo_ultimo_reajuste?: string | null
           data_entrada?: string | null
           data_inicio_cargo_atual?: string | null
           data_desligamento?: string | null
@@ -291,9 +285,6 @@ export interface Database {
           foto_url?: string | null
           cargo_id?: string | null
           time_id?: string | null
-          salario_atual?: number | null
-          data_ultimo_reajuste?: string | null
-          motivo_ultimo_reajuste?: string | null
           data_entrada?: string | null
           data_inicio_cargo_atual?: string | null
           data_desligamento?: string | null
@@ -315,6 +306,43 @@ export interface Database {
             columns: ['time_id']
             isOneToOne: false
             referencedRelation: 'time'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+
+      // SENSÍVEL - LGPD: tabela 1:1 com pessoa, protegida por RLS (apenas gestor)
+      pessoa_remuneracao: {
+        Row: {
+          pessoa_id: string
+          salario_atual: number | null // SENSITIVE - LGPD
+          data_ultimo_reajuste: string | null // SENSITIVE - LGPD
+          motivo_ultimo_reajuste: string | null // SENSITIVE - LGPD
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          pessoa_id: string
+          salario_atual?: number | null
+          data_ultimo_reajuste?: string | null
+          motivo_ultimo_reajuste?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          pessoa_id?: string
+          salario_atual?: number | null
+          data_ultimo_reajuste?: string | null
+          motivo_ultimo_reajuste?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'pessoa_remuneracao_pessoa_id_fkey'
+            columns: ['pessoa_id']
+            isOneToOne: true
+            referencedRelation: 'pessoa'
             referencedColumns: ['id']
           }
         ]

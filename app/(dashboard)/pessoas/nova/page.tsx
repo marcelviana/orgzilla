@@ -20,6 +20,7 @@ import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide
 import { cn } from '@/lib/utils'
 import { createPessoa } from '@/app/actions/pessoas.actions'
 import { getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
+import { getCurrentUser } from '@/app/actions/auth.actions'
 
 interface Project {
   id: string
@@ -56,6 +57,8 @@ export default function NovasPessoasPage() {
   const [status, setStatus] = useState('Ativo')
   const [dataDesligamento, setDataDesligamento] = useState<Date | undefined>(undefined)
   const [salario, setSalario] = useState('')
+  // Remuneração (SENSÍVEL - LGPD): só gestor pode informar salário
+  const [canViewSalary, setCanViewSalary] = useState(false)
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState('')
@@ -70,9 +73,10 @@ export default function NovasPessoasPage() {
 
   async function loadData() {
     try {
-      const [timesResult, cargosResult] = await Promise.all([
+      const [timesResult, cargosResult, usuario] = await Promise.all([
         getTimesParaFiltro(),
         getCargosParaFiltro(),
+        getCurrentUser(),
       ])
 
       if (timesResult.success && timesResult.data) {
@@ -82,6 +86,9 @@ export default function NovasPessoasPage() {
       if (cargosResult.success && cargosResult.data) {
         setCargos(cargosResult.data)
       }
+
+      // Apenas gestores podem informar remuneração (SENSÍVEL - LGPD)
+      setCanViewSalary(usuario?.tipo_perfil === 'gestor')
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
       toast.error('Erro ao carregar formulário')
@@ -170,8 +177,11 @@ export default function NovasPessoasPage() {
         data_inicio_cargo_atual: dataInicioCargo ? dataInicioCargo.toISOString().split('T')[0] : null,
         status: status.toLowerCase() as 'ativo' | 'ferias' | 'licenca' | 'afastamento' | 'desligado',
         data_desligamento: dataDesligamento ? dataDesligamento.toISOString().split('T')[0] : null,
-        salario_atual: salario ? parseFloat(salario.replace(/[^\d,]/g, '').replace(',', '.')) : null,
         ativo: true,
+        // Remuneração (SENSÍVEL - LGPD): só enviada no fluxo do gestor
+        ...(canViewSalary
+          ? { salario_atual: salario ? parseFloat(salario.replace(/[^\d,]/g, '').replace(',', '.')) : null }
+          : {}),
       }
 
       const result = await createPessoa(pessoaData)
@@ -265,10 +275,10 @@ export default function NovasPessoasPage() {
         ) : (
           /* Tabbed Form */
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={cn('grid w-full', canViewSalary ? 'grid-cols-5' : 'grid-cols-4')}>
             <TabsTrigger value="pessoais">Dados Pessoais</TabsTrigger>
             <TabsTrigger value="profissionais">Dados Profissionais</TabsTrigger>
-            <TabsTrigger value="financeiros">Dados Financeiros</TabsTrigger>
+            {canViewSalary && <TabsTrigger value="financeiros">Dados Financeiros</TabsTrigger>}
             <TabsTrigger value="projetos">Projetos/Produtos</TabsTrigger>
             <TabsTrigger value="tags">Tags</TabsTrigger>
           </TabsList>
@@ -549,7 +559,8 @@ export default function NovasPessoasPage() {
             </div>
           </TabsContent>
 
-          {/* TAB 3: Dados Financeiros */}
+          {/* TAB 3: Dados Financeiros (SENSÍVEL - LGPD: apenas gestor) */}
+          {canViewSalary && (
           <TabsContent value="financeiros" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
               <Lock className="h-5 w-5 text-amber-600 mt-0.5" />
@@ -589,6 +600,7 @@ export default function NovasPessoasPage() {
               <p className="text-sm text-blue-900">Histórico completo de reajustes disponível na visualização</p>
             </div>
           </TabsContent>
+          )}
 
           {/* TAB 4: Projetos/Produtos */}
           <TabsContent value="projetos" className="bg-white rounded-lg shadow p-6 space-y-6">

@@ -62,7 +62,7 @@ Regras:
 
 ## Segurança e dados sensíveis (LGPD) — não negociável
 
-Campos sensíveis: `pessoa.salario_atual`, `pessoa.data_ultimo_reajuste`, `pessoa.motivo_ultimo_reajuste` e todos os registros de `historico_reajuste`.
+Campos sensíveis: `pessoa_remuneracao.salario_atual`, `pessoa_remuneracao.data_ultimo_reajuste`, `pessoa_remuneracao.motivo_ultimo_reajuste` e todos os registros de `historico_reajuste`. O salário **não vive em `pessoa`**: foi isolado na tabela 1:1 `pessoa_remuneracao` justamente porque RLS é por linha, não por coluna (ver `STATUS.md` §3.1).
 
 Regra de acesso a salário (intencional):
 - **Gestor:** vê salários da sua hierarquia.
@@ -70,8 +70,8 @@ Regra de acesso a salário (intencional):
 - **Visualizador:** não vê salários.
 
 Proteção em profundidade — **ambas as camadas**, não só uma:
-- **Banco (RLS):** dado sensível deve ser protegido por Row Level Security. A filtragem de campos no app **não basta** — sem RLS, um usuário autenticado pode ler `salario_atual` via query direta ao Supabase. Toda tabela com dado sensível precisa de `ENABLE ROW LEVEL SECURITY` + policies. RLS é opt-in por tabela; não é automático.
-- **Aplicação:** Services filtram campos sensíveis conforme o perfil antes de retornar; a UI omite ou mostra placeholder para quem não pode ver.
+- **Banco (RLS):** dado sensível deve ser protegido por Row Level Security. A filtragem de campos no app **não basta** — sem RLS, um usuário autenticado pode ler o dado via query direta ao Supabase. `pessoa_remuneracao` já tem RLS que só libera acesso ao perfil `gestor`. Toda tabela com dado sensível precisa de `ENABLE ROW LEVEL SECURITY` + policies. RLS é opt-in por tabela; não é automático.
+- **Aplicação:** o `PessoaService` (`buscarRemuneracao`/`salvarRemuneracao`) só lê/grava remuneração quando `PermissaoService` autoriza (gestor da hierarquia); a UI omite o campo para quem não pode ver. Não busque `pessoa_remuneracao` direto numa Action — use o Service.
 
 Não enfraqueça nem remova policies sem registrar o motivo no `STATUS.md`. Em qualquer mudança que toque RLS ou exposição de salário, **pare e confirme com o mantenedor** antes de aplicar.
 
@@ -98,7 +98,7 @@ Não enfraqueça nem remova policies sem registrar o motivo no `STATUS.md`. Em q
 
 ---
 
-## Schema (16 tabelas)
+## Schema (17 tabelas)
 
 Núcleo:
 1. `usuario` — usuários do sistema (login). `tipo_perfil`: admin | gestor | visualizador. `pessoa_id` opcional.
@@ -106,7 +106,8 @@ Núcleo:
 3. `trilha_carreira` — trilhas (Engenharia, Produto, Design, Dados…).
 4. `cargo` — posição = uma trilha + um nível (`trilha_id`, `nivel_id`).
 5. `time` — times hierárquicos (`time_pai_id` auto-referência, `gestor_id`).
-6. `pessoa` — colaboradores. `cargo_id`/`time_id` nullable. Campos sensíveis: `salario_atual`, `data_ultimo_reajuste`, `motivo_ultimo_reajuste`. `status`: ativo|ferias|licenca|afastamento|desligado. **Campos nullable para permitir entrada incremental.**
+6. `pessoa` — colaboradores. `cargo_id`/`time_id` nullable. `status`: ativo|ferias|licenca|afastamento|desligado. **Campos nullable para permitir entrada incremental.** Salário **não** fica aqui (ver `pessoa_remuneracao`).
+6a. `pessoa_remuneracao` — dados salariais 1:1 com `pessoa` (PK/FK `pessoa_id`, `ON DELETE CASCADE`): `salario_atual`, `data_ultimo_reajuste`, `motivo_ultimo_reajuste`. **SENSÍVEL — RLS só gestor.** Acesso via `PessoaRemuneracaoRepository` → `PessoaService`.
 7. `projeto_produto` — projetos (apenas nome + ativo; não é ferramenta de PM).
 8. `pessoa_projeto_produto` — alocação N:N (`data_fim` null = atual).
 9. `vaga_time` — vagas abertas (`time_id`, `cargo_id`, `quantidade`).

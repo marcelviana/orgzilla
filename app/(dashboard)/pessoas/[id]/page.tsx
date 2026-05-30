@@ -43,9 +43,13 @@ type PessoaData = {
   data_entrada: string | null
   data_inicio_cargo_atual: string | null
   status: string
-  salario_atual?: number | null
-  data_ultimo_reajuste?: string | null
-  motivo_ultimo_reajuste?: string | null
+  // Remuneração (SENSÍVEL - LGPD): presente apenas quando o usuário pode ver
+  // salário (gestor da hierarquia). Vive na tabela pessoa_remuneracao.
+  remuneracao?: {
+    salario_atual: number | null
+    data_ultimo_reajuste: string | null
+    motivo_ultimo_reajuste: string | null
+  } | null
   ativo: boolean
   created_at: string
 }
@@ -147,8 +151,8 @@ export default function PersonProfilePage() {
         const result = await getPessoaById(pessoaId)
         if (result.success && result.data) {
           setPessoa(result.data as PessoaData)
-          // Check if salary data is present (means user has permission)
-          setCanViewSalary('salario_atual' in result.data)
+          // A presença da chave `remuneracao` indica que o usuário pode ver salário
+          setCanViewSalary('remuneracao' in result.data)
         } else {
           toast.error(result.error || 'Erro ao carregar pessoa')
           router.push('/pessoas')
@@ -611,18 +615,18 @@ export default function PersonProfilePage() {
                 <Card className="bg-gray-50 p-6">
                   <p className="text-sm text-muted-foreground mb-2">Salário Atual</p>
                   <p className="text-3xl font-bold">
-                    {pessoa.salario_atual
-                      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pessoa.salario_atual)
+                    {pessoa.remuneracao?.salario_atual
+                      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pessoa.remuneracao.salario_atual)
                       : 'Não informado'
                     }
                   </p>
-                  {pessoa.data_ultimo_reajuste && (
+                  {pessoa.remuneracao?.data_ultimo_reajuste && (
                     <>
                       <p className="text-sm text-muted-foreground mt-2">
-                        Último reajuste: {formatDateShort(pessoa.data_ultimo_reajuste)}
+                        Último reajuste: {formatDateShort(pessoa.remuneracao.data_ultimo_reajuste)}
                       </p>
-                      {pessoa.motivo_ultimo_reajuste && (
-                        <p className="text-sm font-medium mt-1">{pessoa.motivo_ultimo_reajuste}</p>
+                      {pessoa.remuneracao.motivo_ultimo_reajuste && (
+                        <p className="text-sm font-medium mt-1">{pessoa.remuneracao.motivo_ultimo_reajuste}</p>
                       )}
                     </>
                   )}

@@ -29,7 +29,7 @@ export type { RegistroAuditoria } from './auditoria.service'
 export { HistoricoService } from './historico.service'
 
 export { PessoaService } from './pessoa.service'
-export type { ServiceResult } from './pessoa.service'
+export type { ServiceResult, RemuneracaoInput } from './pessoa.service'
 
 export { TimeService } from './time.service'
 export type { TimeComHierarquia } from './time.service'

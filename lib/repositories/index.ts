@@ -28,6 +28,8 @@ export type { UsuarioComPessoa } from './usuario.repository'
 export { PessoaRepository } from './pessoa.repository'
 export type { PessoaComRelacionamentosBasicos, PessoaFilters } from './pessoa.repository'
 
+export { PessoaRemuneracaoRepository } from './pessoa-remuneracao.repository'
+
 export { TimeRepository } from './time.repository'
 export type { TimeComRelacionamentosBasicos, TimeHierarchy, TimeFilters } from './time.repository'
 
@@ -78,6 +80,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/types'
 import { UsuarioRepository } from './usuario.repository'
 import { PessoaRepository } from './pessoa.repository'
+import { PessoaRemuneracaoRepository } from './pessoa-remuneracao.repository'
 import { TimeRepository } from './time.repository'
 import { NivelRepository } from './nivel.repository'
 import { TrilhaCarreiraRepository } from './trilha-carreira.repository'
@@ -101,6 +104,7 @@ export function createRepositories(supabase: SupabaseClient<Database>) {
     // Core entities
     usuario: new UsuarioRepository(supabase),
     pessoa: new PessoaRepository(supabase),
+    pessoaRemuneracao: new PessoaRemuneracaoRepository(supabase),
     time: new TimeRepository(supabase),
     nivel: new NivelRepository(supabase),
     trilhaCarreira: new TrilhaCarreiraRepository(supabase),
