@@ -28,7 +28,7 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
         gestor:pessoa!gestor_id(*),
         time_pai:time!time_pai_id(*),
         times_filhos:time!time_pai_id(*),
-        membros:pessoa(
+        membros:pessoa!pessoa_time_id_fkey(
           *,
           cargo:cargo!cargo_id(*)
         ),
