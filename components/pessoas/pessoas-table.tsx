@@ -428,11 +428,11 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                       </TableCell>
                       {canViewSalary && (
                         <TableCell className="text-sm text-gray-600">
-                          {pessoa.salario_atual
+                          {pessoa.remuneracao?.salario_atual
                             ? new Intl.NumberFormat('pt-BR', {
                                 style: 'currency',
                                 currency: 'BRL',
-                              }).format(pessoa.salario_atual)
+                              }).format(pessoa.remuneracao.salario_atual)
                             : '-'}
                         </TableCell>
                       )}

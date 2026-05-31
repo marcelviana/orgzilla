@@ -49,9 +49,11 @@ export type PessoaListItem = {
       cor: string
     }
   }>
-  // Campos sensíveis (apenas para gestores)
-  salario_atual?: number | null
-  data_ultimo_reajuste?: string | null
+  // Dados sensíveis (apenas para gestores, via pessoa_remuneracao)
+  remuneracao?: {
+    salario_atual: number | null
+    data_ultimo_reajuste: string | null
+  } | null
 }
 
 export type PessoasFilters = {
@@ -387,8 +389,10 @@ async function anexarRemuneracaoLista(
     }
     return {
       ...p,
-      salario_atual: rem.salario_atual,
-      data_ultimo_reajuste: rem.data_ultimo_reajuste,
+      remuneracao: {
+        salario_atual: rem.salario_atual,
+        data_ultimo_reajuste: rem.data_ultimo_reajuste,
+      },
     }
   })
 }
