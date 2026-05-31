@@ -14,6 +14,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getUsuarioLogado } from '@/lib/middleware'
+import { PermissaoService } from '@/lib/services'
 import { TimeRepository, PessoaRepository, UsuarioRepository } from '@/lib/repositories'
 import type { TimeInsert, TimeUpdate } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
@@ -78,9 +79,10 @@ export async function getTimesComEstatisticas(): Promise<ActionResult<TimeComEst
     // Gestor vê apenas sua hierarquia
     let times: any[] = []
 
-    if (usuario.tipo_perfil === 'gestor' && usuario.pessoa?.time?.id) {
-      // Buscar todos os IDs da hierarquia do gestor
-      const hierarquiaIds = await getTimeHierarchyIdsRecursive(usuario.pessoa.time.id, timeRepo)
+    if (usuario.tipo_perfil === 'gestor') {
+      // Hierarquia do gestor (times que ele gerencia + descendentes) — fonte única
+      const permissaoService = new PermissaoService(supabase)
+      const hierarquiaIds = await permissaoService.getTimesHierarquia(usuario)
 
       // Buscar times da hierarquia
       const allTimes = await timeRepo.findAll()
@@ -341,9 +343,10 @@ export async function createTime(dados: TimeInsert): Promise<ActionResult<string
         }
       }
 
-      // Gestor só pode criar times dentro da sua hierarquia
-      if (isGestor && !isAdmin && usuario.pessoa?.time?.id) {
-        const hierarquiaIds = await getTimeHierarchyIdsRecursive(usuario.pessoa.time.id, timeRepo)
+      // Gestor só pode criar times dentro da sua hierarquia (fonte única)
+      if (isGestor && !isAdmin) {
+        const permissaoService = new PermissaoService(supabase)
+        const hierarquiaIds = await permissaoService.getTimesHierarquia(usuario)
         if (!hierarquiaIds.includes(dados.time_pai_id)) {
           return {
             success: false,
@@ -413,9 +416,10 @@ export async function updateTime(id: string, dados: TimeUpdate): Promise<ActionR
       }
     }
 
-    // Gestor só pode editar times da sua hierarquia
-    if (isGestor && !isAdmin && usuario.pessoa?.time?.id) {
-      const hierarquiaIds = await getTimeHierarchyIdsRecursive(usuario.pessoa.time.id, timeRepo)
+    // Gestor só pode editar times da sua hierarquia (fonte única)
+    if (isGestor && !isAdmin) {
+      const permissaoService = new PermissaoService(supabase)
+      const hierarquiaIds = await permissaoService.getTimesHierarquia(usuario)
       if (!hierarquiaIds.includes(id)) {
         return {
           success: false,
@@ -454,8 +458,10 @@ export async function updateTime(id: string, dados: TimeUpdate): Promise<ActionR
           }
         }
 
-        // Verificar se o time_pai não é descendente do time atual (prevenir ciclos)
-        const hierarquiaAtualIds = await getTimeHierarchyIdsRecursive(id, timeRepo)
+        // Verificar se o time_pai não é descendente do time atual (prevenir ciclos).
+        // Reutiliza a fonte única de recursão (subárvore incl. o próprio time).
+        const permissaoService = new PermissaoService(supabase)
+        const hierarquiaAtualIds = await permissaoService.getHierarquiaCompleta(id)
         if (hierarquiaAtualIds.includes(dados.time_pai_id)) {
           return {
             success: false,
@@ -530,9 +536,10 @@ export async function softDeleteTime(id: string): Promise<ActionResult> {
       }
     }
 
-    // Gestor só pode desativar times da sua hierarquia
-    if (isGestor && !isAdmin && usuario.pessoa?.time?.id) {
-      const hierarquiaIds = await getTimeHierarchyIdsRecursive(usuario.pessoa.time.id, timeRepo)
+    // Gestor só pode desativar times da sua hierarquia (fonte única)
+    if (isGestor && !isAdmin) {
+      const permissaoService = new PermissaoService(supabase)
+      const hierarquiaIds = await permissaoService.getTimesHierarquia(usuario)
       if (!hierarquiaIds.includes(id)) {
         return {
           success: false,
@@ -581,27 +588,6 @@ export async function softDeleteTime(id: string): Promise<ActionResult> {
 // =============================================================================
 // HELPERS
 // =============================================================================
-
-/**
- * Busca recursivamente todos os IDs de uma hierarquia de times
- */
-async function getTimeHierarchyIdsRecursive(timeId: string, timeRepo: TimeRepository): Promise<string[]> {
-  const ids = [timeId]
-
-  async function buscarFilhos(parentId: string) {
-    const filhos = await timeRepo.findByTimePaiId(parentId)
-
-    for (const filho of filhos) {
-      if (!ids.includes(filho.id)) {
-        ids.push(filho.id)
-        await buscarFilhos(filho.id)
-      }
-    }
-  }
-
-  await buscarFilhos(timeId)
-  return ids
-}
 
 /**
  * Constrói hierarquia recursiva de um time

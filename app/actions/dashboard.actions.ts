@@ -1,7 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from './auth.actions'
+import { getUsuarioLogado } from '@/lib/middleware'
+import { PermissaoService } from '@/lib/services'
 
 export type DashboardMetrics = {
   totalPessoas: number
@@ -56,19 +57,20 @@ const NIVEL_COLORS = [
 export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetrics>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
     }
 
     const isGestor = usuario.tipo_perfil === 'gestor'
-    const timeId = usuario.pessoa?.time?.id
 
-    // Para gestores, buscar IDs de todos os times da hierarquia
+    // Gestor: restringe à sua hierarquia (times que gerencia + descendentes).
+    // Fonte única: PermissaoService.getTimesHierarquia.
     let timeIdsHierarquia: string[] = []
-    if (isGestor && timeId) {
-      timeIdsHierarquia = await getTimeHierarchyIds(timeId)
+    if (isGestor) {
+      const permissaoService = new PermissaoService(supabase)
+      timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
     // Total de pessoas ativas
@@ -78,7 +80,7 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
       .eq('ativo', true)
       .eq('status', 'ativo')
 
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    if (isGestor) {
       queryPessoas = queryPessoas.in('time_id', timeIdsHierarquia)
     }
 
@@ -90,7 +92,7 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
       .select('*', { count: 'exact', head: true })
       .eq('ativo', true)
 
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    if (isGestor) {
       queryTimes = queryTimes.in('id', timeIdsHierarquia)
     }
 
@@ -102,7 +104,7 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
       .select('quantidade', { count: 'exact' })
       .eq('ativo', true)
 
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    if (isGestor) {
       queryVagas = queryVagas.in('time_id', timeIdsHierarquia)
     }
 
@@ -127,7 +129,7 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
       .eq('ativo', true)
       .gte('created_at', firstDayThisMonth.toISOString())
 
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    if (isGestor) {
       queryPessoasEsteMes = queryPessoasEsteMes.in('time_id', timeIdsHierarquia)
     }
 
@@ -141,7 +143,7 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
       .gte('created_at', firstDayLastMonth.toISOString())
       .lt('created_at', firstDayThisMonth.toISOString())
 
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    if (isGestor) {
       queryPessoasMesPassado = queryPessoasMesPassado.in('time_id', timeIdsHierarquia)
     }
 
@@ -177,18 +179,19 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
 export async function getNivelDistribution(): Promise<ActionResult<NivelDistribution[]>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
     }
 
     const isGestor = usuario.tipo_perfil === 'gestor'
-    const timeId = usuario.pessoa?.time?.id
 
+    // Fonte única de hierarquia do gestor
     let timeIdsHierarquia: string[] = []
-    if (isGestor && timeId) {
-      timeIdsHierarquia = await getTimeHierarchyIds(timeId)
+    if (isGestor) {
+      const permissaoService = new PermissaoService(supabase)
+      timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
     // Buscar pessoas com cargo e nível
@@ -207,7 +210,7 @@ export async function getNivelDistribution(): Promise<ActionResult<NivelDistribu
       .eq('ativo', true)
       .eq('status', 'ativo')
 
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    if (isGestor) {
       query = query.in('time_id', timeIdsHierarquia)
     }
 
@@ -258,18 +261,19 @@ export async function getNivelDistribution(): Promise<ActionResult<NivelDistribu
 export async function getTimeDistribution(): Promise<ActionResult<TimeDistribution[]>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
     }
 
     const isGestor = usuario.tipo_perfil === 'gestor'
-    const timeId = usuario.pessoa?.time?.id
 
+    // Fonte única de hierarquia do gestor
     let timeIdsHierarquia: string[] = []
-    if (isGestor && timeId) {
-      timeIdsHierarquia = await getTimeHierarchyIds(timeId)
+    if (isGestor) {
+      const permissaoService = new PermissaoService(supabase)
+      timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
     // Buscar pessoas com time
@@ -285,7 +289,7 @@ export async function getTimeDistribution(): Promise<ActionResult<TimeDistributi
       .eq('ativo', true)
       .eq('status', 'ativo')
 
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    if (isGestor) {
       query = query.in('time_id', timeIdsHierarquia)
     }
 
@@ -328,7 +332,7 @@ export async function getTimeDistribution(): Promise<ActionResult<TimeDistributi
 export async function getRecentActivities(): Promise<ActionResult<RecentActivity[]>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
@@ -424,30 +428,3 @@ export async function getRecentActivities(): Promise<ActionResult<RecentActivity
   }
 }
 
-/**
- * Busca recursivamente todos os IDs de times da hierarquia
- * (time atual + todos os filhos)
- */
-async function getTimeHierarchyIds(timeId: string): Promise<string[]> {
-  const supabase = await createClient()
-  const ids = [timeId]
-
-  // Buscar filhos recursivamente
-  async function buscarFilhos(parentId: string) {
-    const { data: filhos } = await supabase
-      .from('time')
-      .select('id')
-      .eq('time_pai_id', parentId)
-      .eq('ativo', true)
-
-    if (filhos && filhos.length > 0) {
-      for (const filho of filhos) {
-        ids.push(filho.id)
-        await buscarFilhos(filho.id) // Recursão
-      }
-    }
-  }
-
-  await buscarFilhos(timeId)
-  return ids
-}

@@ -251,19 +251,14 @@ export class TimeService {
   }
 
   /**
-   * Busca todos os descendentes de um time (recursivo)
+   * Busca todos os descendentes de um time (recursivo).
+   *
+   * Reutiliza a fonte única de recursão (`PermissaoService.getHierarquiaCompleta`,
+   * com proteção contra ciclos) e remove o próprio time da lista.
    */
   async buscarDescendentes(timeId: string): Promise<string[]> {
-    const filhos = await this.timeRepo.findByTimePaiId(timeId)
-    const descendentes: string[] = []
-
-    for (const filho of filhos) {
-      descendentes.push(filho.id)
-      const subDescendentes = await this.buscarDescendentes(filho.id)
-      descendentes.push(...subDescendentes)
-    }
-
-    return descendentes
+    const subarvore = await this.permissaoService.getHierarquiaCompleta(timeId)
+    return subarvore.filter((id) => id !== timeId)
   }
 
   // ==========================================================================

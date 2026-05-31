@@ -190,27 +190,47 @@ export class PermissaoService {
   }
 
   /**
-   * Busca todos os IDs da hierarquia de um time (recursivo)
+   * Busca todos os IDs da subárvore de um time (o próprio time + descendentes),
+   * recursivamente.
+   *
+   * ⚠️ FONTE ÚNICA da recursão de hierarquia de times no projeto. Não duplique
+   * esta lógica em Actions/outros Services — reutilize este método (ou
+   * `getTimesHierarquia` / `TimeService.buscarDescendentes`, que o reaproveitam).
+   *
+   * Protegido contra ciclos em `time_pai_id` por um conjunto de visitados.
    */
   async getHierarquiaCompleta(timeId: string): Promise<string[]> {
-    const ids = [timeId]
+    const visitados = new Set<string>()
+    await this.coletarSubarvore(timeId, visitados)
+    return [...visitados]
+  }
+
+  /**
+   * Coletor recursivo da subárvore, com proteção contra ciclos.
+   */
+  private async coletarSubarvore(timeId: string, visitados: Set<string>): Promise<void> {
+    // Proteção contra ciclos: se já visitamos este time, para.
+    if (visitados.has(timeId)) {
+      return
+    }
+    visitados.add(timeId)
 
     try {
       const filhos = await this.timeRepo.findByTimePaiId(timeId)
-
       for (const filho of filhos) {
-        const subIds = await this.getHierarquiaCompleta(filho.id)
-        ids.push(...subIds)
+        await this.coletarSubarvore(filho.id, visitados)
       }
     } catch (error) {
       console.error('[PermissaoService] Erro ao buscar hierarquia:', error)
     }
-
-    return ids
   }
 
   /**
-   * Busca todos os times da hierarquia do gestor
+   * Busca todos os times da hierarquia do gestor.
+   *
+   * Regra de negócio: o gestor enxerga os times que **ele gerencia**
+   * (`time.gestor_id` = sua pessoa) e todos os descendentes. Não é o time em
+   * que ele é membro.
    */
   async getTimesHierarquia(usuario: Usuario): Promise<string[]> {
     if (usuario.tipo_perfil !== 'gestor' || !usuario.pessoa_id) {
@@ -219,14 +239,14 @@ export class PermissaoService {
 
     try {
       const timesGerenciados = await this.timeRepo.findByGestorId(usuario.pessoa_id)
-      const hierarquiaIds: string[] = []
 
+      // Conjunto compartilhado: deduplica e protege contra ciclos entre raízes.
+      const visitados = new Set<string>()
       for (const time of timesGerenciados) {
-        const ids = await this.getHierarquiaCompleta(time.id)
-        hierarquiaIds.push(...ids)
+        await this.coletarSubarvore(time.id, visitados)
       }
 
-      return [...new Set(hierarquiaIds)]
+      return [...visitados]
     } catch (error) {
       console.error('[PermissaoService] Erro ao buscar times da hierarquia:', error)
       return []

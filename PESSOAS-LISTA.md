@@ -1,5 +1,13 @@
 # 👥 Lista de Pessoas - Orgzilla
 
+> ⚠️ **DOCUMENTO DESATUALIZADO — não usar como referência.**
+> Os exemplos abaixo mostram padrões que **já não valem**:
+> - `selectFields += ', salario_atual, data_ultimo_reajuste'` na tabela `pessoa` — o salário **saiu de `pessoa`** para a tabela 1:1 `pessoa_remuneracao` e é buscado via `PessoaService` (nunca no `select` de `pessoa`).
+> - `getTimeHierarchyIds(time do membro)` — a hierarquia do gestor agora é **fonte única** em `PermissaoService.getTimesHierarquia` (times que o gestor **gerencia** via `gestor_id` + descendentes, com proteção contra ciclos).
+> - `UPDATE pessoa SET salario_atual = ...` — o salário vive em `pessoa_remuneracao`.
+>
+> Para arquitetura, ver **`CLAUDE.md`**; para o estado atual, **`STATUS.md`**.
+
 Página de listagem de pessoas com filtros, busca e paginação, conectada ao Supabase.
 
 ## ✅ Implementação Completa

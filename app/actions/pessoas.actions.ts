@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentUser } from './auth.actions'
 import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
 import { PessoaRepository, PessoaRemuneracaoRepository } from '@/lib/repositories'
 import { PessoaService, PermissaoService } from '@/lib/services'
@@ -93,19 +92,20 @@ export async function getPessoasComFiltros(
 ): Promise<ActionResult<PessoasResult>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
     }
 
     const isGestor = usuario.tipo_perfil === 'gestor'
-    const timeId = usuario.pessoa?.time?.id
 
-    // Para gestores, buscar IDs de todos os times da hierarquia
+    // Gestor: restringe à sua hierarquia (times que gerencia + descendentes).
+    // Fonte única: PermissaoService.getTimesHierarquia.
     let timeIdsHierarquia: string[] = []
-    if (isGestor && timeId) {
-      timeIdsHierarquia = await getTimeHierarchyIds(timeId)
+    if (isGestor) {
+      const permissaoService = new PermissaoService(supabase)
+      timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
     // Campos base (sem salários — remuneração vive em pessoa_remuneracao)
@@ -148,8 +148,8 @@ export async function getPessoasComFiltros(
       .select(selectFields, { count: 'exact' })
       .eq('ativo', true)
 
-    // Aplicar filtro de hierarquia para gestores
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    // Aplicar filtro de hierarquia para gestores (estrito: sem hierarquia → nada).
+    if (isGestor) {
       query = query.in('time_id', timeIdsHierarquia)
     }
 
@@ -192,7 +192,7 @@ export async function getPessoasComFiltros(
     // Remuneração (SENSÍVEL - LGPD): apenas gestores, e somente para pessoas da
     // sua hierarquia. Admin e visualizador nunca recebem salário.
     if (isGestor) {
-      pessoasList = await anexarRemuneracaoLista(supabase, pessoasList)
+      pessoasList = await anexarRemuneracaoLista(supabase, pessoasList, timeIdsHierarquia)
     }
 
     return {
@@ -219,18 +219,18 @@ export async function getPessoasComFiltros(
 export async function getTimesParaFiltro(): Promise<ActionResult<Array<{ id: string; nome: string }>>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
     }
 
     const isGestor = usuario.tipo_perfil === 'gestor'
-    const timeId = usuario.pessoa?.time?.id
 
     let timeIdsHierarquia: string[] = []
-    if (isGestor && timeId) {
-      timeIdsHierarquia = await getTimeHierarchyIds(timeId)
+    if (isGestor) {
+      const permissaoService = new PermissaoService(supabase)
+      timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
     let query = supabase
@@ -239,8 +239,8 @@ export async function getTimesParaFiltro(): Promise<ActionResult<Array<{ id: str
       .eq('ativo', true)
       .order('nome')
 
-    // Filtrar por hierarquia se for gestor
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    // Filtrar por hierarquia se for gestor (estrito: sem hierarquia → nada)
+    if (isGestor) {
       query = query.in('id', timeIdsHierarquia)
     }
 
@@ -297,18 +297,18 @@ export async function getPessoasParaGestor(): Promise<
 > {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
     }
 
     const isGestor = usuario.tipo_perfil === 'gestor'
-    const timeId = usuario.pessoa?.time?.id
 
     let timeIdsHierarquia: string[] = []
-    if (isGestor && timeId) {
-      timeIdsHierarquia = await getTimeHierarchyIds(timeId)
+    if (isGestor) {
+      const permissaoService = new PermissaoService(supabase)
+      timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
     let query = supabase
@@ -322,8 +322,8 @@ export async function getPessoasParaGestor(): Promise<
       .eq('ativo', true)
       .order('nome')
 
-    // Filtrar por hierarquia se for gestor
-    if (isGestor && timeIdsHierarquia.length > 0) {
+    // Filtrar por hierarquia se for gestor (estrito: sem hierarquia → nada)
+    if (isGestor) {
       query = query.in('time_id', timeIdsHierarquia)
     }
 
@@ -353,52 +353,17 @@ export async function getPessoasParaGestor(): Promise<
 }
 
 /**
- * Busca recursivamente todos os IDs de times da hierarquia
- */
-async function getTimeHierarchyIds(timeId: string): Promise<string[]> {
-  const supabase = await createClient()
-  const ids = [timeId]
-
-  async function buscarFilhos(parentId: string) {
-    const { data: filhos } = await supabase
-      .from('time')
-      .select('id')
-      .eq('time_pai_id', parentId)
-      .eq('ativo', true)
-
-    if (filhos && filhos.length > 0) {
-      for (const filho of filhos) {
-        ids.push(filho.id)
-        await buscarFilhos(filho.id)
-      }
-    }
-  }
-
-  await buscarFilhos(timeId)
-  return ids
-}
-
-/**
- * Anexa a remuneração (SENSÍVEL - LGPD) aos itens da lista, somente para gestores
- * e somente para pessoas dentro da hierarquia do gestor (regra reutilizada de
- * PermissaoService). Admin e visualizador nunca chegam aqui.
+ * Anexa a remuneração (SENSÍVEL - LGPD) aos itens da lista, somente para pessoas
+ * dentro da hierarquia do gestor. Recebe a hierarquia já calculada
+ * (PermissaoService.getTimesHierarquia, a fonte única). Admin e visualizador
+ * nunca chegam aqui (o chamador só invoca quando isGestor).
  */
 async function anexarRemuneracaoLista(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  pessoas: PessoaListItem[]
+  pessoas: PessoaListItem[],
+  hierarquiaIds: string[]
 ): Promise<PessoaListItem[]> {
-  if (pessoas.length === 0) {
-    return pessoas
-  }
-
-  const usuario = await getUsuarioLogado()
-  if (!usuario || usuario.tipo_perfil !== 'gestor') {
-    return pessoas
-  }
-
-  const permissaoService = new PermissaoService(supabase)
-  const hierarquiaIds = await permissaoService.getTimesHierarquia(usuario)
-  if (hierarquiaIds.length === 0) {
+  if (pessoas.length === 0 || hierarquiaIds.length === 0) {
     return pessoas
   }
 
@@ -483,7 +448,7 @@ export async function exportPessoasCSV(
 export async function getPessoaById(id: string): Promise<ActionResult<any>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
@@ -496,12 +461,13 @@ export async function getPessoaById(id: string): Promise<ActionResult<any>> {
       return { success: false, error: 'Pessoa não encontrada' }
     }
 
-    // Verificar permissões (gestores só veem sua hierarquia)
+    const permissaoService = new PermissaoService(supabase)
     const isGestor = usuario.tipo_perfil === 'gestor'
-    if (isGestor && usuario.pessoa?.time?.id) {
-      const timeIdsHierarquia = await getTimeHierarchyIds(usuario.pessoa.time.id)
 
-      if (pessoa.time_id && !timeIdsHierarquia.includes(pessoa.time_id)) {
+    // Gestor só vê pessoas da sua hierarquia (times que gerencia + descendentes)
+    if (isGestor) {
+      const timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
+      if (!pessoa.time_id || !timeIdsHierarquia.includes(pessoa.time_id)) {
         return { success: false, error: 'Sem permissão para visualizar esta pessoa' }
       }
     }
@@ -509,16 +475,11 @@ export async function getPessoaById(id: string): Promise<ActionResult<any>> {
     // Remuneração (SENSÍVEL - LGPD): vive em pessoa_remuneracao e só é anexada
     // quando o usuário pode ver salário (gestor da hierarquia). A decisão fica
     // no Service; admin e visualizador nunca recebem a chave `remuneracao`.
-    const usuarioCompleto = await getUsuarioLogado()
-    if (usuarioCompleto) {
-      const permissaoService = new PermissaoService(supabase)
-      const podeVerSalario = await permissaoService.podeVerSalario(usuarioCompleto, id)
-
-      if (podeVerSalario) {
-        const pessoaService = new PessoaService(supabase)
-        const remuneracao = await pessoaService.buscarRemuneracao(usuarioCompleto, id)
-        return { success: true, data: { ...pessoa, remuneracao: remuneracao ?? null } }
-      }
+    const podeVerSalario = await permissaoService.podeVerSalario(usuario, id)
+    if (podeVerSalario) {
+      const pessoaService = new PessoaService(supabase)
+      const remuneracao = await pessoaService.buscarRemuneracao(usuario, id)
+      return { success: true, data: { ...pessoa, remuneracao: remuneracao ?? null } }
     }
 
     return { success: true, data: pessoa }
@@ -535,7 +496,7 @@ export async function getPessoaById(id: string): Promise<ActionResult<any>> {
 export async function createPessoa(dados: PessoaInsert & RemuneracaoFields): Promise<ActionResult<string>> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
@@ -552,9 +513,10 @@ export async function createPessoa(dados: PessoaInsert & RemuneracaoFields): Pro
     // Separar remuneração (SENSÍVEL - LGPD) dos dados da pessoa
     const { salario_atual, data_ultimo_reajuste, motivo_ultimo_reajuste, ...dadosPessoa } = dados
 
-    // Gestor só pode criar em times da sua hierarquia
-    if (isGestor && dadosPessoa.time_id && usuario.pessoa?.time?.id) {
-      const timeIdsHierarquia = await getTimeHierarchyIds(usuario.pessoa.time.id)
+    // Gestor só pode criar em times da sua hierarquia (fonte única)
+    if (isGestor && dadosPessoa.time_id) {
+      const permissaoService = new PermissaoService(supabase)
+      const timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
 
       if (!timeIdsHierarquia.includes(dadosPessoa.time_id)) {
         return { success: false, error: 'Sem permissão para criar pessoa neste time' }
@@ -579,17 +541,14 @@ export async function createPessoa(dados: PessoaInsert & RemuneracaoFields): Pro
     const temRemuneracao =
       salario_atual != null || data_ultimo_reajuste != null || motivo_ultimo_reajuste != null
     if (isGestor && temRemuneracao) {
-      const usuarioCompleto = await getUsuarioLogado()
-      if (usuarioCompleto) {
-        const pessoaService = new PessoaService(supabase)
-        const remResult = await pessoaService.salvarRemuneracao(usuarioCompleto, novaPessoa.id, {
-          salario_atual,
-          data_ultimo_reajuste,
-          motivo_ultimo_reajuste,
-        })
-        if (!remResult.success) {
-          console.error('[createPessoa] Remuneração não gravada:', remResult.error)
-        }
+      const pessoaService = new PessoaService(supabase)
+      const remResult = await pessoaService.salvarRemuneracao(usuario, novaPessoa.id, {
+        salario_atual,
+        data_ultimo_reajuste,
+        motivo_ultimo_reajuste,
+      })
+      if (!remResult.success) {
+        console.error('[createPessoa] Remuneração não gravada:', remResult.error)
       }
     }
 
@@ -613,7 +572,7 @@ export async function createPessoa(dados: PessoaInsert & RemuneracaoFields): Pro
 export async function updatePessoa(id: string, dados: PessoaUpdate & RemuneracaoFields): Promise<ActionResult> {
   try {
     const supabase = await createClient()
-    const usuario = await getCurrentUser()
+    const usuario = await getUsuarioLogado()
 
     if (!usuario) {
       return { success: false, error: 'Não autenticado' }
@@ -638,11 +597,12 @@ export async function updatePessoa(id: string, dados: PessoaUpdate & Remuneracao
       return { success: false, error: 'Pessoa não encontrada' }
     }
 
-    // Gestor só pode atualizar pessoas da sua hierarquia
-    if (isGestor && usuario.pessoa?.time?.id) {
-      const timeIdsHierarquia = await getTimeHierarchyIds(usuario.pessoa.time.id)
+    // Gestor só pode atualizar pessoas da sua hierarquia (fonte única)
+    if (isGestor) {
+      const permissaoService = new PermissaoService(supabase)
+      const timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
 
-      if (pessoaAtual.time_id && !timeIdsHierarquia.includes(pessoaAtual.time_id)) {
+      if (!pessoaAtual.time_id || !timeIdsHierarquia.includes(pessoaAtual.time_id)) {
         return { success: false, error: 'Sem permissão para atualizar esta pessoa' }
       }
 
@@ -668,17 +628,14 @@ export async function updatePessoa(id: string, dados: PessoaUpdate & Remuneracao
     const temRemuneracao =
       salario_atual != null || data_ultimo_reajuste != null || motivo_ultimo_reajuste != null
     if (isGestor && temRemuneracao) {
-      const usuarioCompleto = await getUsuarioLogado()
-      if (usuarioCompleto) {
-        const pessoaService = new PessoaService(supabase)
-        const remResult = await pessoaService.salvarRemuneracao(usuarioCompleto, id, {
-          salario_atual,
-          data_ultimo_reajuste,
-          motivo_ultimo_reajuste,
-        })
-        if (!remResult.success) {
-          console.error('[updatePessoa] Remuneração não gravada:', remResult.error)
-        }
+      const pessoaService = new PessoaService(supabase)
+      const remResult = await pessoaService.salvarRemuneracao(usuario, id, {
+        salario_atual,
+        data_ultimo_reajuste,
+        motivo_ultimo_reajuste,
+      })
+      if (!remResult.success) {
+        console.error('[updatePessoa] Remuneração não gravada:', remResult.error)
       }
     }
 

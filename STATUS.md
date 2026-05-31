@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 30 de maio de 2026
+**Última atualização:** 31 de maio de 2026
 **Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real.
 
 ---
@@ -30,6 +30,7 @@ Scripts de recriação (rodados nesta ordem):
 Checklist de retomada do ambiente:
 - [x] `orgzilla_schema.sql` rodado (RLS ativo em todas as tabelas)
 - [x] `orgzilla_seed.sql` rodado (dados de teste carregados)
+- [x] Cadeia Action → Service → Repository de pessoas/dashboard/times **validada em código**: filtro de hierarquia do gestor passou a aplicar de fato (BUG 2), hierarquia unificada numa fonte única com proteção contra ciclos (BUG 3), salário sem referências órfãs a `pessoa` (BUG 1); `npm run build` passa. (Re-teste de comportamento ponta-a-ponta depende de conectar o app ao banco — itens abaixo + §6.)
 - [ ] `.env.local` atualizado com URL + chaves do novo projeto
 - [ ] Mesmas variáveis configuradas na **Vercel**
 - [ ] Google OAuth reconfigurado (novo redirect URI do projeto)
@@ -48,7 +49,7 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 
 - **Tipos** (`lib/types/database.ts`): 17 tabelas tipadas. Salário **fora de `pessoa`**, na tabela 1:1 `pessoa_remuneracao` (`salario_atual`, `data_ultimo_reajuste`, `motivo_ultimo_reajuste`), marcada `// SENSITIVE - LGPD`.
 - **Separação de remuneração (código concluído):** `pessoa_remuneracao` acessada via `PessoaRemuneracaoRepository` → `PessoaService` (`buscarRemuneracao`/`salvarRemuneracao`), com a decisão de ver/editar centralizada em `PermissaoService` (`podeVerSalario`/`podeEditarSalario`, gestor da hierarquia). Admin e visualizador nunca recebem nem gravam remuneração; a UI só mostra salário para gestor.
-  > ☐ A verificar contra o código: confirmar que os nomes acima existem como descritos (o doc e o código foram gerados na mesma rodada pelo Claude Code).
+  > ✅ Verificado contra o código: os nomes acima existem como descritos. Nenhuma query lê `salario_atual`/`data_ultimo_reajuste`/`motivo_ultimo_reajuste` da tabela `pessoa` (sem referências órfãs — grep limpo); o salário só é buscado de `pessoa_remuneracao` via `PessoaService`.
 - **Repositories** (`lib/repositories/`): `base.repository.ts` (CRUD genérico, soft delete, contagens, existência) + repositories por entidade.
 - **Services** (`lib/services/`): `AuthService`, `PermissaoService`, `AuditoriaService`, `HistoricoService`, `PessoaService`, `TimeService`, `VagaService`, `PessoaRemuneracaoRepository`, factory `createServices()`.
 - **Server Actions**: pessoas, times, projetos, usuários, níveis, dashboard.
@@ -78,13 +79,14 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 ### 3.3 Débito arquitetural — padrões de acesso a dados misturados
 A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parcialmente aplicada**:
 
-1. ✅ A lógica de **salário** foi extraída para `PessoaService`/`PermissaoService` (o antigo `selectFields` por perfil saiu).
-2. ⚠️ O **restante** de `pessoas.actions.ts` (e `dashboard.actions.ts`) provavelmente ainda faz `supabase.from(...)` cru com hierarquia inline — só a parte de salário foi migrada. Confirmar e migrar o resto.
-3. `times.actions.ts` usa `TimeRepository` direto (pula `TimeService`).
+1. ✅ A lógica de **salário** foi extraída para `PessoaService`/`PermissaoService` (o antigo `selectFields` por perfil saiu). Sem referências órfãs a `pessoa.salario_atual` (verificado por grep).
+2. ✅ **Hierarquia do gestor unificada (fonte única).** Removidas as cópias `getTimeHierarchyIds` (`pessoas.actions.ts` + `dashboard.actions.ts`) e `getTimeHierarchyIdsRecursive` (`times.actions.ts`). Todas as actions usam agora `PermissaoService.getTimesHierarquia` (regra correta: times que o gestor **gerencia** via `gestor_id` + descendentes). A recursão vive num só lugar — `PermissaoService.coletarSubarvore` (privado, **com proteção contra ciclos** por conjunto de visitados) — reutilizada por `getHierarquiaCompleta`, `TimeService.buscarDescendentes` e a checagem de ciclo de `times.actions`.
+3. ⚠️ O **restante** das queries de `pessoas.actions.ts`/`dashboard.actions.ts` ainda usa `supabase.from(...)` cru (apenas leitura com filtros) — migração para Services pendente (não-bloqueante).
+4. `times.actions.ts` usa `TimeRepository` direto (pula `TimeService`).
 
-**Consequências:**
-- Lógica de hierarquia possivelmente duplicada: `getTimeHierarchyIds` (dashboard) vs. `getTimeHierarchyIdsRecursive` (times). Recursão **não-limitada** → loop infinito se houver ciclo em `time_pai_id`. (A nova busca de remuneração deve reusar o filtro de hierarquia, não criar uma 3ª cópia — verificar.)
-- Auto-criação de usuário em **3 lugares**: `app/(dashboard)/layout.tsx`, `auth.middleware.ts`, `auth.service.ts`.
+**Consequências (resolvidas):**
+- ✅ Recursão de hierarquia não está mais duplicada nem desprotegida: era ilimitada (loop infinito em ciclo de `time_pai_id`); agora há uma única implementação com `Set` de visitados.
+- Auto-criação de usuário ainda em **3 lugares**: `app/(dashboard)/layout.tsx`, `auth.middleware.ts`, `auth.service.ts` (pendente).
 
 ### 3.4 Dependências — builds não reprodutíveis
 - **Lockfiles conflitantes**: `package-lock.json` **e** `pnpm-lock.yaml` (versões divergentes: `package.json` pede `next 16.0.10`; `pnpm-lock` tem `16.0.10`; `package-lock` registra `16.0.3`).
@@ -109,7 +111,7 @@ Enquanto o teste não for feito, a proteção está **ativa mas não verificada 
 
 ### 4.2 Defesa em profundidade do salário
 - **Banco:** RLS gestor-only em `pessoa_remuneracao` e `historico_reajuste`.
-- **Aplicação:** `PessoaService` só busca/grava remuneração quando `PermissaoService` autoriza (gestor da hierarquia). O recorte **por hierarquia** é responsabilidade do código — o RLS garante só "é gestor", não "é gestor *daquela* pessoa". Verificar que a busca de remuneração aplica o filtro de hierarquia.
+- **Aplicação:** `PessoaService` só busca/grava remuneração quando `PermissaoService` autoriza (gestor da hierarquia). O recorte **por hierarquia** é responsabilidade do código — o RLS garante só "é gestor", não "é gestor *daquela* pessoa". ✅ O filtro de hierarquia é aplicado: lista, detalhe, criação e edição usam `PermissaoService.getTimesHierarquia`/`podeVerSalario` (fonte única) para limitar salário à hierarquia do gestor.
 
 ### 4.3 Regra de salário (centralizada)
 Admin **não** vê salário (admin de sistema, não de RH); Gestor vê só da sua hierarquia; Visualizador não vê. Centralizado em `PermissaoService`, aplicado pelo `PessoaService`.
