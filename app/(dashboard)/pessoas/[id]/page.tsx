@@ -531,13 +531,13 @@ export default function PersonProfilePage() {
                   Ver Todos os Projetos
                 </Button>
               </div>
-              {PERSON_DATA.projetosAtivos.length === 0 ? (
+              {PERSON_DATA_MOCK.projetosAtivos.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Não está alocado em projetos atualmente
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {PERSON_DATA.projetosAtivos.map(projeto => (
+                  {PERSON_DATA_MOCK.projetosAtivos.map(projeto => (
                     <div key={projeto.id} className="flex items-center justify-between border rounded-lg p-4">
                       <div>
                         <Link href={`/projetos/${projeto.id}`} className="font-medium text-accent hover:underline">
@@ -557,11 +557,11 @@ export default function PersonProfilePage() {
             {/* Tags */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Tags</h3>
-              {PERSON_DATA.tags.length === 0 ? (
+              {PERSON_DATA_MOCK.tags.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">Sem tags</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {PERSON_DATA.tags.map(tag => (
+                  {PERSON_DATA_MOCK.tags.map(tag => (
                     <Badge key={tag} variant="secondary" className="text-sm text-white">
                       {tag}
                     </Badge>
@@ -650,12 +650,12 @@ export default function PersonProfilePage() {
               <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Total Projetos</p>
                 <p className="text-2xl font-bold">
-                  {PERSON_DATA.projetosAtivos.length + PERSON_DATA.projetosAnteriores.length}
+                  {PERSON_DATA_MOCK.projetosAtivos.length + PERSON_DATA_MOCK.projetosAnteriores.length}
                 </p>
               </Card>
               <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Projetos Ativos</p>
-                <p className="text-2xl font-bold">{PERSON_DATA.projetosAtivos.length}</p>
+                <p className="text-2xl font-bold">{PERSON_DATA_MOCK.projetosAtivos.length}</p>
               </Card>
               <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Tempo Médio por Projeto</p>
@@ -666,13 +666,13 @@ export default function PersonProfilePage() {
             {/* Active Projects */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Projetos Ativos</h3>
-              {PERSON_DATA.projetosAtivos.length === 0 ? (
+              {PERSON_DATA_MOCK.projetosAtivos.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Não está alocado em projetos atualmente
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {PERSON_DATA.projetosAtivos.map(projeto => (
+                  {PERSON_DATA_MOCK.projetosAtivos.map(projeto => (
                     <div key={projeto.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-lg font-bold">{projeto.nome}</p>
@@ -693,13 +693,13 @@ export default function PersonProfilePage() {
             {/* Past Projects */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Projetos Anteriores</h3>
-              {PERSON_DATA.projetosAnteriores.length === 0 ? (
+              {PERSON_DATA_MOCK.projetosAnteriores.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Sem projetos anteriores
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {PERSON_DATA.projetosAnteriores.map(projeto => (
+                  {PERSON_DATA_MOCK.projetosAnteriores.map(projeto => (
                     <div key={projeto.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-lg font-bold">{projeto.nome}</p>
