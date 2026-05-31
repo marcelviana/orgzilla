@@ -87,7 +87,7 @@ function LoginForm() {
       // Support both publishable key (new, recommended) and anon key (legacy)
       const hasApiKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !hasApiKey) {
-        toast.error('⚠️ Supabase não configurado. Veja o arquivo CONFIGURAR-SUPABASE.md')
+        toast.error('⚠️ Supabase não configurado. Confira as variáveis de ambiente no .env.local (instruções no README).')
         console.error('[Login] Variáveis de ambiente do Supabase não configuradas!')
         setIsLoading(false)
         return

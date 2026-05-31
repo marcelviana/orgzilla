@@ -60,7 +60,7 @@ No **SQL Editor** do Supabase, rode nesta ordem:
 1. `db/orgzilla_schema.sql` — cria as tabelas, índices e **RLS** (Row Level Security) por perfil.
 2. `db/orgzilla_seed.sql` — popula dados de teste (~140 pessoas, hierarquia, projetos, etc.).
 
-> ⚠️ **Não** use o antigo `CONFIGURAR-SUPABASE.md`: o script dele cria o banco **sem RLS** e expõe dados sensíveis. Ele está substituído pelos scripts acima.
+> ⚠️ Os scripts acima já habilitam **RLS**. Não recrie o banco a partir de um schema sem RLS — isso reabre o furo de segurança que expõe dados sensíveis (salário). Ver `STATUS.md` §4.
 
 ### 4. Criar os usuários de login
 Os usuários ficam em `auth.users` (Supabase) e são criados pelo painel, não pelo seed:
@@ -131,7 +131,7 @@ As regras completas (incluindo segurança de dados sensíveis e convenções) es
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Identidade visual, cores, tipografia e padrões de componente. |
 | [`PADROES-ERRO.md`](./PADROES-ERRO.md) | Padrão centralizado de tratamento de erros e toasts. |
 
-> Docs marcados como históricos/desatualizados (ex.: `CONFIGURAR-SUPABASE.md`, READMEs de camada) estão listados em `STATUS.md` §0 — não use como referência atual.
+> A documentação foi enxugada para esse conjunto pequeno e com dono claro. Docs de "como uma fase foi construída" e READMEs de camada foram removidos por envelhecerem mal; o estado atual vive em `STATUS.md`.
 
 ---
 

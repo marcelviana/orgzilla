@@ -8,14 +8,16 @@
 
 ---
 
-## 0. Aviso sobre a documentação antiga
+## 0. Documentação
 
-Parte da documentação **não reflete o código/estado atual**:
+A documentação foi **enxugada** para um conjunto pequeno e com dono claro. Os "retratos de momento" (docs de "como tal feature/fase foi construída", READMEs de camada, guias de setup superados) foram **removidos** por envelhecerem mal e passarem a enganar.
 
-- ✅ `CLAUDE.md` foi reescrito e reconciliado — pode ser tratado como atual.
-- ❌ `lib/repositories/README.md` e `lib/supabase/README.md` ainda dizem "⏳ Services: próxima camada a ser criada" — **já criada**. Tratar como histórico.
-- 🔴 `CONFIGURAR-SUPABASE.md` contém um script de setup **sem RLS** — está **substituído** por `orgzilla_schema.sql` (ver §7). Não usar o script antigo; ele recria o furo de segurança.
-- ⚠️ `AUTENTICACAO.md` afirma falsamente que "o Supabase protege automaticamente com RLS". Corrigir.
+Conjunto atual:
+
+- **Canônicos:** `README.md` (o que é + como rodar), `CLAUDE.md` (regras + arquitetura), `STATUS.md` (estado atual — este arquivo).
+- **Referência durável:** `DESIGN_SYSTEM.md` (identidade visual) e `PADROES-ERRO.md` (padrão de erros/toasts).
+
+Removidos nesta limpeza (conteúdo útil migrado para os canônicos quando aplicável): `AUTENTICACAO.md`, `CONFIGURAR-SUPABASE.md`, `DASHBOARD.md`, `USUARIO-LOGADO.md`, `PESSOAS-LISTA.md`, `LOGIN-MELHORIAS.md`, `PROXIMOS-PASSOS-ERROS.md`, `lib/middleware/README.md`. (Os READMEs de `lib/repositories`, `lib/supabase` e `lib/types` já haviam sido removidos antes.)
 
 ---
 
@@ -93,6 +95,15 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 - **Pins `"latest"`** em várias deps (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`, `react-day-picker`, `vaul`).
 - Stack bleeding edge (Next 16 + React 19.2) + pins `"latest"` = risco de quebras silenciosas.
 
+### 3.5 Erros de TypeScript mascarados no build
+- `next.config.mjs` tem **`typescript.ignoreBuildErrors: true`**. Por isso `npm run build` passa **sem checagem de tipos** — "build ok" não significa "tipos ok".
+- Rodando `tsc --noEmit` (precisa de Node ≥ 14; o Node ativo no ambiente era 10): **~94 erros de tipo em ~15 arquivos** (actions de pessoas/times/projetos/tags/usuários/cargos/trilhas, `lib/repositories/*`, `lib/services/auditoria.service.ts`, `lib/types/index.ts`, páginas de `configuracoes/*` e `organograma`).
+- Confirmados entre eles os reportados antes: `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314: Generic type 'ActionResult' requires 1 type argument`). O terceiro item então relatado (`timeRepo.findAll({...})` em `getTimesParaFiltro`) **não se reproduz mais**: a função hoje usa `supabase.from('time')` direto.
+- ⚠️ **Validado por `tsc`/build, não verificado contra o app rodando.** Não corrigidos nesta passada — registro de débito para não se perderem. Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
+
+### 3.6 Padronização de toast/erros incompleta
+- A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `perfil`, `pessoas/*`). Migração pendente (não-bloqueante); seguir a convenção em código novo.
+
 ---
 
 ## 4. Segurança
@@ -112,6 +123,7 @@ Enquanto o teste não for feito, a proteção está **ativa mas não verificada 
 ### 4.2 Defesa em profundidade do salário
 - **Banco:** RLS gestor-only em `pessoa_remuneracao` e `historico_reajuste`.
 - **Aplicação:** `PessoaService` só busca/grava remuneração quando `PermissaoService` autoriza (gestor da hierarquia). O recorte **por hierarquia** é responsabilidade do código — o RLS garante só "é gestor", não "é gestor *daquela* pessoa". ✅ O filtro de hierarquia é aplicado: lista, detalhe, criação e edição usam `PermissaoService.getTimesHierarquia`/`podeVerSalario` (fonte única) para limitar salário à hierarquia do gestor.
+- 🧹 Removidos os helpers mortos `filterSensitiveFields`/`filterSensitiveFieldsArray` de `lib/middleware/permission.middleware.ts` (e seus exports): desestruturavam `salario_atual`/`data_ultimo_reajuste`/`motivo_ultimo_reajuste` de `pessoa`, campos que **não existem mais** ali (salário foi para `pessoa_remuneracao`) — eram no-ops sem nenhum uso real. A proteção de salário hoje é via RLS em `pessoa_remuneracao` + `PessoaService`/`PermissaoService`.
 
 ### 4.3 Regra de salário (centralizada)
 Admin **não** vê salário (admin de sistema, não de RH); Gestor vê só da sua hierarquia; Visualizador não vê. Centralizado em `PermissaoService`, aplicado pelo `PessoaService`.
@@ -128,7 +140,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 2. **Validar a cadeia**: app sobe, login funciona, dashboard renderiza, e rodar o teste de fumaça de RLS (§6).
 3. **Resolver lockfiles e pins `"latest"`**: escolher npm *ou* pnpm, apagar o outro lockfile, fixar versões, install limpo, `build` ok.
 4. **Inventário mock vs. real** (§3.1) e remover mocks já substituídos — começar por `mockUsers` órfão e troca de senha falsa em `perfil`.
-5. **Corrigir docs**: marcar `CONFIGURAR-SUPABASE.md` como substituído; corrigir a afirmação falsa de RLS em `AUTENTICACAO.md`; atualizar os READMEs de camada.
+5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
 
 ### 🟨 Em seguida — consolidar a arquitetura
 6. **Terminar a migração para Services** em `pessoas`/`dashboard` (a parte de salário já foi; falta o resto da query sair do `supabase.from()` cru).
@@ -154,7 +166,7 @@ Ambos devem retornar **vazio / negado**. Só o **gestor** deve obter dados. Se v
 ---
 
 ## 7. Artefatos de recriação (fora do repo, gerados nesta retomada)
-- `orgzilla_schema.sql` — schema + RLS (substitui o script de `CONFIGURAR-SUPABASE.md`).
+- `orgzilla_schema.sql` — schema + RLS (recria as 17 tabelas com RLS por perfil).
 - `orgzilla_seed.sql` — dados de teste.
 - `PROMPT-claude-code.md` — prompt que aplicou a separação de remuneração no código.
 

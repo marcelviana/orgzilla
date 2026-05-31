@@ -73,7 +73,5 @@ export {
   pertenceHierarquia,
   filterByHierarchy,
   checkPermission,
-  filterSensitiveFields,
-  filterSensitiveFieldsArray,
   PermissionError,
 } from './permission.middleware'

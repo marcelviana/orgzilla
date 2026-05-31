@@ -301,63 +301,6 @@ export async function checkPermission(
   }
 }
 
-/**
- * Filtra campos sensíveis baseado em permissões
- *
- * Remove campos de salário se usuário não pode ver
- */
-export async function filterSensitiveFields<T extends Record<string, any>>(
-  data: T,
-  pessoaId: string
-): Promise<T> {
-  const podeVerSalario = await canViewSalary(pessoaId)
-
-  if (podeVerSalario) {
-    return data
-  }
-
-  // Remove campos sensíveis
-  const { salario_atual, data_ultimo_reajuste, motivo_ultimo_reajuste, ...rest } = data
-
-  return rest as T
-}
-
-/**
- * Filtra array de objetos removendo campos sensíveis
- */
-export async function filterSensitiveFieldsArray<T extends Record<string, any>>(
-  data: T[]
-): Promise<T[]> {
-  const usuario = await getUsuarioLogado()
-
-  // Se não autenticado ou não pode ver salários, remove campos
-  if (!usuario || usuario.tipo_perfil === 'admin' || usuario.tipo_perfil === 'visualizador') {
-    return data.map((item) => {
-      const { salario_atual, data_ultimo_reajuste, motivo_ultimo_reajuste, ...rest } = item
-      return rest as T
-    })
-  }
-
-  // Gestor: verifica permissão por item
-  const supabase = await createClient()
-  const permissaoService = new PermissaoService(supabase)
-
-  return await Promise.all(
-    data.map(async (item) => {
-      if (!item.id) return item
-
-      const podeVer = await permissaoService.podeVerSalario(usuario, item.id)
-
-      if (podeVer) {
-        return item
-      }
-
-      const { salario_atual, data_ultimo_reajuste, motivo_ultimo_reajuste, ...rest } = item
-      return rest as T
-    })
-  )
-}
-
 // =============================================================================
 // TYPES
 // =============================================================================
