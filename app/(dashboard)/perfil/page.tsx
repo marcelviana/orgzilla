@@ -5,11 +5,11 @@ import { DashboardShell } from "@/components/dashboard-shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { AlertCircle, Calendar, Check, Clock, ExternalLink, Eye, EyeOff, Info, Lock, User, Loader2 } from 'lucide-react'
+import { AlertCircle, Calendar, Check, ExternalLink, Eye, EyeOff, Info, Lock, Loader2 } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 import { toast as sonnerToast } from 'sonner'
 import Link from "next/link"
@@ -42,14 +42,6 @@ const getProfileLabel = (tipo: string) => {
   }
 }
 
-const getTimeSinceDate = (dateString: string) => {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMonths = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30))
-  return `há ${diffMonths} ${diffMonths === 1 ? 'mês' : 'meses'}`
-}
-
 export default function ProfilePage() {
   const { toast } = useToast()
 
@@ -79,27 +71,25 @@ export default function ProfilePage() {
 
   // Load user data on mount
   useEffect(() => {
-    loadUserData()
-  }, [])
-
-  async function loadUserData() {
-    setIsLoading(true)
-    try {
-      const userData = await getUsuarioLogado()
-      if (userData) {
-        setUser(userData)
-        setFormData({
-          nome: userData.nome,
-          email: userData.email
-        })
+    async function loadUserData() {
+      try {
+        const userData = await getUsuarioLogado()
+        if (userData) {
+          setUser(userData)
+          setFormData({
+            nome: userData.nome,
+            email: userData.email
+          })
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error)
+        sonnerToast.error('Erro ao carregar perfil')
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Erro ao carregar dados do usuário:', error)
-      sonnerToast.error('Erro ao carregar perfil')
-    } finally {
-      setIsLoading(false)
     }
-  }
+    void loadUserData()
+  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -148,7 +138,7 @@ export default function ProfilePage() {
       if (result.success) {
         sonnerToast.success("🦖 Perfil atualizado com sucesso!")
         setIsDirty(false)
-        await loadUserData()
+        setUser((prev) => (prev ? { ...prev, nome: formData.nome, email: formData.email } : prev))
       } else {
         toast({
           title: "Erro ao atualizar perfil",
@@ -306,7 +296,7 @@ export default function ProfilePage() {
                 Cancelar
               </Button>
               <Button
-                onClick={handleSave}
+                onClick={() => { void handleSave() }}
                 disabled={!isDirty || isSaving}
                 className="bg-primary hover:bg-primary/90"
               >
@@ -591,7 +581,7 @@ export default function ProfilePage() {
                 Cancelar
               </Button>
               <Button
-                onClick={handleChangePassword}
+                onClick={() => { void handleChangePassword() }}
                 disabled={!isPasswordValid || isChangingPassword}
                 className="bg-primary hover:bg-primary/90"
               >

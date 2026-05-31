@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,69 +44,74 @@ export default function EditarTimePage() {
 
   // Load data on mount
   useEffect(() => {
-    loadData()
-  }, [timeId])
+    const controller = new AbortController()
 
-  async function loadData() {
-    try {
-      const [timeResult, timesResult, pessoasResult] = await Promise.all([
-        getTimeById(timeId),
-        getTimesParaFiltro(),
-        getPessoasParaGestor(),
-      ])
+    async function fetchData() {
+      try {
+        const [timeResult, timesResult, pessoasResult] = await Promise.all([
+          getTimeById(timeId),
+          getTimesParaFiltro(),
+          getPessoasParaGestor(),
+        ])
 
-      // Load time data
-      if (timeResult.success && timeResult.data) {
-        const t = timeResult.data as any
-        setFormData({
-          nome: t.nome || '',
-          descricao: t.descricao || '',
-          timePaiId: t.time_pai_id || null,
-          gestorId: t.gestor_id || null,
-        })
+        if (controller.signal.aborted) return
 
-        // Set selected gestor for display
-        if (t.gestor) {
-          setSelectedGestor({
-            id: t.gestor.id,
-            nome: t.gestor.nome,
-            cargo: null,
-            time: null,
+        // Load time data
+        if (timeResult.success && timeResult.data) {
+          const t = timeResult.data as { nome?: string; descricao?: string; time_pai_id?: string | null; gestor_id?: string | null; gestor?: { id: string; nome: string } | null; time_pai?: { id: string; nome: string } | null }
+          setFormData({
+            nome: t.nome ?? '',
+            descricao: t.descricao ?? '',
+            timePaiId: t.time_pai_id ?? null,
+            gestorId: t.gestor_id ?? null,
           })
+
+          // Set selected gestor for display
+          if (t.gestor) {
+            setSelectedGestor({
+              id: t.gestor.id,
+              nome: t.gestor.nome,
+              cargo: null,
+              time: null,
+            })
+          }
+
+          // Set selected time pai for display
+          if (t.time_pai) {
+            setSelectedTimePai({
+              id: t.time_pai.id,
+              nome: t.time_pai.nome,
+            })
+          }
+        } else {
+          sonnerToast.error(String(timeResult.error ?? 'Erro ao carregar time'))
+          router.push('/times')
+          return
         }
 
-        // Set selected time pai for display
-        if (t.time_pai) {
-          setSelectedTimePai({
-            id: t.time_pai.id,
-            nome: t.time_pai.nome,
-          })
+        // Load dropdown data
+        if (timesResult.success && timesResult.data) {
+          setAvailableTeams(timesResult.data.filter(t => t.id !== timeId))
         }
-      } else {
-        sonnerToast.error(timeResult.error || 'Erro ao carregar time')
+
+        if (pessoasResult.success && pessoasResult.data) {
+          setAvailableManagers(pessoasResult.data)
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return
+        console.error('Erro ao carregar dados:', error)
+        sonnerToast.error('Erro inesperado ao carregar dados')
         router.push('/times')
-        return
+      } finally {
+        if (!controller.signal.aborted) setDataLoading(false)
       }
-
-      // Load dropdown data
-      if (timesResult.success && timesResult.data) {
-        // Filter out current time and its descendants from parent options
-        setAvailableTeams(timesResult.data.filter(t => t.id !== timeId))
-      }
-
-      if (pessoasResult.success && pessoasResult.data) {
-        setAvailableManagers(pessoasResult.data)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      sonnerToast.error('Erro inesperado ao carregar dados')
-      router.push('/times')
-    } finally {
-      setDataLoading(false)
     }
-  }
 
-  const handleInputChange = (field: string, value: any) => {
+    void fetchData()
+    return () => controller.abort()
+  }, [timeId, router])
+
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setIsDirty(true)
   }
@@ -187,7 +193,7 @@ export default function EditarTimePage() {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Home className="h-4 w-4" />
           <ChevronRight className="w-4 h-4" />
-          <a href="/times" className="hover:text-foreground">Times</a>
+          <Link href="/times" className="hover:text-foreground">Times</Link>
           <ChevronRight className="w-4 h-4" />
           <a href={`/times/${timeId}`} className="hover:text-foreground">{formData.nome}</a>
           <ChevronRight className="w-4 h-4" />
@@ -281,7 +287,7 @@ export default function EditarTimePage() {
             <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
+            <Button onClick={() => { void handleSave() }} disabled={isLoading} className="bg-primary hover:bg-primary/90">
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

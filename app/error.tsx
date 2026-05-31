@@ -5,7 +5,7 @@ import { RefreshCw, Home, Copy } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function Error({
   error,
@@ -16,11 +16,15 @@ export default function Error({
 }) {
   const router = useRouter()
   const [copied, setCopied] = useState(false)
-  
-  const errorRef = `ERR-500-${Date.now()}`
+
+  useEffect(() => {
+    console.error(error)
+  }, [error])
+
+  const errorRef = `ERR-500-${error.digest ?? 'unknown'}`
 
   const handleCopyError = () => {
-    navigator.clipboard.writeText(errorRef)
+    void navigator.clipboard.writeText(errorRef)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }

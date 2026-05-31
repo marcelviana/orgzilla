@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter, X, Loader2 } from 'lucide-react'
+import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,
@@ -40,7 +40,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 import {
   getTimesHierarquia,
   getGestoresParaFiltro,
@@ -76,8 +75,6 @@ type ViewMode = 'cards' | 'tree' | 'table'
 export default function TimesPage() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(true)
-  const [currentUser, setCurrentUser] = useState<any>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [teams, setTeams] = useState<Team[]>([])
   const [gestores, setGestores] = useState<Array<{ id: string; nome: string }>>([])
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
@@ -90,73 +87,47 @@ export default function TimesPage() {
   const [timeToDelete, setTimeToDelete] = useState<string | null>(null)
 
   useEffect(() => {
-    loadData()
-  }, [])
+    const controller = new AbortController()
 
-  async function loadData() {
-    setLoading(true)
-    try {
-      await Promise.all([
-        checkPermissions(),
-        loadTimes(),
-        loadGestores(),
-      ])
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      toast({
-        title: 'Erro ao carregar dados',
-        description: 'Não foi possível carregar os times. Tente novamente.',
-        variant: 'destructive',
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
+    async function fetchAll() {
+      setLoading(true)
+      try {
+        const [timesResult, gestoresResult] = await Promise.all([
+          getTimesHierarquia(),
+          getGestoresParaFiltro(),
+        ])
 
-  async function checkPermissions() {
-    try {
-      const user = await getCurrentUser()
-      setCurrentUser(user)
+        if (controller.signal.aborted) return
 
-      const adminStatus = await checkIsAdmin()
-      setIsAdmin(adminStatus)
-    } catch (error) {
-      console.error('Erro ao verificar permissões:', error)
-    }
-  }
+        if (timesResult.success && timesResult.data) {
+          setTeams(timesResult.data.map(mapTimeHierarquicoToTeam))
+        } else {
+          toast({
+            title: 'Erro ao carregar times',
+            description: timesResult.error ?? 'Erro desconhecido',
+            variant: 'destructive',
+          })
+        }
 
-  async function loadTimes() {
-    try {
-      const result = await getTimesHierarquia()
-      if (result.success && result.data) {
-        setTeams(result.data.map(mapTimeHierarquicoToTeam))
-      } else {
+        if (gestoresResult.success && gestoresResult.data) {
+          setGestores(gestoresResult.data)
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return
+        console.error('Erro ao carregar dados:', error)
         toast({
-          title: 'Erro ao carregar times',
-          description: result.error || 'Erro desconhecido',
+          title: 'Erro ao carregar dados',
+          description: 'Não foi possível carregar os times. Tente novamente.',
           variant: 'destructive',
         })
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
       }
-    } catch (error) {
-      console.error('Erro ao carregar times:', error)
-      toast({
-        title: 'Erro ao carregar times',
-        description: 'Não foi possível carregar os times.',
-        variant: 'destructive',
-      })
     }
-  }
 
-  async function loadGestores() {
-    try {
-      const result = await getGestoresParaFiltro()
-      if (result.success && result.data) {
-        setGestores(result.data)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar gestores:', error)
-    }
-  }
+    void fetchAll()
+    return () => controller.abort()
+  }, [toast])
 
   async function handleDelete(timeId: string) {
     try {
@@ -166,7 +137,10 @@ export default function TimesPage() {
           title: '🦖 Time desativado com sucesso!',
           description: 'O time foi desativado.',
         })
-        await loadTimes()
+        const timesResult = await getTimesHierarquia()
+        if (timesResult.success && timesResult.data) {
+          setTeams(timesResult.data.map(mapTimeHierarquicoToTeam))
+        }
       } else {
         toast({
           title: 'Erro ao desativar time',
@@ -432,7 +406,7 @@ export default function TimesPage() {
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => timeToDelete && handleDelete(timeToDelete)}
+                onClick={() => { if (timeToDelete) void handleDelete(timeToDelete) }}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Desativar

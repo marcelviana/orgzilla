@@ -99,7 +99,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       throw new RepositoryError('Erro ao buscar pessoa com relacionamentos básicos', error)
     }
 
-    return data as PessoaComRelacionamentosBasicos
+    return data
   }
 
   /**
@@ -172,7 +172,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       throw new RepositoryError('Erro ao buscar pessoas por projeto', error)
     }
 
-    return (data?.map((item: any) => item.pessoa) || []) as Pessoa[]
+    return (data as Array<{ pessoa: Pessoa }> | null)?.map((item) => item.pessoa) ?? []
   }
 
   /**
@@ -188,7 +188,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       throw new RepositoryError('Erro ao buscar pessoas por tag', error)
     }
 
-    return (data?.map((item: any) => item.pessoa) || []) as Pessoa[]
+    return (data as Array<{ pessoa: Pessoa }> | null)?.map((item) => item.pessoa) ?? []
   }
 
   /**
@@ -256,7 +256,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       throw new RepositoryError('Erro ao buscar pessoas com filtros', error)
     }
 
-    return (data || []) as Pessoa[]
+    return (data || [])
   }
 
   /**

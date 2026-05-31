@@ -39,7 +39,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronDown, ChevronUp, Users, Edit, Copy, Trash2, X, ShieldAlert, Loader2 } from 'lucide-react'
+import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, ShieldAlert, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -48,71 +48,11 @@ import {
   createCargo,
   updateCargo,
   softDeleteCargo,
-  deleteCargo,
   getTrilhasParaFiltro,
   getNiveisParaFiltro,
   type CargoComEstatisticas
 } from '@/app/actions/cargos.actions'
 import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
-
-// Mock data
-const mockPositions = [
-  // Engenharia de Software
-  { id: 'c1', nome: 'Engineer I', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L2', nivelId: 'n2', pessoas: 12, ativo: true },
-  { id: 'c2', nome: 'Engineer II', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L3', nivelId: 'n3', pessoas: 18, ativo: true },
-  { id: 'c3', nome: 'Senior Engineer', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L4', nivelId: 'n4', pessoas: 15, ativo: true },
-  { id: 'c4', nome: 'Staff Engineer', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L5', nivelId: 'n5', pessoas: 8, ativo: true },
-  { id: 'c5', nome: 'Principal Engineer', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L6', nivelId: 'n6', pessoas: 4, ativo: true },
-  { id: 'c6', nome: 'Engineering Lead', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L6', nivelId: 'n6', pessoas: 3, ativo: true },
-  { id: 'c7', nome: 'Architect', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L7', nivelId: 'n7', pessoas: 2, ativo: true },
-  
-  // Produto
-  { id: 'c8', nome: 'Associate PM', trilha: 'Produto', trilhaId: 't2', nivel: 'L2', nivelId: 'n2', pessoas: 3, ativo: true },
-  { id: 'c9', nome: 'Product Manager', trilha: 'Produto', trilhaId: 't2', nivel: 'L4', nivelId: 'n4', pessoas: 8, ativo: true },
-  { id: 'c10', nome: 'Senior PM', trilha: 'Produto', trilhaId: 't2', nivel: 'L5', nivelId: 'n5', pessoas: 5, ativo: true },
-  { id: 'c11', nome: 'Group PM', trilha: 'Produto', trilhaId: 't2', nivel: 'L6', nivelId: 'n6', pessoas: 2, ativo: true },
-  { id: 'c12', nome: 'Director of Product', trilha: 'Produto', trilhaId: 't2', nivel: 'L7', nivelId: 'n7', pessoas: 1, ativo: true },
-  
-  // Design
-  { id: 'c13', nome: 'Junior Designer', trilha: 'Design', trilhaId: 't3', nivel: 'L2', nivelId: 'n2', pessoas: 4, ativo: true },
-  { id: 'c14', nome: 'Designer', trilha: 'Design', trilhaId: 't3', nivel: 'L3', nivelId: 'n3', pessoas: 6, ativo: true },
-  { id: 'c15', nome: 'Senior Designer', trilha: 'Design', trilhaId: 't3', nivel: 'L4', nivelId: 'n4', pessoas: 4, ativo: true },
-  { id: 'c16', nome: 'Design Lead', trilha: 'Design', trilhaId: 't3', nivel: 'L5', nivelId: 'n5', pessoas: 2, ativo: true },
-  { id: 'c17', nome: 'Head of Design', trilha: 'Design', trilhaId: 't3', nivel: 'L6', nivelId: 'n6', pessoas: 1, ativo: true },
-  
-  // Dados
-  { id: 'c18', nome: 'Data Analyst', trilha: 'Dados', trilhaId: 't4', nivel: 'L2', nivelId: 'n2', pessoas: 5, ativo: true },
-  { id: 'c19', nome: 'Senior Data Analyst', trilha: 'Dados', trilhaId: 't4', nivel: 'L3', nivelId: 'n3', pessoas: 3, ativo: true },
-  { id: 'c20', nome: 'Data Scientist', trilha: 'Dados', trilhaId: 't4', nivel: 'L4', nivelId: 'n4', pessoas: 4, ativo: true },
-  { id: 'c21', nome: 'Senior Data Scientist', trilha: 'Dados', trilhaId: 't4', nivel: 'L5', nivelId: 'n5', pessoas: 2, ativo: true },
-  { id: 'c22', nome: 'Data Engineering Lead', trilha: 'Dados', trilhaId: 't4', nivel: 'L6', nivelId: 'n6', pessoas: 1, ativo: true },
-  
-  // Marketing
-  { id: 'c23', nome: 'Marketing Analyst', trilha: 'Marketing', trilhaId: 't5', nivel: 'L2', nivelId: 'n2', pessoas: 3, ativo: true },
-  { id: 'c24', nome: 'Marketing Specialist', trilha: 'Marketing', trilhaId: 't5', nivel: 'L3', nivelId: 'n3', pessoas: 4, ativo: true },
-  { id: 'c25', nome: 'Marketing Manager', trilha: 'Marketing', trilhaId: 't5', nivel: 'L4', nivelId: 'n4', pessoas: 2, ativo: true },
-  { id: 'c26', nome: 'Senior Marketing Manager', trilha: 'Marketing', trilhaId: 't5', nivel: 'L5', nivelId: 'n5', pessoas: 1, ativo: true },
-  
-  // Operações
-  { id: 'c27', nome: 'Operations Analyst', trilha: 'Operações', trilhaId: 't6', nivel: 'L2', nivelId: 'n2', pessoas: 4, ativo: true },
-  { id: 'c28', nome: 'Operations Specialist', trilha: 'Operações', trilhaId: 't6', nivel: 'L3', nivelId: 'n3', pessoas: 5, ativo: true },
-  { id: 'c29', nome: 'Operations Manager', trilha: 'Operações', trilhaId: 't6', nivel: 'L4', nivelId: 'n4', pessoas: 3, ativo: true },
-  { id: 'c30', nome: 'Senior Operations Manager', trilha: 'Operações', trilhaId: 't6', nivel: 'L5', nivelId: 'n5', pessoas: 2, ativo: true },
-  
-  // Additional positions
-  { id: 'c31', nome: 'Tech Lead', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L5', nivelId: 'n5', pessoas: 5, ativo: true },
-  { id: 'c32', nome: 'Frontend Engineer', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L3', nivelId: 'n3', pessoas: 8, ativo: true },
-  { id: 'c33', nome: 'Backend Engineer', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L3', nivelId: 'n3', pessoas: 10, ativo: true },
-  { id: 'c34', nome: 'DevOps Engineer', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L4', nivelId: 'n4', pessoas: 4, ativo: true },
-  { id: 'c35', nome: 'QA Engineer', trilha: 'Engenharia de Software', trilhaId: 't1', nivel: 'L3', nivelId: 'n3', pessoas: 6, ativo: true },
-  { id: 'c36', nome: 'Product Designer', trilha: 'Design', trilhaId: 't3', nivel: 'L4', nivelId: 'n4', pessoas: 3, ativo: true },
-  { id: 'c37', nome: 'UX Researcher', trilha: 'Design', trilhaId: 't3', nivel: 'L3', nivelId: 'n3', pessoas: 2, ativo: true },
-  { id: 'c38', nome: 'Content Designer', trilha: 'Design', trilhaId: 't3', nivel: 'L3', nivelId: 'n3', pessoas: 2, ativo: true },
-  { id: 'c39', nome: 'Growth PM', trilha: 'Produto', trilhaId: 't2', nivel: 'L4', nivelId: 'n4', pessoas: 2, ativo: true },
-  { id: 'c40', nome: 'Technical PM', trilha: 'Produto', trilhaId: 't2', nivel: 'L5', nivelId: 'n5', pessoas: 3, ativo: true },
-  { id: 'c41', nome: 'ML Engineer', trilha: 'Dados', trilhaId: 't4', nivel: 'L4', nivelId: 'n4', pessoas: 0, ativo: true },
-  { id: 'c42', nome: 'Data Engineer (Deprecated)', trilha: 'Dados', trilhaId: 't4', nivel: 'L3', nivelId: 'n3', pessoas: 0, ativo: false },
-]
 
 const trackColors: Record<string, string> = {
   'Engenharia de Software': 'bg-blue-100 text-blue-800',
@@ -136,13 +76,12 @@ export default function CargosPage() {
   const [niveis, setNiveis] = useState<Array<{ id: string; nome: string }>>([])
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [currentUser, setCurrentUser] = useState<string | null>(null)
+  const [, setCurrentUser] = useState<string | null>(null)
 
   // UI state
   const [view, setView] = useState<'table' | 'grid'>('table')
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedRows, setSelectedRows] = useState<string[]>([])
 
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -168,14 +107,14 @@ export default function CargosPage() {
   })
 
   // Mutation state
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [, setIsSubmitting] = useState(false)
 
   // Load data and check permissions on mount
   useEffect(() => {
-    loadCargos()
-    loadTrilhas()
-    loadNiveis()
-    checkPermissions()
+    void loadCargos()
+    void loadTrilhas()
+    void loadNiveis()
+    void checkPermissions()
   }, [])
 
   async function checkPermissions() {
@@ -279,7 +218,7 @@ export default function CargosPage() {
         toast.successDino('Cargo criado com sucesso!')
         setCreateModalOpen(false)
         setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
-        loadCargos() // Recarregar lista
+        void loadCargos() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao criar cargo')
       }
@@ -322,7 +261,7 @@ export default function CargosPage() {
         setEditModalOpen(false)
         setSelectedPosition(null)
         setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
-        loadCargos() // Recarregar lista
+        void loadCargos() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao atualizar cargo')
       }
@@ -352,7 +291,7 @@ export default function CargosPage() {
         toast.successDino('Cargo desativado com sucesso!')
         setDeleteModalOpen(false)
         setSelectedPosition(null)
-        loadCargos() // Recarregar lista
+        void loadCargos() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao desativar cargo')
       }
@@ -951,7 +890,7 @@ export default function CargosPage() {
                 Cancelar
               </Button>
               <Button
-                onClick={editModalOpen ? handleEditPosition : handleCreatePosition}
+                onClick={() => { void (editModalOpen ? handleEditPosition() : handleCreatePosition()) }}
                 className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
                 disabled={!formData.nome || !formData.trilha_id || !formData.nivel_id}
               >
@@ -988,7 +927,7 @@ export default function CargosPage() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={handleDeletePosition}
+                onClick={() => { void handleDeletePosition() }}
                 disabled={selectedPosition?.pessoas > 0}
               >
                 Excluir

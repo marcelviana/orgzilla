@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -43,7 +43,6 @@ const adminSubmenuItems: NavItem[] = [
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const usuario = useUser()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [configExpanded, setConfigExpanded] = useState(pathname?.startsWith('/configuracoes') || false)
@@ -84,7 +83,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         method: 'POST',
       })
 
-      const data = await response.json()
+      const data = (await response.json()) as { error?: string }
 
       if (response.ok) {
         toast.success('🦖 Até logo!')
@@ -98,7 +97,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
     }
   }
 
-  const SidebarContent = () => (
+  const sidebarContent = (
     <div className="flex h-full flex-col bg-secondary">
       {/* Logo */}
       <div className="flex items-center justify-center px-6 py-6">
@@ -217,7 +216,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              handleLogout()
+              void handleLogout()
             }}
           >
             <LogOut className="h-4 w-4" />
@@ -231,13 +230,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
     <div className="flex h-screen overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden w-60 flex-shrink-0 lg:block">
-        <SidebarContent />
+        {sidebarContent}
       </aside>
 
       {/* Mobile Sidebar */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent side="left" className="w-60 p-0 lg:hidden">
-          <SidebarContent />
+          {sidebarContent}
         </SheetContent>
       </Sheet>
 

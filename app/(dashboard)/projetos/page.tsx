@@ -32,7 +32,7 @@ export default function ProjetosPage() {
 
   // Load projetos on mount
   useEffect(() => {
-    loadProjetos()
+    void loadProjetos()
   }, [])
 
   async function loadProjetos() {
@@ -42,7 +42,7 @@ export default function ProjetosPage() {
       if (result.success && result.data) {
         setProjetos(result.data)
       } else {
-        sonnerToast.error(result.error || 'Erro ao carregar projetos')
+        sonnerToast.error(String(result.error ?? 'Erro ao carregar projetos'))
       }
     } catch (error) {
       console.error('Erro ao carregar projetos:', error)
@@ -235,7 +235,7 @@ export default function ProjetosPage() {
                         {project.ativo && (
                           <DropdownMenuItem
                             className="text-red-600"
-                            onClick={() => handleDeleteProjeto(project.id, project.nome)}
+                            onClick={() => { void handleDeleteProjeto(project.id, project.nome) }}
                           >
                             Desativar
                           </DropdownMenuItem>
@@ -346,7 +346,7 @@ export default function ProjetosPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-600 hover:text-red-700"
-                                onClick={() => handleDeleteProjeto(project.id, project.nome)}
+                                onClick={() => { void handleDeleteProjeto(project.id, project.nome) }}
                               >
                                 Desativar
                               </Button>

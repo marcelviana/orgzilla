@@ -50,7 +50,7 @@ export class AuditoriaService {
   async registrarCriacao(
     tipoEntidade: string,
     entidadeId: string,
-    valorNovo: any,
+    valorNovo: unknown,
     usuarioId: string
   ): Promise<void> {
     await this.registrar({
@@ -69,8 +69,8 @@ export class AuditoriaService {
     tipoEntidade: string,
     entidadeId: string,
     campoAlterado: string,
-    valorAnterior: any,
-    valorNovo: any,
+    valorAnterior: unknown,
+    valorNovo: unknown,
     usuarioId: string
   ): Promise<void> {
     // Não registra se valores são iguais
@@ -95,7 +95,7 @@ export class AuditoriaService {
   async registrarExclusao(
     tipoEntidade: string,
     entidadeId: string,
-    valorAnterior: any,
+    valorAnterior: unknown,
     usuarioId: string
   ): Promise<void> {
     await this.registrar({
@@ -113,8 +113,8 @@ export class AuditoriaService {
   async registrarMudancas(
     tipoEntidade: string,
     entidadeId: string,
-    dadosAnteriores: any,
-    dadosNovos: any,
+    dadosAnteriores: Record<string, unknown>,
+    dadosNovos: Record<string, unknown>,
     usuarioId: string
   ): Promise<void> {
     // Compara objetos e registra apenas campos alterados
@@ -264,7 +264,7 @@ export class AuditoriaService {
   /**
    * Compara dois objetos e retorna lista de campos alterados
    */
-  private getCamposAlterados(anterior: any, novo: any): string[] {
+  private getCamposAlterados(anterior: Record<string, unknown>, novo: Record<string, unknown>): string[] {
     const campos: string[] = []
 
     // Campos ignorados (timestamps, etc)
@@ -287,7 +287,7 @@ export class AuditoriaService {
   /**
    * Formata valor para exibição no log
    */
-  formatarValor(valor: any): string {
+  formatarValor(valor: unknown): string {
     if (valor === null || valor === undefined) {
       return 'N/A'
     }
@@ -296,14 +296,22 @@ export class AuditoriaService {
       return JSON.stringify(valor)
     }
 
-    return String(valor)
+    if (typeof valor === 'string') {
+      return valor
+    }
+
+    if (typeof valor === 'number' || typeof valor === 'boolean' || typeof valor === 'bigint') {
+      return String(valor)
+    }
+
+    return JSON.stringify(valor)
   }
 
   /**
    * Sanitiza dados sensíveis antes de registrar
    * (Remove senhas, tokens, etc)
    */
-  sanitizarDadosSensiveis(dados: any): any {
+  sanitizarDadosSensiveis(dados: Record<string, unknown>): Record<string, unknown> {
     const camposSensiveis = ['password', 'senha', 'token', 'secret']
 
     const dadosSanitizados = { ...dados }
@@ -327,7 +335,7 @@ export interface RegistroAuditoria {
   entidadeId: string
   tipoMudanca: TipoMudanca
   campoAlterado?: string
-  valorAnterior?: any
-  valorNovo?: any
+  valorAnterior?: unknown
+  valorNovo?: unknown
   usuarioId: string
 }

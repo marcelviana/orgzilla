@@ -18,7 +18,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Referência: https://nextjs.org/docs/messages/middleware-to-proxy
  */
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
+  const supabaseResponse = NextResponse.next({
     request,
   })
 

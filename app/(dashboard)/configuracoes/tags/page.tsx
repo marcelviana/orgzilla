@@ -29,7 +29,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2, Eye, Loader2 } from 'lucide-react'
+import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -37,40 +37,9 @@ import {
   getTagsComEstatisticas,
   createTag,
   updateTag,
-  softDeleteTag,
   deleteTag,
-  getPessoasComTag,
-  type TagComEstatisticas
 } from '@/app/actions/tags.actions'
 import { getCurrentUser } from '@/app/actions/auth.actions'
-
-// Mock data
-const mockTags = [
-  { id: 'tag1', nome: 'Frontend', cor: '#FF7A00', pessoas: 18, ativo: true },
-  { id: 'tag2', nome: 'Backend', cor: '#1A2734', pessoas: 22, ativo: true },
-  { id: 'tag3', nome: 'Full Stack', cor: '#00C8FF', pessoas: 8, ativo: true },
-  { id: 'tag4', nome: 'Leadership', cor: '#9333EA', pessoas: 12, ativo: true },
-  { id: 'tag5', nome: 'Mentor', cor: '#10B981', pessoas: 15, ativo: true },
-  { id: 'tag6', nome: 'React', cor: '#61DAFB', pessoas: 16, ativo: true },
-  { id: 'tag7', nome: 'Node.js', cor: '#339933', pessoas: 14, ativo: true },
-  { id: 'tag8', nome: 'Python', cor: '#3776AB', pessoas: 11, ativo: true },
-  { id: 'tag9', nome: 'TypeScript', cor: '#3178C6', pessoas: 20, ativo: true },
-  { id: 'tag10', nome: 'AWS', cor: '#FF9900', pessoas: 9, ativo: true },
-  { id: 'tag11', nome: 'Kubernetes', cor: '#326CE5', pessoas: 6, ativo: true },
-  { id: 'tag12', nome: 'Mobile', cor: '#A4C639', pessoas: 5, ativo: true },
-  { id: 'tag13', nome: 'iOS', cor: '#000000', pessoas: 3, ativo: true },
-  { id: 'tag14', nome: 'Android', cor: '#3DDC84', pessoas: 4, ativo: true },
-  { id: 'tag15', nome: 'Machine Learning', cor: '#FF6F00', pessoas: 7, ativo: true },
-  { id: 'tag16', nome: 'Data Analysis', cor: '#4285F4', pessoas: 10, ativo: true },
-  { id: 'tag17', nome: 'UX Design', cor: '#E91E63', pessoas: 6, ativo: true },
-  { id: 'tag18', nome: 'Product Management', cor: '#FF5722', pessoas: 8, ativo: true },
-  { id: 'tag19', nome: 'Agile', cor: '#00BCD4', pessoas: 25, ativo: true },
-  { id: 'tag20', nome: 'Scrum Master', cor: '#009688', pessoas: 4, ativo: true },
-  { id: 'tag21', nome: 'DevOps', cor: '#607D8B', pessoas: 8, ativo: true },
-  { id: 'tag22', nome: 'Security', cor: '#F44336', pessoas: 5, ativo: true },
-  { id: 'tag23', nome: 'Technical Writer', cor: '#9C27B0', pessoas: 0, ativo: true },
-  { id: 'tag24', nome: 'Tester', cor: '#CDDC39', pessoas: 0, ativo: true },
-]
 
 const colorPresets = [
   { name: 'Orange Kaiju', color: '#FF7A00' },
@@ -98,7 +67,7 @@ export default function TagsPage() {
   const [tags, setTags] = useState<Array<{ id: string; nome: string; cor: string; pessoas: number; ativo: boolean }>>([])
   const [loading, setLoading] = useState(true)
   const [hasPermission, setHasPermission] = useState(false)
-  const [currentUser, setCurrentUser] = useState<string | null>(null)
+  const [, setCurrentUser] = useState<string | null>(null)
 
   // UI state
   const [searchQuery, setSearchQuery] = useState('')
@@ -123,12 +92,12 @@ export default function TagsPage() {
   const [removeFromAll, setRemoveFromAll] = useState(false)
 
   // Mutation state
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [, setIsSubmitting] = useState(false)
 
   // Load data and check permissions on mount
   useEffect(() => {
-    loadTags()
-    checkPermissions()
+    void loadTags()
+    void checkPermissions()
   }, [])
 
   async function checkPermissions() {
@@ -235,7 +204,7 @@ export default function TagsPage() {
           setFormData({ nome: '', cor: '#FF7A00' })
           setEditMode(false)
           setSelectedTag(null)
-          loadTags() // Recarregar lista
+          void loadTags() // Recarregar lista
         } else {
           toast.error(result.error || 'Erro ao atualizar tag')
         }
@@ -251,7 +220,7 @@ export default function TagsPage() {
           toast.successDino('Tag criada com sucesso!')
           setCreateEditModalOpen(false)
           setFormData({ nome: '', cor: '#FF7A00' })
-          loadTags() // Recarregar lista
+          void loadTags() // Recarregar lista
         } else {
           toast.error(result.error || 'Erro ao criar tag')
         }
@@ -283,7 +252,7 @@ export default function TagsPage() {
         setDeleteModalOpen(false)
         setSelectedTag(null)
         setRemoveFromAll(false)
-        loadTags() // Recarregar lista
+        void loadTags() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao deletar tag')
       }
@@ -314,7 +283,7 @@ export default function TagsPage() {
         toast.successDino(`Tag removida de ${selectedTag.pessoas} pessoas!`)
         setBulkRemoveModalOpen(false)
         setSelectedTag(null)
-        loadTags() // Recarregar lista
+        void loadTags() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao remover tag')
       }
@@ -342,19 +311,19 @@ export default function TagsPage() {
     setCreateEditModalOpen(true)
   }
 
-  const openEditModal = (tag: typeof mockTags[0]) => {
+  const openEditModal = (tag: typeof tags[0]) => {
     setSelectedTag(tag)
     setFormData({ nome: tag.nome, cor: tag.cor })
     setEditMode(true)
     setCreateEditModalOpen(true)
   }
 
-  const openDetailsModal = (tag: typeof mockTags[0]) => {
+  const openDetailsModal = (tag: typeof tags[0]) => {
     setSelectedTag(tag)
     setDetailsModalOpen(true)
   }
 
-  const openDeleteModal = (tag: typeof mockTags[0]) => {
+  const openDeleteModal = (tag: typeof tags[0]) => {
     setSelectedTag(tag)
     setDeleteModalOpen(true)
   }
@@ -741,7 +710,7 @@ export default function TagsPage() {
               Cancelar
             </Button>
             <Button
-              onClick={handleCreateEdit}
+              onClick={() => { void handleCreateEdit() }}
               disabled={!formData.nome}
               className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
             >
@@ -907,7 +876,7 @@ export default function TagsPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDelete}
+              onClick={() => { void handleDelete() }}
               disabled={selectedTag && selectedTag.pessoas > 0 && !removeFromAll}
             >
               <Trash2 className="h-4 w-4 mr-2" />
@@ -951,7 +920,7 @@ export default function TagsPage() {
             <Button variant="outline" onClick={() => setBulkRemoveModalOpen(false)}>
               Cancelar
             </Button>
-            <Button variant="destructive" onClick={handleBulkRemove}>
+            <Button variant="destructive" onClick={() => { void handleBulkRemove() }}>
               Remover de Todos
             </Button>
           </DialogFooter>

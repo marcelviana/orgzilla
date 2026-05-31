@@ -59,7 +59,7 @@ export class HistoricoCargoRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar histórico de cargos com cargo', error)
     }
 
-    return (data || []) as HistoricoCargoComCargo[]
+    return (data || [])
   }
 
   /**
@@ -147,7 +147,7 @@ export class HistoricoTimeRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar histórico de times com time', error)
     }
 
-    return (data || []) as HistoricoTimeComTime[]
+    return (data || [])
   }
 
   /**
@@ -316,7 +316,7 @@ export class HistoricoMudancaRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar histórico com usuário', error)
     }
 
-    return (data || []) as HistoricoMudancaComUsuario[]
+    return (data || [])
   }
 
   /**
@@ -370,7 +370,7 @@ export class HistoricoMudancaRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar mudanças recentes', error)
     }
 
-    return (data || []) as HistoricoMudancaComUsuario[]
+    return (data || [])
   }
 
   /**
@@ -415,7 +415,7 @@ export class HistoricoMudancaRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar histórico com filtros', error)
     }
 
-    return (data || []) as HistoricoMudanca[]
+    return (data || [])
   }
 
   /**

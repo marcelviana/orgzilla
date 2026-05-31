@@ -24,7 +24,14 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [hasError, setHasError] = useState(false) // Para destacar campos quando houver erro de credenciais
-  const [triangles, setTriangles] = useState<Array<{ left: number; top: number; width: number; height: number }>>([])
+  const [triangles] = useState<Array<{ left: number; top: number; width: number; height: number }>>(() =>
+    Array.from({ length: 20 }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      width: 20 + Math.random() * 40,
+      height: 20 + Math.random() * 40,
+    }))
+  )
 
   // Redirecionar se já estiver autenticado
   useEffect(() => {
@@ -37,19 +44,8 @@ function LoginForm() {
       }
     }
 
-    checkAuth()
+    void checkAuth()
   }, [supabase, router])
-
-  // Generate random triangle positions on client side only
-  useEffect(() => {
-    const positions = Array.from({ length: 20 }, () => ({
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      width: 20 + Math.random() * 40,
-      height: 20 + Math.random() * 40,
-    }))
-    setTriangles(positions)
-  }, [])
 
   // Verificar erro de OAuth na URL
   useEffect(() => {
@@ -94,7 +90,7 @@ function LoginForm() {
       }
 
       // Autenticação com Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -120,7 +116,7 @@ function LoginForm() {
       // Redirecionar para dashboard
       router.push('/')
       router.refresh()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[Login] Erro não tratado:', error)
       const appError = handleError(error, 'unknown')
       toast.error(appError)
@@ -132,7 +128,7 @@ function LoginForm() {
     try {
       setIsLoading(true)
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -146,7 +142,7 @@ function LoginForm() {
       }
 
       // O redirect acontecerá automaticamente
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[GoogleLogin] Erro:', error)
       toast.error('Ops! Orgzilla tropeçou. Tente novamente.')
       setIsLoading(false)
@@ -217,7 +213,7 @@ function LoginForm() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={(e) => { void handleSubmit(e) }} className="space-y-6">
             {/* Email Field */}
             <div className="relative">
               <Label htmlFor="email" className="text-sm font-medium text-secondary mb-2 block">
@@ -324,7 +320,7 @@ function LoginForm() {
               type="button"
               variant="outline"
               className="w-full h-12 bg-white hover:bg-surface border-muted text-secondary font-medium rounded-lg transition-colors"
-              onClick={handleGoogleLogin}
+              onClick={() => { void handleGoogleLogin() }}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path

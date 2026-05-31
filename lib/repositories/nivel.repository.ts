@@ -46,7 +46,7 @@ export class NivelRepository extends BaseRepository<'nivel', Nivel, NivelInsert,
       throw new RepositoryError('Erro ao buscar nível com anterior', error)
     }
 
-    return data as NivelComAnterior
+    return data
   }
 
   /**
@@ -97,7 +97,6 @@ export class NivelRepository extends BaseRepository<'nivel', Nivel, NivelInsert,
 
     // Ordena pela cadeia de nivel_anterior_id
     const ordenados: Nivel[] = []
-    const nivelMap = new Map(todos.map((n) => [n.id, n]))
 
     // Encontra o primeiro nível (sem anterior)
     let atual = todos.find((n) => !n.nivel_anterior_id)

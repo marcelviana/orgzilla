@@ -16,7 +16,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getUsuarioLogado } from '@/lib/middleware'
 import { PermissaoService } from '@/lib/services'
 import { TimeRepository, PessoaRepository, UsuarioRepository } from '@/lib/repositories'
-import type { TimeInsert, TimeUpdate } from '@/lib/types'
+import type { Time, TimeInsert, TimeUpdate } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
 
 // =============================================================================
@@ -106,7 +106,7 @@ export async function getTimesComEstatisticas(): Promise<ActionResult<TimeComEst
 
     // Admin e Visualizador veem todos os times
     // Gestor vê apenas sua hierarquia
-    let times: any[] = []
+    let times: Time[] = []
 
     if (usuario.tipo_perfil === 'gestor') {
       // Hierarquia do gestor (times que ele gerencia + descendentes) — fonte única
@@ -122,7 +122,7 @@ export async function getTimesComEstatisticas(): Promise<ActionResult<TimeComEst
 
     // Para cada time, busca estatísticas
     const timesComStats = await Promise.all(
-      times.map(async (time: any) => {
+      times.map(async (time) => {
         const [membrosCount, vagasCount, filhosCount, timeComRelacionamentos] = await Promise.all([
           timeRepo.countMembros(time.id),
           timeRepo.countVagas(time.id),
@@ -179,7 +179,7 @@ export async function getTimeById(id: string): Promise<ActionResult<TimeDetalhe>
     }
 
     // Busca estatísticas
-    const [membrosCount, vagasCount, filhosCount] = await Promise.all([
+    const [, vagasCount, filhosCount] = await Promise.all([
       timeRepo.countMembros(time.id),
       timeRepo.countVagas(time.id),
       timeRepo.countFilhos(time.id),

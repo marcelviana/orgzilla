@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
 import { PessoaRepository, PessoaRemuneracaoRepository } from '@/lib/repositories'
 import { PessoaService, PermissaoService } from '@/lib/services'
-import type { PessoaInsert, PessoaUpdate, PessoaRemuneracao } from '@/lib/types'
+import type { PessoaInsert, PessoaUpdate, PessoaComRelacionamentos, PessoaRemuneracao } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
 
 /**
@@ -189,7 +189,7 @@ export async function getPessoasComFiltros(
 
     const totalPages = Math.ceil((count || 0) / pagination.itemsPerPage)
 
-    let pessoasList = ((pessoas as any[]) || []) as PessoaListItem[]
+    let pessoasList = (pessoas ?? []) as unknown as PessoaListItem[]
 
     // Remuneração (SENSÍVEL - LGPD): apenas gestores, e somente para pessoas da
     // sua hierarquia. Admin e visualizador nunca recebem salário.
@@ -334,7 +334,13 @@ export async function getPessoasParaGestor(): Promise<
     if (error) throw error
 
     // Format response
-    const formatted = (pessoas || []).map((p: any) => ({
+    const pessoasRaw = (pessoas ?? []) as unknown as Array<{
+      id: string
+      nome: string
+      cargo?: { nome?: string | null } | null
+      time?: { nome?: string | null } | null
+    }>
+    const formatted = pessoasRaw.map((p) => ({
       id: p.id,
       nome: p.nome,
       cargo: p.cargo?.nome || null,
@@ -449,7 +455,9 @@ export async function exportPessoasCSV(
 /**
  * Busca uma pessoa por ID com todos os relacionamentos
  */
-export async function getPessoaById(id: string): Promise<ActionResult<any>> {
+export async function getPessoaById(
+  id: string
+): Promise<ActionResult<PessoaComRelacionamentos & { remuneracao?: PessoaRemuneracao | null }>> {
   try {
     const supabase = await createClient()
     const usuario = await getUsuarioLogado()
@@ -573,7 +581,7 @@ export async function createPessoa(dados: PessoaInsert & RemuneracaoFields): Pro
  * Atualiza uma pessoa existente
  * Permissões: Admin ou Gestor (gestor só atualiza em sua hierarquia)
  */
-export async function updatePessoa(id: string, dados: PessoaUpdate & RemuneracaoFields): Promise<ActionResult> {
+export async function updatePessoa(id: string, dados: PessoaUpdate & RemuneracaoFields): Promise<ActionResult<null>> {
   try {
     const supabase = await createClient()
     const usuario = await getUsuarioLogado()
@@ -664,7 +672,7 @@ export async function updatePessoa(id: string, dados: PessoaUpdate & Remuneracao
  * Desativa uma pessoa (soft delete)
  * Permissões: Apenas Admin
  */
-export async function softDeletePessoa(id: string): Promise<ActionResult> {
+export async function softDeletePessoa(id: string): Promise<ActionResult<null>> {
   try {
     // Apenas admin pode desativar pessoas
     await requireAdmin()

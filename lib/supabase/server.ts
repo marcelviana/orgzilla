@@ -2,6 +2,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import type { Database } from '@/lib/types'
 
 /**
  * Cliente Supabase para uso server-side (Server Components, Server Actions, Route Handlers)
@@ -94,7 +95,7 @@ function getSupabaseApiKey(): string {
 export async function createClient() {
   const cookieStore = await cookies()
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     getSupabaseApiKey(),
     {
@@ -107,7 +108,7 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options)
             })
-          } catch (error) {
+          } catch {
             // Os cookies setAll podem ser chamados do Server Component,
             // que não pode modificar cookies. Ignorar erro.
           }

@@ -5,7 +5,7 @@ import { DashboardShell } from '@/components/dashboard-shell'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Calendar, Download, Lock, TrendingUp, TrendingDown } from 'lucide-react'
+import { Calendar, Download, Lock, TrendingUp } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -22,8 +22,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  RadialBarChart,
-  RadialBar,
   Treemap,
   ScatterChart,
   Scatter,
@@ -181,7 +179,7 @@ const topProjects = [
 ]
 
 export default function RelatoriosPage() {
-  const [dateRange, setDateRange] = useState('Últimos 30 dias')
+  const [dateRange, _setDateRange] = useState('Últimos 30 dias')
   const [isManager] = useState(true) // Mock: change to false to see locked state
 
   const handleExport = (widgetName: string, format: string) => {
@@ -491,7 +489,20 @@ export default function RelatoriosPage() {
                     dataKey="size"
                     stroke="#fff"
                     fill="#FF7A00"
-                    content={({ x, y, width, height, name, size }: any) => (
+                    content={(props: {
+                      x?: number
+                      y?: number
+                      width?: number
+                      height?: number
+                      name?: string
+                      size?: number
+                    }) => {
+                      const x = props.x ?? 0
+                      const y = props.y ?? 0
+                      const width = props.width ?? 0
+                      const height = props.height ?? 0
+                      const { name, size } = props
+                      return (
                       <g>
                         <rect x={x} y={y} width={width} height={height} fill={teamSizeData.find(t => t.name === name)?.fill} />
                         <text x={x + width / 2} y={y + height / 2} textAnchor="middle" fill="#fff" fontSize={12} fontWeight="bold">
@@ -501,7 +512,8 @@ export default function RelatoriosPage() {
                           {size} pessoas
                         </text>
                       </g>
-                    )}
+                    )
+                  }}
                   />
                 </ResponsiveContainer>
               </CardContent>
@@ -689,7 +701,7 @@ export default function RelatoriosPage() {
                           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                           <XAxis type="number" stroke="#6b7280" />
                           <YAxis dataKey="team" type="category" stroke="#6b7280" width={100} />
-                          <Tooltip formatter={(value: any) => `R$ ${value.toLocaleString()}`} />
+                          <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString()}`} />
                           <Bar dataKey="avg" fill="#FF7A00" radius={[0, 4, 4, 0]} />
                         </BarChart>
                       </ResponsiveContainer>

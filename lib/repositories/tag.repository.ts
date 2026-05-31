@@ -165,7 +165,7 @@ export class PessoaTagRepository extends BaseRepository<'pessoa_tag', PessoaTag,
       throw new RepositoryError('Erro ao buscar tags da pessoa', error)
     }
 
-    return (data || []) as PessoaTagComTag[]
+    return (data || [])
   }
 
   /**
@@ -191,7 +191,7 @@ export class PessoaTagRepository extends BaseRepository<'pessoa_tag', PessoaTag,
       throw new RepositoryError('Erro ao buscar pessoas da tag', error)
     }
 
-    return (data || []) as PessoaTagComPessoa[]
+    return (data || [])
   }
 
   /**

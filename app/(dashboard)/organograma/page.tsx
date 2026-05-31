@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { DashboardShell } from "@/components/dashboard-shell"
 import {
   ReactFlow,
@@ -15,7 +15,7 @@ import {
   useReactFlow,
 } from "@xyflow/react"
 import "@xyflow/react/dist/style.css"
-import { ZoomIn, ZoomOut, Maximize2, Minimize2, Maximize, ChevronDown, ChevronRight, Search, Download, User, Mail, Phone, Briefcase, Users, X, ArrowUpDown, ArrowRightLeft } from 'lucide-react'
+import { ZoomIn, ZoomOut, Minimize2, Maximize, ChevronDown, ChevronRight, Search, Mail, Phone, Briefcase, Users, X, ArrowUpDown, ArrowRightLeft } from 'lucide-react'
 import Image from "next/image"
 
 // Mock hierarchy data
@@ -172,8 +172,25 @@ const hierarchyData = {
 
 type PersonNode = typeof hierarchyData
 
+interface PersonNodeData {
+  nome: string
+  cargo: string
+  nivel: string
+  time: string
+  email: string
+  telefone: string
+  avatar?: string
+  reportsCount: number
+  isExpanded: boolean
+  isHighlighted: boolean
+  isSelected: boolean
+  childrenVisible: boolean
+  onClick: () => void
+  onToggle: () => void
+}
+
 // Custom node component
-function PersonNodeComponent({ data }: { data: any }) {
+function PersonNodeComponent({ data }: { data: PersonNodeData }) {
   const isExpanded = data.isExpanded
   const hasReports = data.reportsCount > 0
 
@@ -255,11 +272,11 @@ export default function OrganogramaPage() {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(["ceo"]))
   const [layoutDirection, setLayoutDirection] = useState<"TB" | "LR">("TB")
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const { fitView, zoomIn, zoomOut, setCenter } = useReactFlow()
+  const { fitView, zoomIn, zoomOut } = useReactFlow()
 
   // Build tree structure
   const buildTree = useCallback(
-    (person: PersonNode, parentId: string | null = null, level = 0, xOffset = 0): { nodes: Node[]; edges: Edge[]; width: number } => {
+    (person: PersonNode, _parentId: string | null = null, level = 0, xOffset = 0): { nodes: Node[]; edges: Edge[]; width: number } => {
       const nodeId = person.id
       const isExpanded = expandedNodes.has(nodeId)
       const childrenVisible = isExpanded || level === 0
@@ -349,12 +366,12 @@ export default function OrganogramaPage() {
   )
 
   // Update tree when dependencies change
-  useMemo(() => {
+  useEffect(() => {
     const { nodes: newNodes, edges: newEdges } = buildTree(hierarchyData)
     setNodes(newNodes)
     setEdges(newEdges)
-    setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 100)
-  }, [expandedNodes, selectedPerson, searchQuery, layoutDirection, buildTree, setNodes, setEdges, fitView])
+    setTimeout(() => void fitView({ padding: 0.2, duration: 400 }), 100)
+  }, [buildTree, setNodes, setEdges, fitView])
 
   const handleExpandAll = () => {
     const allNodeIds = new Set<string>()
@@ -465,21 +482,21 @@ export default function OrganogramaPage() {
             {/* Zoom controls */}
             <div className="flex items-center gap-1 border-l pl-2">
               <button
-                onClick={() => zoomIn({ duration: 400 })}
+                onClick={() => void zoomIn({ duration: 400 })}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Aumentar zoom"
               >
                 <ZoomIn className="w-5 h-5 text-gray-600" />
               </button>
               <button
-                onClick={() => zoomOut({ duration: 400 })}
+                onClick={() => void zoomOut({ duration: 400 })}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Diminuir zoom"
               >
                 <ZoomOut className="w-5 h-5 text-gray-600" />
               </button>
               <button
-                onClick={() => fitView({ padding: 0.2, duration: 400 })}
+                onClick={() => void fitView({ padding: 0.2, duration: 400 })}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 title="Ajustar à tela"
               >

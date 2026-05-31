@@ -40,7 +40,7 @@ export class HistoricoService {
       })
     } catch (error) {
       console.error('[HistoricoService] Erro ao criar histórico de cargo:', error)
-      throw new Error('Erro ao criar histórico de cargo')
+      throw new Error('Erro ao criar histórico de cargo', { cause: error })
     }
   }
 
@@ -52,7 +52,7 @@ export class HistoricoService {
       await this.historicoCargoRepo.finalizarCargoAtual(pessoaId, dataFim)
     } catch (error) {
       console.error('[HistoricoService] Erro ao finalizar histórico de cargo:', error)
-      throw new Error('Erro ao finalizar histórico de cargo')
+      throw new Error('Erro ao finalizar histórico de cargo', { cause: error })
     }
   }
 
@@ -87,7 +87,7 @@ export class HistoricoService {
       })
     } catch (error) {
       console.error('[HistoricoService] Erro ao criar histórico de time:', error)
-      throw new Error('Erro ao criar histórico de time')
+      throw new Error('Erro ao criar histórico de time', { cause: error })
     }
   }
 
@@ -99,7 +99,7 @@ export class HistoricoService {
       await this.historicoTimeRepo.finalizarTimeAtual(pessoaId, dataFim)
     } catch (error) {
       console.error('[HistoricoService] Erro ao finalizar histórico de time:', error)
-      throw new Error('Erro ao finalizar histórico de time')
+      throw new Error('Erro ao finalizar histórico de time', { cause: error })
     }
   }
 
@@ -156,7 +156,7 @@ export class HistoricoService {
       })
     } catch (error) {
       console.error('[HistoricoService] Erro ao criar histórico de reajuste:', error)
-      throw new Error('Erro ao criar histórico de reajuste')
+      throw new Error('Erro ao criar histórico de reajuste', { cause: error })
     }
   }
 
@@ -217,7 +217,7 @@ export class HistoricoService {
       await this.criarHistoricoCargo(pessoaId, novoCargoId, hoje)
     } catch (error) {
       console.error('[HistoricoService] Erro ao processar mudança de cargo:', error)
-      throw new Error('Erro ao processar mudança de cargo')
+      throw new Error('Erro ao processar mudança de cargo', { cause: error })
     }
   }
 
@@ -238,7 +238,7 @@ export class HistoricoService {
       await this.criarHistoricoTime(pessoaId, novoTimeId, hoje)
     } catch (error) {
       console.error('[HistoricoService] Erro ao processar mudança de time:', error)
-      throw new Error('Erro ao processar mudança de time')
+      throw new Error('Erro ao processar mudança de time', { cause: error })
     }
   }
 
@@ -261,7 +261,7 @@ export class HistoricoService {
       await this.criarHistoricoReajuste(pessoaId, salarioAnterior, salarioNovo, hoje, motivo)
     } catch (error) {
       console.error('[HistoricoService] Erro ao processar mudança de salário:', error)
-      throw new Error('Erro ao processar mudança de salário')
+      throw new Error('Erro ao processar mudança de salário', { cause: error })
     }
   }
 

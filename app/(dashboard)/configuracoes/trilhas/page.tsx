@@ -25,7 +25,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, ShieldAlert, X, Trash2, Copy, Eye, Edit, CheckCircle2, XCircle, ArrowRight, Loader2 } from 'lucide-react'
+import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, ShieldAlert, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -34,8 +34,6 @@ import {
   createTrilha,
   updateTrilha,
   softDeleteTrilha,
-  deleteTrilha,
-  type TrilhaComEstatisticas
 } from '@/app/actions/trilhas.actions'
 import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 
@@ -51,118 +49,6 @@ interface CareerTrack {
   cargosPrincipais: string[]
   cor: string
 }
-
-const mockTracks: CareerTrack[] = [
-  {
-    id: 't1',
-    nome: 'Engenharia de Software',
-    descricao:
-      'Desenvolvimento, arquitetura e manutenção de sistemas de software, desde aplicações web até infraestrutura',
-    cargos: 12,
-    pessoas: 58,
-    niveisUsados: { min: 'L2', max: 'L8' },
-    nivelMedio: 'L4',
-    ativo: true,
-    cargosPrincipais: [
-      'Engineer I',
-      'Engineer II',
-      'Senior Engineer',
-      'Staff Engineer',
-      'Principal Engineer',
-    ],
-    cor: '#FF7A00',
-  },
-  {
-    id: 't2',
-    nome: 'Produto',
-    descricao:
-      'Product Management, definição de estratégia, roadmap e priorização de features',
-    cargos: 8,
-    pessoas: 18,
-    niveisUsados: { min: 'L2', max: 'L6' },
-    nivelMedio: 'L4',
-    ativo: true,
-    cargosPrincipais: [
-      'Associate PM',
-      'Product Manager',
-      'Senior PM',
-      'Group PM',
-    ],
-    cor: '#00C8FF',
-  },
-  {
-    id: 't3',
-    nome: 'Design',
-    descricao:
-      'UX/UI Design, Design Research, Design Systems e experiência do usuário',
-    cargos: 6,
-    pessoas: 12,
-    niveisUsados: { min: 'L2', max: 'L5' },
-    nivelMedio: 'L3',
-    ativo: true,
-    cargosPrincipais: [
-      'Designer Júnior',
-      'Designer',
-      'Senior Designer',
-      'Design Lead',
-    ],
-    cor: '#9333EA',
-  },
-  {
-    id: 't4',
-    nome: 'Dados',
-    descricao:
-      'Data Science, Analytics, Business Intelligence e Machine Learning',
-    cargos: 7,
-    pessoas: 15,
-    niveisUsados: { min: 'L2', max: 'L6' },
-    nivelMedio: 'L3',
-    ativo: true,
-    cargosPrincipais: [
-      'Data Analyst',
-      'Data Scientist',
-      'Senior Data Scientist',
-      'Data Lead',
-    ],
-    cor: '#8B5CF6',
-  },
-  {
-    id: 't5',
-    nome: 'Marketing',
-    descricao:
-      'Marketing Digital, Growth, Branding, Comunicação e estratégia de mercado',
-    cargos: 5,
-    pessoas: 10,
-    niveisUsados: { min: 'L2', max: 'L5' },
-    nivelMedio: 'L3',
-    ativo: true,
-    cargosPrincipais: [
-      'Marketing Analyst',
-      'Marketing Specialist',
-      'Marketing Manager',
-      'Marketing Lead',
-    ],
-    cor: '#F59E0B',
-  },
-  {
-    id: 't6',
-    nome: 'Operações',
-    descricao:
-      'Infraestrutura, DevOps, Segurança, SRE e operações de TI',
-    cargos: 4,
-    pessoas: 14,
-    niveisUsados: { min: 'L3', max: 'L6' },
-    nivelMedio: 'L4',
-    ativo: true,
-    cargosPrincipais: [
-      'DevOps Engineer',
-      'SRE',
-      'Infrastructure Lead',
-      'Security Engineer',
-    ],
-    cor: '#EF4444',
-  },
-]
 
 const mockPositions = [
   { id: 1, name: 'Engineer I', level: 'L2', people: 12 },
@@ -204,7 +90,7 @@ export default function CareerTracksPage() {
   const [tracks, setTracks] = useState<CareerTrack[]>([])
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [currentUser, setCurrentUser] = useState<string | null>(null)
+  const [, setCurrentUser] = useState<string | null>(null)
 
   // UI state
   const [view, setView] = useState<'grid' | 'table'>('grid')
@@ -230,12 +116,12 @@ export default function CareerTracksPage() {
   })
 
   // Mutation state
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [, setIsSubmitting] = useState(false)
 
   // Load data and check permissions on mount
   useEffect(() => {
-    loadTrilhas()
-    checkPermissions()
+    void loadTrilhas()
+    void checkPermissions()
   }, [])
 
   async function checkPermissions() {
@@ -336,7 +222,7 @@ export default function CareerTracksPage() {
         toast.successDino('Trilha criada com sucesso!')
         setCreateModalOpen(false)
         setFormData({ nome: '', descricao: '', cor: '#FF7A00', ativo: true })
-        loadTrilhas() // Recarregar lista
+        void loadTrilhas() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao criar trilha')
       }
@@ -378,7 +264,7 @@ export default function CareerTracksPage() {
         setEditModalOpen(false)
         setSelectedTrack(null)
         setFormData({ nome: '', descricao: '', cor: '#FF7A00', ativo: true })
-        loadTrilhas() // Recarregar lista
+        void loadTrilhas() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao atualizar trilha')
       }
@@ -408,7 +294,7 @@ export default function CareerTracksPage() {
         toast.successDino('Trilha desativada com sucesso!')
         setDeleteModalOpen(false)
         setSelectedTrack(null)
-        loadTrilhas() // Recarregar lista
+        void loadTrilhas() // Recarregar lista
       } else {
         toast.error(result.error || 'Erro ao desativar trilha')
       }
@@ -1055,16 +941,13 @@ export default function CareerTracksPage() {
               {!editModalOpen && (
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    handleCreateTrack()
-                    console.log('[v0] Save and add positions')
-                  }}
+                  onClick={() => { void handleCreateTrack() }}
                 >
                   Salvar e Adicionar Cargos
                 </Button>
               )}
               <Button
-                onClick={editModalOpen ? handleEditTrack : handleCreateTrack}
+                onClick={() => { void (editModalOpen ? handleEditTrack() : handleCreateTrack()) }}
                 disabled={!formData.nome}
               >
                 {editModalOpen ? 'Salvar Alterações' : 'Salvar Trilha'}
@@ -1391,7 +1274,7 @@ export default function CareerTracksPage() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={handleDeleteTrack}
+                onClick={() => { void handleDeleteTrack() }}
                 disabled={selectedTrack ? selectedTrack.cargos > 0 : true}
               >
                 Excluir Trilha

@@ -328,12 +328,12 @@ export interface AuditoriaFilters {
 /**
  * Response padrão de API
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T
   error?: {
     message: string
     code?: string
-    details?: any
+    details?: unknown
   }
   meta?: {
     page?: number
@@ -388,7 +388,7 @@ export interface SelectOption {
   value: string
   label: string
   disabled?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -417,5 +417,5 @@ export interface OrgChartNode {
   foto_url?: string
   children?: OrgChartNode[]
   isGestor?: boolean
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }

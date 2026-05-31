@@ -68,34 +68,34 @@ export default function NovasPessoasPage() {
 
   // Carregar dados ao montar
   useEffect(() => {
-    loadData()
-  }, [])
+    async function loadData() {
+      try {
+        const [timesResult, cargosResult, usuario] = await Promise.all([
+          getTimesParaFiltro(),
+          getCargosParaFiltro(),
+          getCurrentUser(),
+        ])
 
-  async function loadData() {
-    try {
-      const [timesResult, cargosResult, usuario] = await Promise.all([
-        getTimesParaFiltro(),
-        getCargosParaFiltro(),
-        getCurrentUser(),
-      ])
+        if (timesResult.success && timesResult.data) {
+          setTimes(timesResult.data)
+        }
 
-      if (timesResult.success && timesResult.data) {
-        setTimes(timesResult.data)
+        if (cargosResult.success && cargosResult.data) {
+          setCargos(cargosResult.data)
+        }
+
+        // Apenas gestores podem informar remuneração (SENSÍVEL - LGPD)
+        setCanViewSalary(usuario?.tipo_perfil === 'gestor')
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error)
+        toast.error('Erro ao carregar formulário')
+      } finally {
+        setDataLoading(false)
       }
-
-      if (cargosResult.success && cargosResult.data) {
-        setCargos(cargosResult.data)
-      }
-
-      // Apenas gestores podem informar remuneração (SENSÍVEL - LGPD)
-      setCanViewSalary(usuario?.tipo_perfil === 'gestor')
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      toast.error('Erro ao carregar formulário')
-    } finally {
-      setDataLoading(false)
     }
-  }
+
+    void loadData()
+  }, [])
 
   const handlePhoneMask = (value: string) => {
     const cleaned = value.replace(/\D/g, '')
@@ -122,7 +122,7 @@ export default function NovasPessoasPage() {
     return re.test(email)
   }
 
-  const handleFieldChange = (field: string, value: any) => {
+  const handleFieldChange = (field: string, _value?: unknown) => {
     setIsDirty(true)
     
     // Clear error when user starts typing
@@ -224,7 +224,7 @@ export default function NovasPessoasPage() {
     setIsDirty(true)
   }
 
-  const handleProjectChange = (id: string, field: keyof Project, value: any) => {
+  const handleProjectChange = (id: string, field: keyof Project, value: Project[keyof Project]) => {
     setProjects(projects.map(p => p.id === id ? { ...p, [field]: value } : p))
     setIsDirty(true)
   }
@@ -777,7 +777,7 @@ export default function NovasPessoasPage() {
           <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
+          <Button onClick={() => { void handleSave() }} disabled={isLoading} className="bg-primary hover:bg-primary/90">
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

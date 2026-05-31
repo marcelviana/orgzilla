@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { ChevronRight, Info, Plus, X, Search, Users, Loader2 } from 'lucide-react'
+import { ChevronRight, Info, Plus, X, Users, Loader2 } from 'lucide-react'
 import { createTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 import { toast as sonnerToast } from 'sonner'
@@ -34,7 +35,7 @@ export default function NovoTimePage() {
     timePaiId: null as string | null,
     gestorId: null as string | null,
     temVagas: false,
-    vagas: [] as any[],
+    vagas: [] as Array<{ cargo: string; quantidade: number }>,
     status: 'ativo'
   })
 
@@ -42,40 +43,47 @@ export default function NovoTimePage() {
   const [showManagerSelect, setShowManagerSelect] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [selectedGestor, setSelectedGestor] = useState<{ id: string; nome: string; cargo: string | null; time: string | null } | null>(null)
+  const [selectedTimePai, setSelectedTimePai] = useState<{ id: string; nome: string; path?: string } | null>(null)
 
   // Load data on mount
   useEffect(() => {
-    loadData()
+    const controller = new AbortController()
+
+    async function fetchData() {
+      try {
+        const [timesResult, pessoasResult, cargosResult] = await Promise.all([
+          getTimesParaFiltro(),
+          getPessoasParaGestor(),
+          getCargosParaFiltro(),
+        ])
+
+        if (controller.signal.aborted) return
+
+        if (timesResult.success && timesResult.data) {
+          setAvailableTeams(timesResult.data)
+        }
+
+        if (pessoasResult.success && pessoasResult.data) {
+          setAvailableManagers(pessoasResult.data)
+        }
+
+        if (cargosResult.success && cargosResult.data) {
+          setAvailablePositions(cargosResult.data)
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return
+        console.error('Erro ao carregar dados:', error)
+        sonnerToast.error('Erro ao carregar formulário')
+      } finally {
+        if (!controller.signal.aborted) setDataLoading(false)
+      }
+    }
+
+    void fetchData()
+    return () => controller.abort()
   }, [])
 
-  async function loadData() {
-    try {
-      const [timesResult, pessoasResult, cargosResult] = await Promise.all([
-        getTimesParaFiltro(),
-        getPessoasParaGestor(),
-        getCargosParaFiltro(),
-      ])
-
-      if (timesResult.success && timesResult.data) {
-        setAvailableTeams(timesResult.data)
-      }
-
-      if (pessoasResult.success && pessoasResult.data) {
-        setAvailableManagers(pessoasResult.data)
-      }
-
-      if (cargosResult.success && cargosResult.data) {
-        setAvailablePositions(cargosResult.data)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      sonnerToast.error('Erro ao carregar formulário')
-    } finally {
-      setDataLoading(false)
-    }
-  }
-
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setIsDirty(true)
   }
@@ -96,7 +104,7 @@ export default function NovoTimePage() {
     setIsDirty(true)
   }
 
-  const updateVaga = (index: number, field: string, value: any) => {
+  const updateVaga = (index: number, field: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       vagas: prev.vagas.map((v, i) => i === index ? { ...v, [field]: value } : v)
@@ -160,12 +168,6 @@ export default function NovoTimePage() {
     }
   }
 
-  const handleAddPeople = () => {
-    // Logic to add selected people to the team
-    console.log('Adding people to team:', selectedPeople)
-    setShowPersonSelector(false)
-  }
-
   // Loading state
   if (dataLoading) {
     return (
@@ -185,9 +187,9 @@ export default function NovoTimePage() {
       <div className="p-6 space-y-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <a href="/" className="hover:text-foreground">Dashboard</a>
+          <Link href="/" className="hover:text-foreground">Dashboard</Link>
           <ChevronRight className="w-4 h-4" />
-          <a href="/times" className="hover:text-foreground">Times</a>
+          <Link href="/times" className="hover:text-foreground">Times</Link>
           <ChevronRight className="w-4 h-4" />
           <span className="text-foreground">Novo Time</span>
         </div>
@@ -243,8 +245,8 @@ export default function NovoTimePage() {
                 onClick={() => setShowParentSelect(true)}
                 className="w-full h-11 px-3 text-left border rounded-md hover:border-primary transition-colors flex items-center justify-between"
               >
-                <span className={formData.timePai ? 'text-foreground' : 'text-muted-foreground'}>
-                  {formData.timePai ? formData.timePai.path : 'Selecione um time (opcional)'}
+                <span className={selectedTimePai ? 'text-foreground' : 'text-muted-foreground'}>
+                  {selectedTimePai ? (selectedTimePai.path ?? selectedTimePai.nome) : 'Selecione um time (opcional)'}
                 </span>
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -353,7 +355,7 @@ export default function NovoTimePage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowPersonSelector(true)}
+                onClick={() => { /* funcionalidade a implementar */ }}
                 className="flex items-center gap-2"
               >
                 <Users className="w-4 h-4" />
@@ -406,7 +408,7 @@ export default function NovoTimePage() {
             <Button variant="ghost" onClick={handleCancel} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
+            <Button onClick={() => { void handleSave() }} disabled={isLoading} className="bg-primary hover:bg-primary/90">
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -429,7 +431,8 @@ export default function NovoTimePage() {
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
               <button
                 onClick={() => {
-                  handleInputChange('timePai', null)
+                  setSelectedTimePai(null)
+                  handleInputChange('timePaiId', null)
                   setShowParentSelect(false)
                 }}
                 className="w-full p-3 text-left border rounded-md hover:bg-accent transition-colors"
@@ -440,7 +443,8 @@ export default function NovoTimePage() {
                 <button
                   key={team.id}
                   onClick={() => {
-                    handleInputChange('timePai', team)
+                    setSelectedTimePai(team)
+                    handleInputChange('timePaiId', team.id)
                     setShowParentSelect(false)
                   }}
                   className="w-full p-3 text-left border rounded-md hover:bg-accent transition-colors"

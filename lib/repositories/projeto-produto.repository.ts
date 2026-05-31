@@ -59,7 +59,7 @@ export class ProjetoProdutoRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar projeto com pessoas', error)
     }
 
-    return data as ProjetoComPessoas
+    return data
   }
 
   /**
@@ -85,7 +85,7 @@ export class ProjetoProdutoRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar projetos com pessoas', error)
     }
 
-    return (data || []) as ProjetoComPessoas[]
+    return (data || [])
   }
 
   /**
@@ -274,7 +274,7 @@ export class PessoaProjetoProdutoRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar alocação com relacionamentos', error)
     }
 
-    return data as AlocacaoComRelacionamentos
+    return data
   }
 
   /**

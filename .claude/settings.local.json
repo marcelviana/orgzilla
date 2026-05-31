@@ -17,7 +17,12 @@
       "Bash(git branch *)",
       "Bash(git rm *)",
       "Bash(npx tsc *)",
-      "Bash(command -v fnm)"
+      "Bash(command -v fnm)",
+      "Bash(pnpm lint *)",
+      "Bash(grep -oE '@typescript-eslint/[a-z-]+|react-hooks/[a-z-]+|[a-z-]+/[a-z-]+$' /tmp/lint-errors.txt | sort | uniq -c | sort -rn)",
+      "Bash(sed 's|/Users/marcelviana/projects/orgzilla/||')",
+      "Bash(awk '/^[^ ]/{f=$0} /error|warning/{c[f]++} END{for\\(x in c\\) print c[x], x}' /tmp/lint-errors.txt)",
+      "Bash(awk '/^\\\\/Users\\\\//{f=$0} / error | warning /{c[f]++} END{for\\(x in c\\) print c[x], x}' /tmp/lint-errors.txt)"
     ],
     "deny": [],
     "ask": []

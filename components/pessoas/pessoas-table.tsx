@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Download, Plus, ChevronDown, ChevronUp, MoreVertical, X } from 'lucide-react'
@@ -30,7 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import type { PessoaListItem, PessoasResult } from '@/app/actions/pessoas.actions'
+import type { PessoasResult } from '@/app/actions/pessoas.actions'
 import { exportPessoasCSV } from '@/app/actions/pessoas.actions'
 
 type PessoasTableProps = {
@@ -58,7 +59,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
   const [selectedCargo, setSelectedCargo] = useState<string>('todos')
   const [selectedStatus, setSelectedStatus] = useState<string>('todos')
   const [selectedRows, setSelectedRows] = useState<string[]>([])
-  const [currentPage, setCurrentPage] = useState(initialData.page)
+  const currentPage = initialData.page
   const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // Usar dados do servidor
@@ -235,7 +236,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                   className="pl-10"
                 />
               </div>
-              <Button variant="outline" className="gap-2" onClick={handleExport}>
+              <Button variant="outline" className="gap-2" onClick={() => { void handleExport() }}>
                 <Download className="h-4 w-4" />
                 Exportar
               </Button>
@@ -382,9 +383,11 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {pessoa.foto_url ? (
-                            <img
+                            <Image
                               src={pessoa.foto_url}
                               alt={pessoa.nome}
+                              width={40}
+                              height={40}
                               className="w-10 h-10 rounded-full object-cover"
                             />
                           ) : (

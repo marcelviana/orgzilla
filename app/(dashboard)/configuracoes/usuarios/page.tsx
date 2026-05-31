@@ -39,8 +39,7 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Textarea } from "@/components/ui/textarea"
-import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Key, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
+import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
 import Link from "next/link"
 import {
   getUsuarios,
@@ -54,159 +53,6 @@ import {
 import { toast as sonnerToast } from 'sonner'
 import { useToast } from '@/hooks/use-toast'
 
-// Mock data (will be replaced with real data)
-const mockUsers = [
-  {
-    id: "u1",
-    nome: "Carlos Silva",
-    email: "carlos@orgzilla.com",
-    tipoPerfil: "admin" as const,
-    pessoaVinculada: { id: "p1", nome: "Carlos Silva" },
-    ativo: true,
-    ultimoAcesso: "2024-11-16T10:30:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u2",
-    nome: "Maria Santos",
-    email: "maria@orgzilla.com",
-    tipoPerfil: "gestor" as const,
-    pessoaVinculada: { id: "p2", nome: "Maria Santos" },
-    ativo: true,
-    ultimoAcesso: "2024-11-16T09:15:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u3",
-    nome: "João Silva",
-    email: "joao@orgzilla.com",
-    tipoPerfil: "gestor" as const,
-    pessoaVinculada: { id: "p3", nome: "João Silva" },
-    ativo: true,
-    ultimoAcesso: "2024-11-15T18:45:00",
-    avatar: "/man.jpg",
-  },
-  {
-    id: "u4",
-    nome: "Ana Costa",
-    email: "ana@orgzilla.com",
-    tipoPerfil: "visualizador" as const,
-    pessoaVinculada: null,
-    ativo: true,
-    ultimoAcesso: "2024-11-14T14:20:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u5",
-    nome: "Pedro Lima",
-    email: "pedro@orgzilla.com",
-    tipoPerfil: "gestor" as const,
-    pessoaVinculada: { id: "p5", nome: "Pedro Lima" },
-    ativo: false,
-    ultimoAcesso: "2024-10-01T16:30:00",
-    avatar: "/man.jpg",
-  },
-  {
-    id: "u6",
-    nome: "Julia Martins",
-    email: "julia@orgzilla.com",
-    tipoPerfil: "visualizador" as const,
-    pessoaVinculada: { id: "p6", nome: "Julia Martins" },
-    ativo: true,
-    ultimoAcesso: "2024-11-16T08:00:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u7",
-    nome: "Roberto Santos",
-    email: "roberto@orgzilla.com",
-    tipoPerfil: "gestor" as const,
-    pessoaVinculada: { id: "p7", nome: "Roberto Santos" },
-    ativo: true,
-    ultimoAcesso: "2024-11-15T17:30:00",
-    avatar: "/man.jpg",
-  },
-  {
-    id: "u8",
-    nome: "Fernanda Silva",
-    email: "fernanda@orgzilla.com",
-    tipoPerfil: "gestor" as const,
-    pessoaVinculada: null,
-    ativo: true,
-    ultimoAcesso: "2024-11-16T11:00:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u9",
-    nome: "Lucas Oliveira",
-    email: "lucas@orgzilla.com",
-    tipoPerfil: "visualizador" as const,
-    pessoaVinculada: { id: "p9", nome: "Lucas Oliveira" },
-    ativo: true,
-    ultimoAcesso: "2024-11-13T15:45:00",
-    avatar: "/man.jpg",
-  },
-  {
-    id: "u10",
-    nome: "Carla Mendes",
-    email: "carla@orgzilla.com",
-    tipoPerfil: "gestor" as const,
-    pessoaVinculada: { id: "p10", nome: "Carla Mendes" },
-    ativo: false,
-    ultimoAcesso: "2024-09-20T10:15:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u11",
-    nome: "Rafael Souza",
-    email: "rafael@orgzilla.com",
-    tipoPerfil: "visualizador" as const,
-    pessoaVinculada: { id: "p11", nome: "Rafael Souza" },
-    ativo: true,
-    ultimoAcesso: "2024-11-15T12:30:00",
-    avatar: "/man.jpg",
-  },
-  {
-    id: "u12",
-    nome: "Patricia Costa",
-    email: "patricia@orgzilla.com",
-    tipoPerfil: "gestor" as const,
-    pessoaVinculada: null,
-    ativo: true,
-    ultimoAcesso: "2024-11-16T07:45:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u13",
-    nome: "Bruno Alves",
-    email: "bruno@orgzilla.com",
-    tipoPerfil: "visualizador" as const,
-    pessoaVinculada: { id: "p13", nome: "Bruno Alves" },
-    ativo: true,
-    ultimoAcesso: "2024-11-14T16:20:00",
-    avatar: "/man.jpg",
-  },
-  {
-    id: "u14",
-    nome: "Juliana Lima",
-    email: "juliana@orgzilla.com",
-    tipoPerfil: "visualizador" as const,
-    pessoaVinculada: { id: "p14", nome: "Juliana Lima" },
-    ativo: false,
-    ultimoAcesso: "2024-10-15T13:00:00",
-    avatar: "/diverse-woman-portrait.png",
-  },
-  {
-    id: "u15",
-    nome: "Thiago Santos",
-    email: "thiago@orgzilla.com",
-    tipoPerfil: "visualizador" as const,
-    pessoaVinculada: { id: "p15", nome: "Thiago Santos" },
-    ativo: true,
-    ultimoAcesso: "2024-11-15T19:10:00",
-    avatar: "/man.jpg",
-  },
-]
 
 function formatRelativeTime(dateString: string) {
   const date = new Date(dateString)
@@ -246,7 +92,7 @@ export default function UsuariosPage() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [linkModalOpen, setLinkModalOpen] = useState(false)
   const [unlinkModalOpen, setUnlinkModalOpen] = useState(false)
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false)
+  const [_passwordModalOpen, _setPasswordModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState<UsuarioListItem | null>(null)
   const [selectedPessoaId, setSelectedPessoaId] = useState<string | null>(null)
@@ -265,7 +111,7 @@ export default function UsuariosPage() {
 
   // Load data on mount
   useEffect(() => {
-    loadData()
+    void loadData()
   }, [])
 
   async function loadData() {
@@ -279,7 +125,7 @@ export default function UsuariosPage() {
       if (usuariosResult.success && usuariosResult.data) {
         setUsers(usuariosResult.data)
       } else {
-        sonnerToast.error(usuariosResult.error || 'Erro ao carregar usuários')
+        sonnerToast.error(String(usuariosResult.error ?? 'Erro ao carregar usuários'))
       }
 
       if (pessoasResult.success && pessoasResult.data) {
@@ -783,7 +629,7 @@ export default function UsuariosPage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                        <AvatarImage src={(user.avatar as string | undefined) ?? "/placeholder.svg"} />
                         <AvatarFallback>
                           {user.nome
                             .split(" ")
@@ -813,7 +659,7 @@ export default function UsuariosPage() {
                   <TableCell>
                     <Switch
                       checked={user.ativo}
-                      onCheckedChange={() => handleToggleStatus(user.id, user.ativo)}
+                      onCheckedChange={() => { void handleToggleStatus(user.id, user.ativo) }}
                     />
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
@@ -990,7 +836,7 @@ export default function UsuariosPage() {
         >
           <DialogContent 
             className="p-0"
-            onInteractOutside={(e) => {
+            onInteractOutside={(_e) => {
               setCreateModalOpen(false)
               setEditModalOpen(false)
               setFormData({
@@ -1001,7 +847,7 @@ export default function UsuariosPage() {
                 ativo: true,
               })
             }}
-            onEscapeKeyDown={(e) => {
+            onEscapeKeyDown={(_e) => {
               setCreateModalOpen(false)
               setEditModalOpen(false)
               setFormData({
@@ -1210,7 +1056,7 @@ export default function UsuariosPage() {
                   Cancelar
                 </Button>
                 <Button
-                  onClick={createModalOpen ? handleCreateUser : handleEditUser}
+                  onClick={() => { void (createModalOpen ? handleCreateUser() : handleEditUser()) }}
                   className="bg-primary hover:bg-primary/90 text-white"
                   disabled={isSaving}
                 >
@@ -1282,7 +1128,7 @@ export default function UsuariosPage() {
               <Button
                 variant="destructive"
                 disabled={!deleteConfirmed}
-                onClick={handleDeleteUser}
+                onClick={() => { void handleDeleteUser() }}
               >
                 Excluir
               </Button>
@@ -1335,7 +1181,7 @@ export default function UsuariosPage() {
                 Cancelar
               </Button>
               <Button
-                onClick={handleLinkPessoa}
+                onClick={() => { void handleLinkPessoa() }}
                 disabled={!selectedPessoaId}
               >
                 Vincular
@@ -1362,7 +1208,7 @@ export default function UsuariosPage() {
               <Button variant="outline" onClick={() => setUnlinkModalOpen(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleUnlinkPessoa}>
+              <Button onClick={() => { void handleUnlinkPessoa() }}>
                 Desvincular
               </Button>
             </DialogFooter>

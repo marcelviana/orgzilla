@@ -7,14 +7,14 @@ import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { ChevronRight, Home, Users, MoreVertical, Loader2, TrendingUp, Briefcase } from 'lucide-react'
+import { ChevronRight, Home, Users, MoreVertical, Loader2, Briefcase } from 'lucide-react'
 import { toast } from 'sonner'
 import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
 
@@ -27,27 +27,26 @@ export default function TimeDetailPage() {
   const [time, setTime] = useState<TimeDetalhe | null>(null)
 
   useEffect(() => {
-    loadTime()
-  }, [timeId])
-
-  async function loadTime() {
-    setIsLoading(true)
-    try {
-      const result = await getTimeById(timeId)
-      if (result.success && result.data) {
-        setTime(result.data)
-      } else {
-        toast.error(result.error || 'Erro ao carregar time')
+    async function loadTime() {
+      try {
+        const result = await getTimeById(timeId)
+        if (result.success && result.data) {
+          setTime(result.data)
+        } else {
+          toast.error(result.error || 'Erro ao carregar time')
+          router.push('/times')
+        }
+      } catch (error) {
+        console.error('Erro ao carregar time:', error)
+        toast.error('Erro inesperado ao carregar time')
         router.push('/times')
+      } finally {
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Erro ao carregar time:', error)
-      toast.error('Erro inesperado ao carregar time')
-      router.push('/times')
-    } finally {
-      setIsLoading(false)
     }
-  }
+
+    void loadTime()
+  }, [timeId, router])
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)

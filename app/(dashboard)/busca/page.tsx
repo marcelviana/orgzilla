@@ -67,8 +67,6 @@ interface CargoResult {
   relevance: number
 }
 
-type SearchResult = PessoaResult | TimeResult | ProjetoResult | CargoResult
-
 // Mock data
 const mockPeople: PessoaResult[] = [
   {
@@ -178,7 +176,6 @@ export default function BuscaPage() {
 
   const [searchQuery, setSearchQuery] = useState(queryParam)
   const [searchTerm, setSearchTerm] = useState(queryParam)
-  const [isSearching, setIsSearching] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
   // Filters
@@ -211,7 +208,6 @@ export default function BuscaPage() {
   const searchResults = useMemo(() => {
     if (!searchTerm) return { pessoas: [], times: [], projetos: [], cargos: [] }
 
-    setIsSearching(true)
     const query = searchTerm.toLowerCase()
 
     const pessoas = mockPeople.filter(
@@ -235,8 +231,6 @@ export default function BuscaPage() {
     const cargos = mockPositions.filter((c) =>
       c.nome.toLowerCase().includes(query)
     )
-
-    setTimeout(() => setIsSearching(false), 200)
 
     return { pessoas, times, projetos, cargos }
   }, [searchTerm])

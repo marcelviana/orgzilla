@@ -39,7 +39,6 @@ import {
 } from '@/components/ui/select'
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
@@ -57,7 +56,7 @@ export default function NiveisPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [currentUser, setCurrentUser] = useState<string | null>(null)
+  const [, setCurrentUser] = useState<string | null>(null)
 
   // UI state
   const [expandedRows, setExpandedRows] = useState<string[]>([])
@@ -80,8 +79,8 @@ export default function NiveisPage() {
 
   // Load data and check permissions on mount
   useEffect(() => {
-    loadNiveis()
-    checkPermissions()
+    void loadNiveis()
+    void checkPermissions()
   }, [])
 
   async function checkPermissions() {
@@ -319,7 +318,7 @@ export default function NiveisPage() {
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-2">Erro ao carregar níveis</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
-            <Button onClick={loadNiveis} variant="outline">
+            <Button onClick={() => { void loadNiveis() }} variant="outline">
               Tentar Novamente
             </Button>
           </div>
@@ -573,9 +572,9 @@ export default function NiveisPage() {
                     <TableCell>
                       <Switch
                         checked={level.ativo}
-                        onCheckedChange={() =>
-                          handleToggleStatus(level.id, level.ativo)
-                        }
+                        onCheckedChange={() => {
+                          void handleToggleStatus(level.id, level.ativo)
+                        }}
                         disabled={!isAdmin}
                       />
                     </TableCell>
@@ -767,7 +766,7 @@ export default function NiveisPage() {
             </Button>
             <Button
               className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
-              onClick={handleCreateLevel}
+              onClick={() => { void handleCreateLevel() }}
               disabled={isSubmitting}
             >
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -882,7 +881,7 @@ export default function NiveisPage() {
             </Button>
             <Button
               className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
-              onClick={handleEditLevel}
+              onClick={() => { void handleEditLevel() }}
               disabled={isSubmitting}
             >
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -932,7 +931,7 @@ export default function NiveisPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={handleDeleteLevel}
+              onClick={() => { void handleDeleteLevel() }}
               disabled={
                 isSubmitting ||
                 selectedLevel?.pessoas > 0 ||

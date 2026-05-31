@@ -61,28 +61,48 @@ export default function ProjetoDetailPage() {
     pessoaNome: null,
   })
 
-  useEffect(() => {
-    loadProjeto()
-  }, [projetoId])
-
+  // Recarrega os dados do projeto (usado pelos handlers após mutações)
   async function loadProjeto() {
-    setIsLoading(true)
     try {
       const result = await getProjetoById(projetoId)
       if (result.success && result.data) {
         setProjeto(result.data)
       } else {
-        sonnerToast.error(result.error || 'Erro ao carregar projeto')
+        sonnerToast.error((!result.success && result.error) || 'Erro ao carregar projeto')
         router.push('/projetos')
       }
     } catch (error) {
       console.error('Erro ao carregar projeto:', error)
       sonnerToast.error('Erro inesperado ao carregar projeto')
       router.push('/projetos')
-    } finally {
-      setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    let active = true
+    async function carregar() {
+      try {
+        const result = await getProjetoById(projetoId)
+        if (!active) return
+        if (result.success && result.data) {
+          setProjeto(result.data)
+        } else {
+          sonnerToast.error((!result.success && result.error) || 'Erro ao carregar projeto')
+          router.push('/projetos')
+        }
+      } catch (error) {
+        console.error('Erro ao carregar projeto:', error)
+        sonnerToast.error('Erro inesperado ao carregar projeto')
+        router.push('/projetos')
+      } finally {
+        if (active) setIsLoading(false)
+      }
+    }
+    void carregar()
+    return () => {
+      active = false
+    }
+  }, [projetoId, router])
 
   async function loadAvailablePeople() {
     const result = await getPessoasParaGestor()
@@ -94,7 +114,7 @@ export default function ProjetoDetailPage() {
   }
 
   const handleOpenAddPeopleModal = () => {
-    loadAvailablePeople()
+    void loadAvailablePeople()
     setAddPeopleModalOpen(true)
   }
 
@@ -264,7 +284,7 @@ export default function ProjetoDetailPage() {
                   <Plus className="w-4 h-4 mr-2" />
                   Adicionar Pessoas
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDeleteProject} className="text-red-600">
+                <DropdownMenuItem onClick={() => { void handleDeleteProject() }} className="text-red-600">
                   Desativar Projeto
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -439,7 +459,7 @@ export default function ProjetoDetailPage() {
                 Cancelar
               </Button>
               <Button
-                onClick={handleAddPeople}
+                onClick={() => { void handleAddPeople() }}
                 disabled={selectedPeopleIds.length === 0}
                 className="bg-primary hover:bg-primary/90"
               >
@@ -463,7 +483,7 @@ export default function ProjetoDetailPage() {
               <Button variant="outline" onClick={() => setRemovePersonModal({ open: false, alocacaoId: null, pessoaNome: null })}>
                 Cancelar
               </Button>
-              <Button onClick={handleRemovePerson} variant="destructive">
+              <Button onClick={() => { void handleRemovePerson() }} variant="destructive">
                 Remover
               </Button>
             </DialogFooter>

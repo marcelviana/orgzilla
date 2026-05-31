@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Session, SupabaseClient, User } from '@supabase/supabase-js'
 import type { Database, Usuario, TipoPerfil } from '@/lib/types'
 import { UsuarioRepository } from '@/lib/repositories'
 
@@ -84,7 +84,7 @@ export class AuthService {
    */
   async loginWithGoogle(): Promise<AuthResult> {
     try {
-      const { data, error } = await this.supabase.auth.signInWithOAuth({
+      const { error } = await this.supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -304,7 +304,7 @@ export interface AuthResult {
   error?: string
   message?: string
   usuario?: Usuario
-  session?: any
+  session?: Session | null
 }
 
 export interface UsuarioLogado extends Usuario {
@@ -322,5 +322,5 @@ export interface UsuarioLogado extends Usuario {
       nome: string
     } | null
   } | null
-  authUser?: any
+  authUser?: User | null
 }

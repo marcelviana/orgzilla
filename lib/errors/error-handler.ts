@@ -14,7 +14,7 @@ export type ErrorType =
 export interface AppError {
   type: ErrorType
   message: string
-  originalError?: any
+  originalError?: unknown
   field?: string  // Para erros de validação específicos de campo
 }
 
@@ -51,20 +51,26 @@ const ERROR_TYPE_MESSAGES: Record<ErrorType, string> = {
 /**
  * Processa um erro e retorna uma mensagem amigável
  */
-export function handleError(error: any, type: ErrorType = 'unknown'): AppError {
+export function handleError(error: unknown, type: ErrorType = 'unknown'): AppError {
   console.error(`[${type.toUpperCase()}]`, error)
 
+  const errorObj = (typeof error === 'object' && error !== null)
+    ? (error as { type?: unknown; message?: unknown })
+    : {}
+
   // Se já é um AppError, retornar
-  if (error?.type && error?.message) {
+  if (typeof errorObj.type === 'string' && typeof errorObj.message === 'string') {
     return error as AppError
   }
+
+  const errorMessage = typeof errorObj.message === 'string' ? errorObj.message : ''
 
   let message = ERROR_TYPE_MESSAGES[type]
 
   // Processar erros do Supabase Auth
-  if (type === 'auth' && error?.message) {
+  if (type === 'auth' && errorMessage) {
     for (const [key, value] of Object.entries(AUTH_ERROR_MESSAGES)) {
-      if (error.message.includes(key)) {
+      if (errorMessage.includes(key)) {
         message = value
         break
       }
@@ -72,9 +78,9 @@ export function handleError(error: any, type: ErrorType = 'unknown'): AppError {
   }
 
   // Processar erros do Supabase Database
-  if (type === 'database' && error?.message) {
+  if (type === 'database' && errorMessage) {
     const dbError = Object.keys(DATABASE_ERROR_MESSAGES).find(key =>
-      error.message.toLowerCase().includes(key.toLowerCase())
+      errorMessage.toLowerCase().includes(key.toLowerCase())
     )
     if (dbError) {
       message = DATABASE_ERROR_MESSAGES[dbError]
@@ -82,7 +88,7 @@ export function handleError(error: any, type: ErrorType = 'unknown'): AppError {
   }
 
   // Processar erros de rede
-  if (error?.message?.includes('fetch') || error?.message?.includes('network')) {
+  if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
     message = ERROR_TYPE_MESSAGES.network
   }
 
@@ -142,7 +148,7 @@ export function validatePassword(password: string, minLength: number = 6): AppEr
 /**
  * Valida campo obrigatório
  */
-export function validateRequired(value: any, fieldName: string): AppError | null {
+export function validateRequired(value: unknown, fieldName: string): AppError | null {
   if (!value || (typeof value === 'string' && value.trim() === '')) {
     return {
       type: 'validation',

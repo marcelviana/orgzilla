@@ -1,5 +1,39 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
+import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/types'
+
+type FilterValue = string | number | boolean | null | undefined | Array<string | number | boolean>
+
+type Filters = Record<string, FilterValue>
+
+type QueryResult = { data: unknown; error: PostgrestError | null; count?: number | null }
+
+/**
+ * Interface estrutural mínima do query builder do PostgREST.
+ *
+ * O tipo concreto retornado por `supabase.from(table).select(...)` depende
+ * das relações da tabela (inferência genérica) e o resolver do ESLint o trata
+ * como `any`. Em vez de propagar `any`, descrevemos aqui apenas os métodos
+ * encadeáveis que os repositories realmente usam, mantendo type-safety.
+ */
+interface SelectQueryBuilder extends PromiseLike<QueryResult> {
+  eq: (column: string, value: FilterValue) => SelectQueryBuilder
+  neq: (column: string, value: FilterValue) => SelectQueryBuilder
+  in: (column: string, values: Array<string | number | boolean>) => SelectQueryBuilder
+  is: (column: string, value: null | boolean) => SelectQueryBuilder
+  gte: (column: string, value: string | number) => SelectQueryBuilder
+  lte: (column: string, value: string | number) => SelectQueryBuilder
+  gt: (column: string, value: string | number) => SelectQueryBuilder
+  lt: (column: string, value: string | number) => SelectQueryBuilder
+  like: (column: string, pattern: string) => SelectQueryBuilder
+  ilike: (column: string, pattern: string) => SelectQueryBuilder
+  or: (filters: string) => SelectQueryBuilder
+  contains: (column: string, value: unknown) => SelectQueryBuilder
+  order: (column: string, options?: { ascending?: boolean }) => SelectQueryBuilder
+  range: (from: number, to: number) => SelectQueryBuilder
+  limit: (count: number) => SelectQueryBuilder
+  single: () => PromiseLike<QueryResult>
+  maybeSingle: () => PromiseLike<QueryResult>
+}
 
 /**
  * Base Repository
@@ -83,13 +117,15 @@ export abstract class BaseRepository<
     const from = (page - 1) * limit
     const to = from + limit - 1
 
-    let query = this.supabase.from(this.tableName).select('*', { count: 'exact' })
+    let query = this.supabase
+      .from(this.tableName)
+      .select('*', { count: 'exact' }) as unknown as SelectQueryBuilder
 
     // Aplicar filtros
     query = this.applyFilters(query, filters)
 
     // Aplicar ordenação
-    query = query.order(orderBy as string, { ascending: orderDirection === 'asc' })
+    query = query.order(orderBy, { ascending: orderDirection === 'asc' })
 
     // Aplicar paginação
     query = query.range(from, to)
@@ -134,7 +170,7 @@ export abstract class BaseRepository<
   async create(data: Insert): Promise<Row> {
     const { data: created, error } = await this.supabase
       .from(this.tableName)
-      .insert(data as any)
+      .insert(data as never)
       .select()
       .single()
 
@@ -151,7 +187,7 @@ export abstract class BaseRepository<
   async update(id: string, data: Update): Promise<Row> {
     const { data: updated, error } = await this.supabase
       .from(this.tableName)
-      .update(data as any)
+      .update(data as never)
       .eq('id', id)
       .select()
       .single()
@@ -183,14 +219,14 @@ export abstract class BaseRepository<
    * Funciona apenas para tabelas que têm campo 'ativo'
    */
   async softDelete(id: string): Promise<Row> {
-    return this.update(id, { ativo: false } as any)
+    return this.update(id, { ativo: false } as Update)
   }
 
   /**
    * Reativa um registro marcado como inativo
    */
   async restore(id: string): Promise<Row> {
-    return this.update(id, { ativo: true } as any)
+    return this.update(id, { ativo: true } as Update)
   }
 
   // ==========================================================================
@@ -200,10 +236,10 @@ export abstract class BaseRepository<
   /**
    * Conta total de registros
    */
-  async count(filters: Record<string, any> = {}): Promise<number> {
+  async count(filters: Filters = {}): Promise<number> {
     let query = this.supabase
       .from(this.tableName)
-      .select('*', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true }) as unknown as SelectQueryBuilder
 
     query = this.applyFilters(query, filters)
 
@@ -252,18 +288,19 @@ export abstract class BaseRepository<
    * Aplica filtros à query
    * Subclasses podem sobrescrever para filtros customizados
    */
-  protected applyFilters(query: any, filters: Record<string, any>): any {
+  protected applyFilters(query: SelectQueryBuilder, filters: Filters): SelectQueryBuilder {
+    let result = query
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
-          query = query.in(key, value)
+          result = result.in(key, value)
         } else {
-          query = query.eq(key, value)
+          result = result.eq(key, value)
         }
       }
     })
 
-    return query
+    return result
   }
 
   /**
@@ -271,12 +308,12 @@ export abstract class BaseRepository<
    * Para casos onde os métodos padrão não são suficientes
    */
   protected async executeQuery<T = Row>(
-    queryBuilder: (query: any) => any
+    queryBuilder: (query: SelectQueryBuilder) => PromiseLike<QueryResult>
   ): Promise<T[]> {
-    const baseQuery = this.supabase.from(this.tableName).select('*')
-    const query = queryBuilder(baseQuery)
-
-    const { data, error } = await query
+    const baseQuery = this.supabase
+      .from(this.tableName)
+      .select('*') as unknown as SelectQueryBuilder
+    const { data, error } = await queryBuilder(baseQuery)
 
     if (error) {
       throw new RepositoryError(`Erro ao executar query em ${this.tableName}`, error)
@@ -289,9 +326,11 @@ export abstract class BaseRepository<
    * Busca com query customizada (single result)
    */
   protected async executeQuerySingle<T = Row>(
-    queryBuilder: (query: any) => any
+    queryBuilder: (query: SelectQueryBuilder) => { single: () => PromiseLike<QueryResult> }
   ): Promise<T | null> {
-    const baseQuery = this.supabase.from(this.tableName).select('*')
+    const baseQuery = this.supabase
+      .from(this.tableName)
+      .select('*') as unknown as SelectQueryBuilder
     const query = queryBuilder(baseQuery)
 
     const { data, error } = await query.single()
@@ -316,7 +355,7 @@ export interface FindManyOptions {
   limit?: number
   orderBy?: string
   orderDirection?: 'asc' | 'desc'
-  filters?: Record<string, any>
+  filters?: Filters
 }
 
 export interface PaginatedResult<T> {
@@ -334,9 +373,9 @@ export interface PaginatedResult<T> {
 // =============================================================================
 
 export class RepositoryError extends Error {
-  public readonly originalError?: any
+  public readonly originalError?: PostgrestError | null
 
-  constructor(message: string, originalError?: any) {
+  constructor(message: string, originalError?: PostgrestError | null) {
     super(message)
     this.name = 'RepositoryError'
     this.originalError = originalError

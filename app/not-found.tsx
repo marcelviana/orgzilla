@@ -1,7 +1,7 @@
 'use client'
 
 import { ErrorPage } from '@/components/shared/ErrorPage'
-import { Home, Users, Search } from 'lucide-react'
+import { Home, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function NotFound() {

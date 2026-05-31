@@ -43,7 +43,7 @@ export class AnotacaoRepository extends BaseRepository<'anotacao', Anotacao, Ano
       throw new RepositoryError('Erro ao buscar anotação com usuário', error)
     }
 
-    return data as AnotacaoComUsuario
+    return data
   }
 
   /**
@@ -80,7 +80,7 @@ export class AnotacaoRepository extends BaseRepository<'anotacao', Anotacao, Ano
       throw new RepositoryError('Erro ao buscar anotações com usuário', error)
     }
 
-    return (data || []) as AnotacaoComUsuario[]
+    return (data || [])
   }
 
   /**
@@ -160,7 +160,7 @@ export class AnotacaoRepository extends BaseRepository<'anotacao', Anotacao, Ano
       throw new RepositoryError('Erro ao buscar anotações recentes', error)
     }
 
-    return (data || []) as AnotacaoComUsuario[]
+    return (data || [])
   }
 
   /**
@@ -201,7 +201,7 @@ export class AnotacaoRepository extends BaseRepository<'anotacao', Anotacao, Ano
       throw new RepositoryError('Erro ao buscar anotações com filtros', error)
     }
 
-    return (data || []) as Anotacao[]
+    return (data || [])
   }
 
   /**

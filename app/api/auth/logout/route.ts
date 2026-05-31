@@ -26,7 +26,7 @@ export async function POST() {
       { success: true, message: 'Logout realizado com sucesso' },
       { status: 200 }
     )
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Logout] Erro inesperado:', error)
     return NextResponse.json(
       { error: 'Erro ao fazer logout' },

@@ -37,8 +37,8 @@ interface FilterConfig {
 
 interface FilterPanelProps {
   filters: FilterConfig[]
-  values: Record<string, any>
-  onChange: (values: Record<string, any>) => void
+  values: Record<string, unknown>
+  onChange: (values: Record<string, unknown>) => void
   onClear: () => void
   onApply?: () => void
 }
@@ -54,7 +54,7 @@ export function FilterPanel({
 
   const activeFiltersCount = Object.values(values).filter(Boolean).length
 
-  const handleFilterChange = (id: string, value: any) => {
+  const handleFilterChange = (id: string, value: unknown) => {
     onChange({ ...values, [id]: value })
   }
 

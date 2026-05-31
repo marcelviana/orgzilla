@@ -131,7 +131,7 @@ export async function requireCanViewSalary(): Promise<Usuario> {
 /**
  * Verifica se usuário pode criar uma entidade
  */
-export async function canCreate(entidade: string): Promise<boolean> {
+export async function canCreate(_entidade: string): Promise<boolean> {
   const usuario = await getUsuarioLogado()
   if (!usuario) return false
 
@@ -273,14 +273,14 @@ export async function filterByHierarchy<T>(
 
     if (timesIds.length === 0) {
       // Gestor sem hierarquia: retorna vazio
-      return [] as any
+      return [] as unknown as T
     }
 
     return await queryFn(timesIds)
   }
 
   // Fallback: retorna vazio
-  return [] as any
+  return [] as unknown as T
 }
 
 // =============================================================================

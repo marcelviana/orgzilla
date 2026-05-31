@@ -59,7 +59,7 @@ export class TrilhaCarreiraRepository extends BaseRepository<
       throw new RepositoryError('Erro ao buscar trilha com cargos', error)
     }
 
-    return data as TrilhaComCargos
+    return data
   }
 
   /**

@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
+import type { Database } from '@/lib/types'
 
 /**
  * Cliente Supabase para uso no browser (Client Components)
@@ -55,7 +56,7 @@ function getSupabaseApiKey(): string {
 }
 
 export function createClient() {
-  return createBrowserClient(
+  return createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     getSupabaseApiKey()
   )

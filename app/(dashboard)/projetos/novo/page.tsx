@@ -55,23 +55,23 @@ export default function NovoProjeto() {
 
   // Load pessoas on mount
   useEffect(() => {
-    loadData()
-  }, [])
+    async function loadData() {
+      try {
+        const pessoasResult = await getPessoasParaGestor()
 
-  async function loadData() {
-    try {
-      const pessoasResult = await getPessoasParaGestor()
-
-      if (pessoasResult.success && pessoasResult.data) {
-        setAvailablePeople(pessoasResult.data)
+        if (pessoasResult.success && pessoasResult.data) {
+          setAvailablePeople(pessoasResult.data)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error)
+        sonnerToast.error('Erro ao carregar formulário')
+      } finally {
+        setDataLoading(false)
       }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      sonnerToast.error('Erro ao carregar formulário')
-    } finally {
-      setDataLoading(false)
     }
-  }
+
+    void loadData()
+  }, [])
 
   const availableToAdd = availablePeople.filter(
     (p) => !pessoasAlocadas.find((pa) => pa.id === p.id)
@@ -281,7 +281,7 @@ export default function NovoProjeto() {
                 Cancelar
               </Button>
               <Button
-                onClick={handleSave}
+                onClick={() => { void handleSave() }}
                 disabled={isLoading}
                 className="bg-primary hover:bg-primary/90"
               >

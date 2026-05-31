@@ -33,6 +33,7 @@ const availablePeople = [
 
 export default function EditarProjeto() {
   const params = useParams()
+  const projetoId = params.id as string
   const router = useRouter()
   const { toast } = useToast()
   
@@ -88,7 +89,7 @@ export default function EditarProjeto() {
       title: 'Projeto atualizado!',
       description: `${nome} foi atualizado com sucesso`,
     })
-    router.push(`/projetos/${params.id}`)
+    router.push(`/projetos/${projetoId}`)
   }
 
   const handleDelete = () => {
@@ -236,7 +237,7 @@ export default function EditarProjeto() {
           {/* Actions */}
           <div className="border-t p-6 flex items-center justify-between">
             <div className="flex gap-2">
-              <Link href={`/projetos/${params.id}`}>
+              <Link href={`/projetos/${projetoId}`}>
                 <Button variant="outline">Cancelar</Button>
               </Link>
               <Button variant="destructive" onClick={() => setDeleteModalOpen(true)}>

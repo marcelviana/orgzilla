@@ -151,7 +151,7 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
       throw new RepositoryError('Erro ao buscar times com vagas', error)
     }
 
-    return (data || []) as Time[]
+    return (data || [])
   }
 
   /**
@@ -247,7 +247,7 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
       throw new RepositoryError('Erro ao buscar times com filtros', error)
     }
 
-    return (data || []) as Time[]
+    return (data || [])
   }
 
   /**

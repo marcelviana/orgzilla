@@ -44,7 +44,7 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
       throw new RepositoryError('Erro ao buscar vaga com relacionamentos', error)
     }
 
-    return data as VagaComRelacionamentos
+    return data
   }
 
   /**
@@ -68,7 +68,7 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
       throw new RepositoryError('Erro ao buscar vagas com relacionamentos', error)
     }
 
-    return (data || []) as VagaComRelacionamentos[]
+    return (data || [])
   }
 
   /**
@@ -99,7 +99,7 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
       throw new RepositoryError('Erro ao buscar vagas do time com relacionamentos', error)
     }
 
-    return (data || []) as VagaComRelacionamentos[]
+    return (data || [])
   }
 
   /**
@@ -130,7 +130,7 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
       throw new RepositoryError('Erro ao buscar vagas do cargo com relacionamentos', error)
     }
 
-    return (data || []) as VagaComRelacionamentos[]
+    return (data || [])
   }
 
   /**
@@ -161,7 +161,7 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
       throw new RepositoryError('Erro ao buscar vagas ativas com relacionamentos', error)
     }
 
-    return (data || []) as VagaComRelacionamentos[]
+    return (data || [])
   }
 
   /**
@@ -245,7 +245,7 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
       throw new RepositoryError('Erro ao buscar vagas com filtros', error)
     }
 
-    return (data || []) as VagaTime[]
+    return (data || [])
   }
 
   /**

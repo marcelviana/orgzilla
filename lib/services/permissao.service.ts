@@ -30,7 +30,7 @@ export class PermissaoService {
   /**
    * Verifica se usuário pode criar uma entidade
    */
-  podeCriar(usuario: Usuario, entidade: TipoEntidade): boolean {
+  podeCriar(usuario: Usuario, _entidade: TipoEntidade): boolean {
     // Visualizador não pode criar nada
     if (usuario.tipo_perfil === 'visualizador') {
       return false
@@ -303,7 +303,7 @@ export class PermissaoService {
   /**
    * Verifica se usuário pode exportar dados
    */
-  async podeExportar(usuario: Usuario): Promise<boolean> {
+  podeExportar(usuario: Usuario): boolean {
     // Apenas Admin e Gestor podem exportar
     return usuario.tipo_perfil === 'admin' || usuario.tipo_perfil === 'gestor'
   }

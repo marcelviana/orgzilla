@@ -16,9 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Briefcase, Calendar, Users, Lock, MessageSquare, ChevronRight, Home, Loader2 } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, ChevronRight, Home, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { getPessoaById } from '@/app/actions/pessoas.actions'
 
 // Type for person data
@@ -102,18 +101,6 @@ const TIMELINE_DATA = [
   { tipo: 'promocao', titulo: 'Promovido para Senior Engineer', data: '2024-06-20', detalhes: 'De L3 para L4' }
 ]
 
-const SALARY_HISTORY = [
-  { data: '2024-06-20', anterior: 12000, novo: 15000, variacao: '+25%', variacaoValor: '+R$ 3.000', motivo: 'Promoção para L4', registradoPor: 'João Silva' },
-  { data: '2023-07-01', anterior: 8000, novo: 12000, variacao: '+50%', variacaoValor: '+R$ 4.000', motivo: 'Promoção para L3', registradoPor: 'João Silva' },
-  { data: '2023-01-15', anterior: 0, novo: 8000, variacao: 'Inicial', variacaoValor: '-', motivo: 'Contratação', registradoPor: 'RH' }
-]
-
-const SALARY_CHART_DATA = [
-  { mes: 'Jan/23', salario: 8000 },
-  { mes: 'Jul/23', salario: 12000 },
-  { mes: 'Jun/24', salario: 15000 }
-]
-
 const MOCK_NOTES = [
   { 
     id: '1',
@@ -166,7 +153,7 @@ export default function PersonProfilePage() {
       }
     }
 
-    loadPessoa()
+    void loadPessoa()
   }, [pessoaId, router])
 
   const calculateTimeInCompany = (dataEntrada: string | null) => {
@@ -706,7 +693,7 @@ export default function PersonProfilePage() {
                         <Badge className={getStatusColor(projeto.status)}>{projeto.status}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
-                        {formatDateShort(projeto.dataInicio)} até {formatDateShort(projeto.dataFim!)} (5 meses)
+                        {formatDateShort(projeto.dataInicio)} até {formatDateShort(projeto.dataFim)} (5 meses)
                       </p>
                       <Link href={`/projetos/${projeto.id}`}>
                         <Button variant="link" className="p-0 h-auto">Ver Projeto</Button>

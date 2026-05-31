@@ -4,10 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Home, Mail, RefreshCw, Search, Users, Info } from 'lucide-react'
 
 interface ErrorPageProps {
-  code: 404 | 500 | 403 | number
+  code: number
   title: string
   description: string
   illustration: string

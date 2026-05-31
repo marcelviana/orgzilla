@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Dialog,
   DialogContent,
@@ -109,7 +109,12 @@ export default function ConfiguracoesPage() {
   const [showTagModal, setShowTagModal] = useState(false)
   const [showTrilhaModal, setShowTrilhaModal] = useState(false)
   const [showLevelModal, setShowLevelModal] = useState(false)
-  const [editingItem, setEditingItem] = useState<any>(null)
+  const [editingItem, setEditingItem] = useState<{
+    nome?: string
+    cor?: string
+    descricao?: string
+    ativo?: boolean
+  } | null>(null)
 
   const isAdmin = currentUser.tipoPerfil === "admin"
   const isGestor = currentUser.tipoPerfil === "gestor" || isAdmin

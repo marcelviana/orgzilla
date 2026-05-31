@@ -50,7 +50,7 @@ export default async function Page() {
   const recentActivities = activitiesResult.success ? activitiesResult.data! : []
 
   // Nome do usuário para saudação
-  const nomeExibicao = usuario?.pessoa?.nome || usuario?.nome || 'Usuário'
+  const nomeExibicao = usuario?.nome || 'Usuário'
   const primeiroNome = nomeExibicao.split(' ')[0]
 
   // Data atual formatada

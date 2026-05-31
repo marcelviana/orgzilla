@@ -221,7 +221,10 @@ export async function getNivelDistribution(): Promise<ActionResult<NivelDistribu
     // Agrupar por nível
     const nivelMap = new Map<string, number>()
 
-    pessoas?.forEach((pessoa: any) => {
+    const pessoasNivel = (pessoas ?? []) as unknown as Array<{
+      cargo?: { nivel?: { nome?: string | null } | null } | null
+    }>
+    pessoasNivel.forEach((pessoa) => {
       const nivelNome = pessoa.cargo?.nivel?.nome
       if (nivelNome) {
         nivelMap.set(nivelNome, (nivelMap.get(nivelNome) || 0) + 1)
@@ -300,7 +303,10 @@ export async function getTimeDistribution(): Promise<ActionResult<TimeDistributi
     // Agrupar por time
     const timeMap = new Map<string, number>()
 
-    pessoas?.forEach((pessoa: any) => {
+    const pessoasTime = (pessoas ?? []) as unknown as Array<{
+      time?: { nome?: string | null } | null
+    }>
+    pessoasTime.forEach((pessoa) => {
       const timeNome = pessoa.time?.nome
       if (timeNome) {
         timeMap.set(timeNome, (timeMap.get(timeNome) || 0) + 1)
@@ -397,8 +403,10 @@ export async function getRecentActivities(): Promise<ActionResult<RecentActivity
         const diffHours = Math.floor(diffMs / 3600000)
         const diffDays = Math.floor(diffMs / 86400000)
 
-        let time = 'agora'
-        if (diffMins < 60) {
+        let time: string
+        if (diffMins < 1) {
+          time = 'agora'
+        } else if (diffMins < 60) {
           time = `${diffMins}m atrás`
         } else if (diffHours < 24) {
           time = `${diffHours}h atrás`

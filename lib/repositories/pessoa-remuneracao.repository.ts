@@ -41,7 +41,7 @@ export class PessoaRemuneracaoRepository {
       throw new RepositoryError('Erro ao buscar remuneração da pessoa', error)
     }
 
-    return (data as PessoaRemuneracao) || null
+    return (data) || null
   }
 
   /**
@@ -61,7 +61,7 @@ export class PessoaRemuneracaoRepository {
       throw new RepositoryError('Erro ao buscar remunerações', error)
     }
 
-    return (data || []) as PessoaRemuneracao[]
+    return (data || [])
   }
 
   /**
@@ -70,7 +70,7 @@ export class PessoaRemuneracaoRepository {
   async upsert(dados: PessoaRemuneracaoInsert): Promise<PessoaRemuneracao> {
     const { data, error } = await this.supabase
       .from(this.tableName)
-      .upsert(dados as any, { onConflict: 'pessoa_id' })
+      .upsert(dados as never, { onConflict: 'pessoa_id' })
       .select()
       .single()
 
@@ -78,7 +78,7 @@ export class PessoaRemuneracaoRepository {
       throw new RepositoryError('Erro ao salvar remuneração', error)
     }
 
-    return data as PessoaRemuneracao
+    return data
   }
 
   /**

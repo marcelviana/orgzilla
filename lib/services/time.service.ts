@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, Time, TimeInsert, TimeUpdate, Usuario } from '@/lib/types'
+import type { Database, Pessoa, Time, TimeInsert, TimeUpdate, Usuario } from '@/lib/types'
 import { TimeRepository, PessoaRepository } from '@/lib/repositories'
+import type { TimeFilters } from '@/lib/repositories/time.repository'
 import { AuditoriaService } from './auditoria.service'
 import { PermissaoService } from './permissao.service'
 
@@ -271,7 +272,7 @@ export class TimeService {
    * @param timeId ID do time
    * @param incluirSubtimes Se true, inclui pessoas de todos os subtimes
    */
-  async buscarPessoasTime(timeId: string, incluirSubtimes: boolean = false): Promise<any[]> {
+  async buscarPessoasTime(timeId: string, incluirSubtimes: boolean = false): Promise<Pessoa[]> {
     try {
       if (!incluirSubtimes) {
         // Apenas pessoas do time específico
@@ -305,7 +306,7 @@ export class TimeService {
   /**
    * Busca times com filtro de permissão
    */
-  async buscarComPermissao(usuarioLogado: Usuario, filtros?: any) {
+  async buscarComPermissao(usuarioLogado: Usuario, filtros?: TimeFilters) {
     try {
       // Admin vê todos os times
       if (usuarioLogado.tipo_perfil === 'admin') {
@@ -343,7 +344,7 @@ export class TimeService {
   /**
    * Valida dados de time antes de salvar
    */
-  private async validar(dados: TimeInsert | TimeUpdate, id?: string): Promise<ValidationResult> {
+  private async validar(dados: TimeInsert | TimeUpdate, _id?: string): Promise<ValidationResult> {
     // Nome obrigatório (apenas em criação)
     if ('nome' in dados && !dados.nome) {
       return { valido: false, erro: 'Nome é obrigatório' }

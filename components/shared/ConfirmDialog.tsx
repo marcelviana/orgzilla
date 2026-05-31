@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 
 /**
  * ConfirmDialog - Standard confirmation dialog for destructive actions
@@ -57,19 +57,15 @@ export function ConfirmDialog({
   confirmationWord = "EXCLUIR",
 }: ConfirmDialogProps) {
   const [typedConfirmation, setTypedConfirmation] = useState("")
-  const [isValid, setIsValid] = useState(!requiresTypedConfirmation)
 
-  useEffect(() => {
-    if (requiresTypedConfirmation) {
-      setIsValid(typedConfirmation === confirmationWord)
-    }
-  }, [typedConfirmation, confirmationWord, requiresTypedConfirmation])
+  const isValid = !requiresTypedConfirmation || typedConfirmation === confirmationWord
 
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
       setTypedConfirmation("")
     }
-  }, [open])
+    onOpenChange(next)
+  }
 
   const handleConfirm = () => {
     if (!isValid) return
@@ -89,7 +85,7 @@ export function ConfirmDialog({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent className="sm:max-w-[450px]">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl">{title}</AlertDialogTitle>

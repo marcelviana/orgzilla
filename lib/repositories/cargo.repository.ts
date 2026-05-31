@@ -41,7 +41,7 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
       throw new RepositoryError('Erro ao buscar cargo com relacionamentos', error)
     }
 
-    return data as CargoComRelacionamentos
+    return data
   }
 
   /**
@@ -63,7 +63,7 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
         throw new RepositoryError('Erro ao buscar cargos com relacionamentos', error)
       }
 
-      return (data || []) as CargoComRelacionamentos[]
+      return (data || [])
     } catch (err) {
       console.error('[CargoRepository] Erro inesperado:', err)
       throw err
@@ -247,7 +247,7 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
       throw new RepositoryError('Erro ao buscar cargos com filtros', error)
     }
 
-    return (data || []) as Cargo[]
+    return (data || [])
   }
 
   /**
@@ -268,7 +268,7 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
       throw new RepositoryError('Erro ao buscar cargos ordenados', error)
     }
 
-    return (data || []) as CargoComRelacionamentos[]
+    return (data || [])
   }
 
   /**

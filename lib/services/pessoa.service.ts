@@ -9,6 +9,7 @@ import type {
   StatusPessoa,
 } from '@/lib/types'
 import { PessoaRepository, PessoaRemuneracaoRepository } from '@/lib/repositories'
+import type { PessoaFilters } from '@/lib/repositories/pessoa.repository'
 import { AuditoriaService } from './auditoria.service'
 import { HistoricoService } from './historico.service'
 import { PermissaoService } from './permissao.service'
@@ -258,7 +259,7 @@ export class PessoaService {
    * - Gestor: vê apenas pessoas de sua hierarquia
    * - Visualizador: vê todas as pessoas (mas não vê salários)
    */
-  async buscarComPermissao(usuarioLogado: Usuario, filtros?: any) {
+  async buscarComPermissao(usuarioLogado: Usuario, filtros?: PessoaFilters) {
     try {
       // Admin e Visualizador veem todas
       if (usuarioLogado.tipo_perfil === 'admin' || usuarioLogado.tipo_perfil === 'visualizador') {
@@ -375,7 +376,6 @@ export class PessoaService {
         return { success: false, error: 'Salário não pode ser negativo' }
       }
 
-      const hoje = new Date().toISOString().split('T')[0]
       const remuneracaoAnterior = await this.remuneracaoRepo.findByPessoaId(pessoaId)
 
       const remuneracao = await this.remuneracaoRepo.upsert({

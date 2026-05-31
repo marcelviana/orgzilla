@@ -292,7 +292,7 @@ export class VagaService {
   /**
    * Valida dados de vaga antes de salvar
    */
-  private async validar(dados: VagaTimeInsert | VagaTimeUpdate, id?: string): Promise<ValidationResult> {
+  private async validar(dados: VagaTimeInsert | VagaTimeUpdate, _id?: string): Promise<ValidationResult> {
     // Time obrigatório (apenas em criação)
     if ('time_id' in dados && !dados.time_id) {
       return { valido: false, erro: 'Time é obrigatório' }

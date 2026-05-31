@@ -1,3 +1,4 @@
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import type { Usuario, TipoPerfil } from '@/lib/types'
 import { UsuarioRepository } from '@/lib/repositories'
@@ -72,7 +73,9 @@ export async function getUsuarioLogado(): Promise<UsuarioLogado | null> {
         usuario = await usuarioRepo.create({
           id: authUser.id,
           email: authUser.email,
-          nome: authUser.user_metadata?.full_name || authUser.email.split('@')[0],
+          nome: (typeof authUser.user_metadata?.full_name === 'string'
+            ? authUser.user_metadata.full_name
+            : null) || authUser.email.split('@')[0],
           tipo_perfil: 'visualizador', // Perfil padrão
           ativo: true,
         })
@@ -253,7 +256,7 @@ export interface UsuarioLogado extends Usuario {
       nome: string
     } | null
   } | null
-  authUser?: any
+  authUser?: User | null
 }
 
 export class AuthError extends Error {

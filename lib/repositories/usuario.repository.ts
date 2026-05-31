@@ -51,7 +51,7 @@ export class UsuarioRepository extends BaseRepository<'usuario', Usuario, Usuari
       throw new RepositoryError('Erro ao buscar usuário com pessoa', error)
     }
 
-    return data as UsuarioComPessoa
+    return data
   }
 
   /**

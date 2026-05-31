@@ -32,12 +32,12 @@ function DialogPortal({
   container,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  // Force portal to render in body
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
+  // Force portal to render in body (only after hydration)
+  const mounted = React.useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  )
 
   if (!mounted) return null
 
