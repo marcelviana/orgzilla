@@ -52,6 +52,35 @@ export interface TimeHierarquico extends TimeComEstatisticas {
   filhos: TimeHierarquico[]
 }
 
+export interface TimeDetalhe {
+  id: string
+  nome: string
+  descricao: string | null
+  time_pai_id: string | null
+  gestor_id: string | null
+  ativo: boolean
+  created_at: string
+  updated_at: string
+  time_pai: {
+    id: string
+    nome: string
+  } | null
+  gestor: {
+    id: string
+    nome: string
+    email_corporativo: string | null
+  } | null
+  membros: Array<{
+    id: string
+    nome: string
+    cargo?: {
+      nome: string
+    } | null
+  }>
+  vagas: number
+  times_filhos: number
+}
+
 export interface ActionResult<T = void> {
   success: boolean
   data?: T
@@ -135,12 +164,12 @@ export async function getTimesComEstatisticas(): Promise<ActionResult<TimeComEst
 /**
  * Busca um time por ID com estatísticas
  */
-export async function getTimeById(id: string): Promise<ActionResult<TimeComEstatisticas>> {
+export async function getTimeById(id: string): Promise<ActionResult<TimeDetalhe>> {
   try {
     const supabase = await createClient()
     const timeRepo = new TimeRepository(supabase)
 
-    const time = await timeRepo.findByIdWithBasicRelationships(id)
+    const time = await timeRepo.findByIdWithRelationships(id)
 
     if (!time) {
       return {
@@ -156,6 +185,15 @@ export async function getTimeById(id: string): Promise<ActionResult<TimeComEstat
       timeRepo.countFilhos(time.id),
     ])
 
+    const membros = (time.membros || []) as Array<{
+      id: string
+      nome: string
+      ativo: boolean
+      cargo?: {
+        nome: string
+      } | null
+    }>
+
     return {
       success: true,
       data: {
@@ -169,7 +207,13 @@ export async function getTimeById(id: string): Promise<ActionResult<TimeComEstat
         updated_at: time.updated_at,
         time_pai: time.time_pai || null,
         gestor: time.gestor || null,
-        membros: membrosCount,
+        membros: membros
+          .filter((membro) => membro.ativo)
+          .map((membro) => ({
+            id: membro.id,
+            nome: membro.nome,
+            cargo: membro.cargo ? { nome: membro.cargo.nome } : null,
+          })),
         vagas: vagasCount,
         times_filhos: filhosCount,
       },

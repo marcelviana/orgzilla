@@ -16,28 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ChevronRight, Home, Users, MoreVertical, Loader2, TrendingUp, Briefcase } from 'lucide-react'
 import { toast } from 'sonner'
-import { getTimeById } from '@/app/actions/times.actions'
-
-type TimeData = {
-  id: string
-  nome: string
-  descricao: string | null
-  time_pai: {
-    id: string
-    nome: string
-  } | null
-  gestor: {
-    id: string
-    nome: string
-  } | null
-  membros?: Array<{
-    id: string
-    nome: string
-    cargo?: { nome: string }
-  }>
-  ativo: boolean
-  created_at: string
-}
+import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
 
 export default function TimeDetailPage() {
   const router = useRouter()
@@ -45,7 +24,7 @@ export default function TimeDetailPage() {
   const timeId = params.id as string
 
   const [isLoading, setIsLoading] = useState(true)
-  const [time, setTime] = useState<TimeData | null>(null)
+  const [time, setTime] = useState<TimeDetalhe | null>(null)
 
   useEffect(() => {
     loadTime()
@@ -56,7 +35,7 @@ export default function TimeDetailPage() {
     try {
       const result = await getTimeById(timeId)
       if (result.success && result.data) {
-        setTime(result.data as TimeData)
+        setTime(result.data)
       } else {
         toast.error(result.error || 'Erro ao carregar time')
         router.push('/times')
@@ -202,9 +181,9 @@ export default function TimeDetailPage() {
               <Users className="h-5 w-5 text-primary" />
               <h3 className="font-semibold">Membros</h3>
             </div>
-            <p className="text-3xl font-bold">{time.membros?.length || 0}</p>
+            <p className="text-3xl font-bold">{time.membros.length}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {time.membros?.length === 1 ? 'pessoa no time' : 'pessoas no time'}
+              {time.membros.length === 1 ? 'pessoa no time' : 'pessoas no time'}
             </p>
           </Card>
 
@@ -214,7 +193,7 @@ export default function TimeDetailPage() {
               <Briefcase className="h-5 w-5 text-primary" />
               <h3 className="font-semibold">Times Filhos</h3>
             </div>
-            <p className="text-3xl font-bold">0</p>
+            <p className="text-3xl font-bold">{time.times_filhos}</p>
             <p className="text-sm text-muted-foreground mt-1">sub-times diretos</p>
           </Card>
         </div>
@@ -222,7 +201,7 @@ export default function TimeDetailPage() {
         {/* Members List */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Membros do Time</h3>
-          {time.membros && time.membros.length > 0 ? (
+          {time.membros.length > 0 ? (
             <div className="space-y-3">
               {time.membros.map(membro => (
                 <div key={membro.id} className="flex items-center justify-between border rounded-lg p-4">
