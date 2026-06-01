@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (testes de repositories adicionados — 87 testes no total; bug documentado em PessoaRepository.findComFiltrosPaginados filtro timeId='todos')
+**Última atualização:** 1 de junho de 2026 (testes de repositories adicionados — 87 testes no total; bug documentado em PessoaRepository.findComFiltrosPaginados filtro timeId='todos'; débitos arquiteturais identificados pelo revisor-camadas registrados em §3.3)
 
 ---
 
@@ -104,6 +104,11 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 2. ✅ **Hierarquia do gestor unificada (fonte única).** Removidas as cópias `getTimeHierarchyIds` (`pessoas.actions.ts` + `dashboard.actions.ts`) e `getTimeHierarchyIdsRecursive` (`times.actions.ts`). Todas as actions usam agora `PermissaoService.getTimesHierarquia` (regra correta: times que o gestor **gerencia** via `gestor_id` + descendentes). A recursão vive num só lugar — `PermissaoService.coletarSubarvore` (privado, **com proteção contra ciclos** por conjunto de visitados) — reutilizada por `getHierarquiaCompleta`, `TimeService.buscarDescendentes` e a checagem de ciclo de `times.actions`.
 3. ✅ Queries cruas de `pessoas.actions.ts` e `dashboard.actions.ts` migradas para repositories: `PessoaRepository.findComFiltrosPaginados`, `PessoaRepository.findParaSelecao`, `TimeRepository.findAtivosParaFiltro`, `CargoRepository.findAtivosParaFiltro` (pessoas); `PessoaRepository` (countAtivasComStatus, countCriadasNoPeriodo, findParaNivelDistribuicao, findParaTimeDistribuicao), `TimeRepository.countAtivos`, `VagaTimeRepository.sumQuantidadeAtivasEmTimes`, `ProjetoProdutoRepository.countActive`, `HistoricoMudancaRepository.findRecent` (dashboard). `projetos.actions.ts` e `tags.actions.ts` já eram ✅.
 4. ✅ `getTimesComEstatisticas` em `times.actions.ts` migrado para `TimeService.buscarComPermissao(usuario)` — não mais `timeRepo.findAll()` + filter manual.
+
+**Débitos pendentes (identificados pelo revisor-camadas):**
+- 🟡 `pessoas.actions.ts` linhas 262–296: função `anexarRemuneracaoLista` aplica lógica LGPD de negócio (guarda de perfil + enriquecimento de dados salariais) diretamente na Action, fora do `PessoaService`. Deve ser extraída para o Service.
+- 🟡 `dashboard.actions.ts` linhas 124/185/238/336: blocos `catch` usam `console.error` em vez de `handleError` (convenção de `lib/errors/error-handler.ts`). Não-bloqueante, mas fura a padronização de tratamento de erros.
+- 🟡 `times.actions.ts` linhas 628–671: função `buildTimeHierarchy` recursiva sem proteção a ciclos — é uma cópia fora do `TimeService`. Viola o princípio de fonte única para recursão de hierarquia (§3.3 item 2). Deve ser eliminada e substituída pela implementação já protegida em `TimeService`/`PermissaoService`.
 
 **Consequências (resolvidas):**
 - ✅ Recursão de hierarquia não está mais duplicada nem desprotegida: era ilimitada (loop infinito em ciclo de `time_pai_id`); agora há uma única implementação com `Set` de visitados.
