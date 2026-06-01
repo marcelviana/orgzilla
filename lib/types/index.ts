@@ -33,7 +33,7 @@ export type {
 // TABLE TYPES (Row)
 // =============================================================================
 
-import type { Database } from './database'
+import type { Database, StatusPessoa, TipoPerfil, TipoEntidade, TipoMudanca } from './database'
 
 // Core tables
 export type Usuario = Database['public']['Tables']['usuario']['Row']

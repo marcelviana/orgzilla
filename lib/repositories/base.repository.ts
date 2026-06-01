@@ -68,9 +68,9 @@ export abstract class BaseRepository<
    * Busca um registro por ID
    */
   async findById(id: string): Promise<Row | null> {
-    const { data, error } = await this.supabase
+    const { data, error } = await (this.supabase
       .from(this.tableName)
-      .select('*')
+      .select('*') as unknown as SelectQueryBuilder)
       .eq('id', id)
       .single()
 
@@ -90,9 +90,9 @@ export abstract class BaseRepository<
    * CUIDADO: Use apenas para tabelas pequenas
    */
   async findAll(): Promise<Row[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await (this.supabase
       .from(this.tableName)
-      .select('*')
+      .select('*') as unknown as SelectQueryBuilder)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -151,9 +151,9 @@ export abstract class BaseRepository<
    * Busca registros ativos (where ativo = true)
    */
   async findActive(): Promise<Row[]> {
-    const { data, error } = await this.supabase
+    const { data, error } = await (this.supabase
       .from(this.tableName)
-      .select('*')
+      .select('*') as unknown as SelectQueryBuilder)
       .eq('ativo', true)
       .order('created_at', { ascending: false })
 
@@ -204,9 +204,9 @@ export abstract class BaseRepository<
    * CUIDADO: Prefira usar softDelete quando possível
    */
   async delete(id: string): Promise<void> {
-    const { error } = await this.supabase
+    const { error } = await (this.supabase
       .from(this.tableName)
-      .delete()
+      .delete() as unknown as SelectQueryBuilder)
       .eq('id', id)
 
     if (error) {
@@ -219,14 +219,14 @@ export abstract class BaseRepository<
    * Funciona apenas para tabelas que têm campo 'ativo'
    */
   async softDelete(id: string): Promise<Row> {
-    return this.update(id, { ativo: false } as Update)
+    return this.update(id, { ativo: false } as unknown as Update)
   }
 
   /**
    * Reativa um registro marcado como inativo
    */
   async restore(id: string): Promise<Row> {
-    return this.update(id, { ativo: true } as Update)
+    return this.update(id, { ativo: true } as unknown as Update)
   }
 
   // ==========================================================================
@@ -267,9 +267,9 @@ export abstract class BaseRepository<
    * Verifica se um registro existe por ID
    */
   async exists(id: string): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const { data, error } = await (this.supabase
       .from(this.tableName)
-      .select('id')
+      .select('id') as unknown as SelectQueryBuilder)
       .eq('id', id)
       .single()
 

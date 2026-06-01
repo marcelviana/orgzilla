@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (bug do filtro sentinela `'todos'` em `PessoaRepository.findComFiltrosPaginados` corrigido; teste atualizado para verificar comportamento correto; 98 testes passando)
+**Última atualização:** 1 de junho de 2026 (erros TS2304/TS2345 corrigidos em `lib/types/index.ts` e `lib/repositories/base.repository.ts`; 98 testes passando)
 
 ---
 
@@ -122,9 +122,11 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 
 ### 3.5 Erros de TypeScript mascarados no build
 - `next.config.mjs` tem **`typescript.ignoreBuildErrors: true`**. Por isso `npm run build` passa **sem checagem de tipos** — "build ok" não significa "tipos ok".
-- Rodando `tsc --noEmit` (precisa de Node ≥ 14; o Node ativo no ambiente era 10): **~94 erros de tipo em ~15 arquivos** (actions de pessoas/times/projetos/tags/usuários/cargos/trilhas, `lib/repositories/*`, `lib/services/auditoria.service.ts`, `lib/types/index.ts`, páginas de `configuracoes/*` e `organograma`).
-- Confirmados entre eles os reportados antes: `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314: Generic type 'ActionResult' requires 1 type argument`). O terceiro item então relatado (`timeRepo.findAll({...})` em `getTimesParaFiltro`) **não se reproduz mais**: a função hoje usa `supabase.from('time')` direto.
-- ⚠️ **Validado por `tsc`/build, não verificado contra o app rodando.** Não corrigidos nesta passada — registro de débito para não se perderem. Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
+- Rodando `tsc --noEmit`: **~63 erros de tipo em ~16 arquivos** (actions de pessoas/times/projetos/tags/usuários/cargos/trilhas, `lib/services/auditoria.service.ts`, páginas de `configuracoes/*`, `organograma`, `relatorios`, `pessoas/[id]`, `projetos`, `times/novo`).
+- **Corrigidos neste ciclo:**
+  - `lib/types/index.ts`: `import type { StatusPessoa, TipoPerfil, TipoEntidade, TipoMudanca }` adicionado — resolvia TS2304 (identificadores não encontrados).
+  - `lib/repositories/base.repository.ts`: casts `as unknown as SelectQueryBuilder` e `as unknown as Update` adicionados nos métodos CRUD/soft-delete — resolvia TS2345 (incompatibilidade de generics do Supabase SDK).
+- **Débito restante:** `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314`); demais erros nos arquivos de actions e pages listados acima ainda presentes. Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
 
 ### 3.6 Padronização de toast/erros incompleta
 - A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `pessoas/*`). `perfil` já migrado ✅. Migração pendente (não-bloqueante); seguir a convenção em código novo.
