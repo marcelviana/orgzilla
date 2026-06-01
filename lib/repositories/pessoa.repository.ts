@@ -68,7 +68,14 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       throw new RepositoryError('Erro ao buscar pessoa com relacionamentos', error)
     }
 
-    return data as PessoaComRelacionamentos
+    if (!data) return null
+
+    const normalized = {
+      ...data,
+      tags: (data.tags as Array<{ tag: unknown }>)?.map((pt) => pt.tag) ?? [],
+    }
+
+    return normalized as unknown as PessoaComRelacionamentos
   }
 
   /**
@@ -99,7 +106,14 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       throw new RepositoryError('Erro ao buscar pessoa com relacionamentos básicos', error)
     }
 
-    return data
+    if (!data) return null
+
+    const normalized = {
+      ...data,
+      tags: (data.tags as Array<{ tag: unknown }>)?.map((pt) => pt.tag) ?? [],
+    }
+
+    return normalized as unknown as PessoaComRelacionamentosBasicos
   }
 
   /**

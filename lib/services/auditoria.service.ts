@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { Database, TipoMudanca } from '@/lib/types'
+import type { Database, TipoMudanca, Json } from '@/lib/types'
 import { HistoricoMudancaRepository } from '@/lib/repositories'
 
 /**
@@ -34,8 +34,8 @@ export class AuditoriaService {
         entidade_id: dados.entidadeId,
         tipo_mudanca: dados.tipoMudanca,
         campo_alterado: dados.campoAlterado || null,
-        valor_anterior: dados.valorAnterior || null,
-        valor_novo: dados.valorNovo || null,
+        valor_anterior: (dados.valorAnterior ?? null) as Json | null,
+        valor_novo: (dados.valorNovo ?? null) as Json | null,
         usuario_id: dados.usuarioId,
       })
     } catch (error) {
@@ -176,7 +176,15 @@ export class AuditoriaService {
     dataInicio?: string
     dataFim?: string
   }) {
-    return await this.historicoRepo.findWithFilters(filtros)
+    return await this.historicoRepo.findWithFilters({
+      tipo_entidade: filtros.tipoEntidade,
+      entidade_id: filtros.entidadeId,
+      tipo_mudanca: filtros.tipoMudanca,
+      usuario_id: filtros.usuarioId,
+      campo_alterado: filtros.campoAlterado,
+      data_inicio: filtros.dataInicio,
+      data_fim: filtros.dataFim,
+    })
   }
 
   // ==========================================================================

@@ -51,7 +51,16 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
       throw new RepositoryError('Erro ao buscar time com relacionamentos', error)
     }
 
-    return data as TimeComRelacionamentos
+    // Supabase infere times_filhos como objeto | null na auto-referência; normalizamos para array
+    const normalized = {
+      ...data,
+      times_filhos: Array.isArray(data.times_filhos)
+        ? data.times_filhos
+        : data.times_filhos
+          ? [data.times_filhos]
+          : [],
+    }
+    return normalized as unknown as TimeComRelacionamentos
   }
 
   /**
@@ -76,7 +85,15 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
       throw new RepositoryError('Erro ao buscar time com relacionamentos básicos', error)
     }
 
-    return data as TimeComRelacionamentosBasicos
+    const normalizedBasico = {
+      ...data,
+      times_filhos: Array.isArray(data.times_filhos)
+        ? data.times_filhos
+        : data.times_filhos
+          ? [data.times_filhos]
+          : [],
+    }
+    return normalizedBasico as unknown as TimeComRelacionamentosBasicos
   }
 
   /**
