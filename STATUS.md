@@ -3,8 +3,8 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (migração mock → real: busca/page.tsx — dados reais via `buscarEntidades` em paralelo)
-**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real (resta apenas: relatórios).
+**Última atualização:** 1 de junho de 2026 (migração mock → real: relatorios — dados reais com proteção LGPD)
+**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários) e validar o RLS por teste. Migração mock → real concluída em todas as páginas.
 
 ---
 
@@ -68,7 +68,7 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 | Página | Estado |
 |---|---|
 | `busca` | ✅ Dados reais via `buscarEntidades` (`busca.actions.ts`): executa em paralelo `getPessoasComFiltros`, `getTimesParaFiltro`, `getProjetosParaFiltro`, `getCargosParaFiltro` |
-| `relatorios` | ❌ Mock puro + `console.log('[v0]')` em export/filtro de data |
+| `relatorios` | ✅ Dados reais via `relatorios.actions.ts`: distribuição por nível/status, top times, pessoas por cargo, vagas, projetos; tab Financeiro protegida por `PermissaoService` (gestor only, LGPD), agregados salariais com supressão n<3 |
 | `configuracoes/page.tsx` (landing) | ⚠️ Dados reais via `getNiveisComEstatisticas`, `getTrilhasComEstatisticas`, `getTagsComEstatisticas`; histórico de login substituído por mensagem estática "em breve" (não implementado) |
 | `configuracoes/tags` | ✅ Pessoas reais via `getPessoasComTag`; import/export pendentes (disabled) |
 | `perfil` (troca de senha) | ✅ Real: chama `atualizarSenhaAction` → `AuthService.atualizarSenha` |
@@ -150,7 +150,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 1. **Conectar o app ao banco recriado**: ✅ schema + seed já aplicados. Falta atualizar env vars (local + Vercel), reconfigurar OAuth e criar/vincular os usuários de teste — ver checklist da §1.
 2. **Validar a cadeia**: app sobe, login funciona, dashboard renderiza, e rodar o teste de fumaça de RLS (§6).
 3. **Resolver lockfiles e pins `"latest"`**: escolher npm *ou* pnpm, apagar o outro lockfile, fixar versões, install limpo, `build` ok.
-4. **Limpar mocks residuais** (§3.1): resta apenas `relatorios`. (`busca`, `pessoas/nova`, `pessoas/[id]/editar`, `pessoas/[id]` detalhe, `perfil` troca de senha, `configuracoes/cargos`, `configuracoes/trilhas` e `configuracoes/page.tsx` já migrados — ✅ concluído.)
+4. **Limpar mocks residuais** (§3.1): ✅ **concluído** — `relatorios` migrado para dados reais. Todas as páginas estão em dados reais.
 5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
 
 ### 🟨 Em seguida — consolidar a arquitetura
