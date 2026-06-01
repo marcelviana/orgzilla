@@ -117,6 +117,24 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
   }
 
   /**
+   * Busca pessoas por cargo com nome do time (join)
+   */
+  async findByCargoIdWithTime(cargoId: string): Promise<Array<Pessoa & { time_nome: string | null }>> {
+    const { data, error } = await this.supabase
+      .from('pessoa')
+      .select('*, time:time!time_id(nome)')
+      .eq('cargo_id', cargoId)
+      .eq('ativo', true)
+
+    if (error) throw new RepositoryError('Erro ao buscar pessoas por cargo', error)
+
+    return (data ?? []).map((p) => ({
+      ...p,
+      time_nome: (p.time as { nome: string } | null)?.nome ?? null,
+    }))
+  }
+
+  /**
    * Busca pessoas por status
    */
   async findByStatus(status: StatusPessoa): Promise<Pessoa[]> {

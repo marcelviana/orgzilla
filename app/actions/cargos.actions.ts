@@ -13,8 +13,9 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/middleware'
+import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
 import { CargoRepository, TrilhaCarreiraRepository, NivelRepository } from '@/lib/repositories'
+import { PessoaService } from '@/lib/services/pessoa.service'
 import type { CargoInsert, CargoUpdate } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
 
@@ -196,6 +197,33 @@ export async function getNiveisParaFiltro(): Promise<ActionResult<Array<{ id: st
       success: false,
       error: appError.message,
     }
+  }
+}
+
+export interface PessoaNoCargo {
+  id: string
+  nome: string
+  foto_url: string | null
+  time_nome: string | null
+}
+
+/**
+ * Busca pessoas alocadas num cargo.
+ * Gestor vê apenas pessoas da sua hierarquia; admin/visualizador vêem todas.
+ */
+export async function getPessoasNoCargo(cargoId: string): Promise<ActionResult<PessoaNoCargo[]>> {
+  try {
+    const supabase = await createClient()
+    const pessoaService = new PessoaService(supabase)
+
+    const usuario = await getUsuarioLogado()
+    if (!usuario) return { success: false, error: 'Usuário não autenticado' }
+
+    const pessoas = await pessoaService.buscarPorCargo(cargoId, usuario)
+    return { success: true, data: pessoas }
+  } catch (error) {
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
   }
 }
 

@@ -44,6 +44,32 @@ export class PessoaService {
   }
 
   // ==========================================================================
+  // CONSULTAS COM FILTRO DE HIERARQUIA
+  // ==========================================================================
+
+  /**
+   * Retorna pessoas num cargo, aplicando filtro de hierarquia para gestores.
+   */
+  async buscarPorCargo(
+    cargoId: string,
+    usuario: Usuario
+  ): Promise<Array<{ id: string; nome: string; foto_url: string | null; time_nome: string | null }>> {
+    let pessoas = await this.pessoaRepo.findByCargoIdWithTime(cargoId)
+
+    if (usuario.tipo_perfil === 'gestor') {
+      const timesIds = await this.permissaoService.getTimesHierarquia(usuario)
+      pessoas = pessoas.filter((p) => p.time_id && timesIds.includes(p.time_id))
+    }
+
+    return pessoas.map((p) => ({
+      id: p.id,
+      nome: p.nome,
+      foto_url: p.foto_url ?? null,
+      time_nome: p.time_nome,
+    }))
+  }
+
+  // ==========================================================================
   // CRUD COM LÓGICA DE NEGÓCIO
   // ==========================================================================
 

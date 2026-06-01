@@ -50,7 +50,9 @@ import {
   softDeleteCargo,
   getTrilhasParaFiltro,
   getNiveisParaFiltro,
-  type CargoComEstatisticas
+  getPessoasNoCargo,
+  type CargoComEstatisticas,
+  type PessoaNoCargo,
 } from '@/app/actions/cargos.actions'
 import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 
@@ -62,12 +64,6 @@ const trackColors: Record<string, string> = {
   'Marketing': 'bg-yellow-100 text-yellow-800',
   'Operações': 'bg-orange-100 text-orange-800',
 }
-
-const mockPeople = [
-  { id: '1', nome: 'Maria Santos', avatar: '/diverse-woman-portrait.png', time: 'Engenharia', desde: 'jan. 2023' },
-  { id: '2', nome: 'João Silva', avatar: '/man.jpg', time: 'Produto', desde: 'mar. 2022' },
-  { id: '3', nome: 'Ana Costa', avatar: '/tech-woman.png', time: 'Design', desde: 'jun. 2023' },
-]
 
 export default function CargosPage() {
   // Data state
@@ -89,6 +85,8 @@ export default function CargosPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [viewPeopleModalOpen, setViewPeopleModalOpen] = useState(false)
   const [selectedPosition, setSelectedPosition] = useState<CargoComEstatisticas | null>(null)
+  const [pessoasDoCargo, setPessoasDoCargo] = useState<PessoaNoCargo[]>([])
+  const [loadingPessoas, setLoadingPessoas] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -314,9 +312,23 @@ export default function CargosPage() {
     setCreateModalOpen(true)
   }
 
-  const handleViewPeople = (position: CargoComEstatisticas) => {
+  const handleViewPeople = async (position: CargoComEstatisticas) => {
     setSelectedPosition(position)
     setViewPeopleModalOpen(true)
+    setLoadingPessoas(true)
+    try {
+      const result = await getPessoasNoCargo(position.id)
+      if (result.success && result.data) {
+        setPessoasDoCargo(result.data)
+      } else {
+        toast.error(result.error || 'Erro ao carregar pessoas')
+      }
+    } catch (error) {
+      const appError = handleError(error, 'database')
+      toast.error(appError)
+    } finally {
+      setLoadingPessoas(false)
+    }
   }
 
   const handleToggleStatus = (positionId: string) => {
@@ -624,7 +636,7 @@ export default function CargosPage() {
                     <TableCell>
                       {position.pessoas > 0 ? (
                         <button
-                          onClick={() => handleViewPeople(position)}
+                          onClick={() => { void handleViewPeople(position) }}
                           className="text-[#00C8FF] hover:underline"
                         >
                           {position.pessoas} {position.pessoas === 1 ? 'pessoa' : 'pessoas'}
@@ -647,7 +659,7 @@ export default function CargosPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewPeople(position)}>
+                          <DropdownMenuItem onClick={() => { void handleViewPeople(position) }}>
                             <Users className="mr-2 h-4 w-4" />
                             Ver Pessoas neste Cargo
                           </DropdownMenuItem>
@@ -707,7 +719,7 @@ export default function CargosPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewPeople(position)}>
+                        <DropdownMenuItem onClick={() => { void handleViewPeople(position) }}>
                           <Users className="mr-2 h-4 w-4" />
                           Ver Pessoas
                         </DropdownMenuItem>
@@ -937,7 +949,7 @@ export default function CargosPage() {
         </Dialog>
 
         {/* View People Modal */}
-        <Dialog open={viewPeopleModalOpen} onOpenChange={setViewPeopleModalOpen}>
+        <Dialog open={viewPeopleModalOpen} onOpenChange={(open) => { setViewPeopleModalOpen(open); if (!open) setPessoasDoCargo([]) }}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Pessoas com este Cargo</DialogTitle>
@@ -948,23 +960,33 @@ export default function CargosPage() {
             </DialogHeader>
 
             <div className="space-y-3 py-4">
-              {mockPeople.map((person) => (
-                <div key={person.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50">
-                  <Avatar>
-                    <AvatarImage src={person.avatar || "/placeholder.svg"} />
-                    <AvatarFallback>{person.nome.slice(0, 2)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-medium">{person.nome}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {person.time} • Desde {person.desde}
-                    </p>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    Ver Perfil
-                  </Button>
+              {loadingPessoas ? (
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
-              ))}
+              ) : pessoasDoCargo.length === 0 ? (
+                <p className="text-center text-sm text-muted-foreground py-4">
+                  Nenhuma pessoa neste cargo.
+                </p>
+              ) : (
+                pessoasDoCargo.map((person) => (
+                  <div key={person.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50">
+                    <Avatar>
+                      <AvatarImage src={person.foto_url || '/placeholder.svg'} />
+                      <AvatarFallback>{person.nome.slice(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium">{person.nome}</p>
+                      {person.time_nome && (
+                        <p className="text-sm text-muted-foreground">{person.time_nome}</p>
+                      )}
+                    </div>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/pessoas/${person.id}`}>Ver Perfil</Link>
+                    </Button>
+                  </div>
+                ))
+              )}
             </div>
 
             <DialogFooter>
