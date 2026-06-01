@@ -16,6 +16,7 @@ Conjunto atual:
 
 - **Canônicos:** `README.md` (o que é + como rodar), `CLAUDE.md` (regras + arquitetura), `STATUS.md` (estado atual — este arquivo).
 - **Referência durável:** `DESIGN_SYSTEM.md` (identidade visual) e `PADROES-ERRO.md` (padrão de erros/toasts).
+- **Tooling de IA** (`.claude/`): subagentes em `.claude/agents/` (`revisor-camadas`, `escritor-testes`, `sincronizador-docs`,`guardiao-rls-lgpd`) e prompts de auditoria avulsos em `.claude/prompts/` (`PROMPT-sincronizar-docs.md`).
 
 Removidos nesta limpeza (conteúdo útil migrado para os canônicos quando aplicável): `AUTENTICACAO.md`, `CONFIGURAR-SUPABASE.md`, `DASHBOARD.md`, `USUARIO-LOGADO.md`, `PESSOAS-LISTA.md`, `LOGIN-MELHORIAS.md`, `PROXIMOS-PASSOS-ERROS.md`, `lib/middleware/README.md`. (Os READMEs de `lib/repositories`, `lib/supabase` e `lib/types` já haviam sido removidos antes.)
 
@@ -149,7 +150,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 1. **Conectar o app ao banco recriado**: ✅ schema + seed já aplicados. Falta atualizar env vars (local + Vercel), reconfigurar OAuth e criar/vincular os usuários de teste — ver checklist da §1.
 2. **Validar a cadeia**: app sobe, login funciona, dashboard renderiza, e rodar o teste de fumaça de RLS (§6).
 3. **Resolver lockfiles e pins `"latest"`**: escolher npm *ou* pnpm, apagar o outro lockfile, fixar versões, install limpo, `build` ok.
-4. **Inventário mock vs. real** (§3.1) e remover mocks já substituídos — começar por `mockUsers` órfão e troca de senha falsa em `perfil`.
+4. **Limpar mocks residuais** (§3.1): troca de senha falsa em `perfil` (ligar `AuthService.atualizarSenha`); mocks de projetos/tags em `pessoas/nova`, `pessoas/[id]` e `pessoas/[id]/editar` (`MOCK_PROJECTS`, `MOCK_TAGS`, `PERSON_DATA_MOCK`); arrays mortos em `configuracoes/cargos` e `configuracoes/trilhas`.
 5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
 
 ### 🟨 Em seguida — consolidar a arquitetura
