@@ -1,12 +1,29 @@
 'use server'
 
-/**
- * Server Actions - Autenticação
- *
- * Actions para verificar autenticação e permissões em Client Components
- */
-
 import { getUsuarioLogado, isAdmin } from '@/lib/middleware'
+import { createClient } from '@/lib/supabase/server'
+import { AuthService } from '@/lib/services/auth.service'
+import { handleError, type ErrorType } from '@/lib/errors/error-handler'
+
+type ActionResult<T = void> = {
+  success: boolean
+  data?: T
+  error?: string
+}
+
+export async function atualizarSenhaAction(novaSenha: string): Promise<ActionResult> {
+  try {
+    const supabase = await createClient()
+    const authService = new AuthService(supabase)
+    const result = await authService.atualizarSenha(novaSenha)
+    if (!result.success) {
+      return { success: false, error: result.error }
+    }
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: handleError(error, 'auth' as ErrorType).message }
+  }
+}
 
 export interface UsuarioLogadoInfo {
   id: string

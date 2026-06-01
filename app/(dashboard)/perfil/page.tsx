@@ -10,11 +10,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertCircle, Calendar, Check, ExternalLink, Eye, EyeOff, Info, Lock, Loader2 } from 'lucide-react'
-import { useToast } from "@/hooks/use-toast"
-import { toast as sonnerToast } from 'sonner'
 import Link from "next/link"
 import { getUsuarioLogado, type UsuarioLogado } from "@/lib/middleware/auth.middleware"
 import { updateUsuario } from "@/app/actions/usuarios.actions"
+import { atualizarSenhaAction } from "@/app/actions/auth.actions"
+import { toast } from "@/lib/ui/toast-config"
 
 const getProfileBadgeColor = (tipo: string) => {
   switch (tipo) {
@@ -43,7 +43,6 @@ const getProfileLabel = (tipo: string) => {
 }
 
 export default function ProfilePage() {
-  const { toast } = useToast()
 
   // Data state
   const [isLoading, setIsLoading] = useState(true)
@@ -83,7 +82,7 @@ export default function ProfilePage() {
         }
       } catch (error) {
         console.error('Erro ao carregar dados do usuário:', error)
-        sonnerToast.error('Erro ao carregar perfil')
+        toast.error('Erro ao carregar perfil')
       } finally {
         setIsLoading(false)
       }
@@ -110,21 +109,13 @@ export default function ProfilePage() {
 
     // Validation
     if (formData.nome.length < 3) {
-      toast({
-        title: "Erro",
-        description: "Nome deve ter pelo menos 3 caracteres",
-        variant: "destructive"
-      })
+      toast.error("Nome deve ter pelo menos 3 caracteres")
       return
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      toast({
-        title: "Erro",
-        description: "Email inválido",
-        variant: "destructive"
-      })
+      toast.error("Email inválido")
       return
     }
 
@@ -136,23 +127,15 @@ export default function ProfilePage() {
       })
 
       if (result.success) {
-        sonnerToast.success("🦖 Perfil atualizado com sucesso!")
+        toast.successDino("Perfil atualizado com sucesso!")
         setIsDirty(false)
         setUser((prev) => (prev ? { ...prev, nome: formData.nome, email: formData.email } : prev))
       } else {
-        toast({
-          title: "Erro ao atualizar perfil",
-          description: result.error,
-          variant: "destructive"
-        })
+        toast.error(result.error ?? "Erro ao atualizar perfil")
       }
     } catch (error) {
       console.error('Erro ao salvar perfil:', error)
-      toast({
-        title: "Erro inesperado",
-        description: "Ocorreu um erro ao salvar o perfil",
-        variant: "destructive"
-      })
+      toast.error("Ops! Orgzilla tropeçou ao salvar o perfil. Tente novamente.")
     } finally {
       setIsSaving(false)
     }
@@ -182,19 +165,21 @@ export default function ProfilePage() {
 
   const handleChangePassword = async () => {
     setIsChangingPassword(true)
-    console.log("[v0] Changing password")
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    setIsChangingPassword(false)
-    setPasswordModalOpen(false)
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
-    
-    toast({
-      title: "Senha alterada com sucesso!",
-      description: "🦖 Sua nova senha foi salva"
-    })
+    try {
+      const result = await atualizarSenhaAction(passwordData.newPassword)
+      if (result.success) {
+        setPasswordModalOpen(false)
+        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" })
+        toast.successDino("Senha alterada com sucesso!")
+      } else {
+        toast.error(result.error ?? "Erro ao alterar senha. Tente novamente.")
+      }
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error)
+      toast.error("Ops! Orgzilla tropeçou ao alterar a senha. Tente novamente.")
+    } finally {
+      setIsChangingPassword(false)
+    }
   }
 
   // Loading state
