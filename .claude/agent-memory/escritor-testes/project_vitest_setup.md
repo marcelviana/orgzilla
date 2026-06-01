@@ -30,3 +30,32 @@ vi.mock('@/lib/repositories', () => {
 ## Padrão de mock dos Services que têm dependências encadeadas
 
 Services como `PessoaService` e `TimeService` instanciam internamente `AuditoriaService`, `HistoricoService`, etc. Mocká-los todos no `vi.mock` usando o padrão acima (function como constructor). Importar o Service via `import()` dinâmico dentro do teste (`async function getService()`) para garantir que os mocks já estão registrados antes da importação.
+
+## Padrão de mock para Repositories (Supabase direto)
+
+Repositories chamam `this.supabase.from(tabela).select(...).eq(...) ...` em cadeia. O mock precisa de um query builder onde todos os métodos intermediários retornam `this` (o mesmo objeto) e o objeto é awaitable com resultado configurable:
+
+```ts
+function makeQueryBuilder(result = {}) {
+  const defaults = { data: null, error: null, count: null, ...result }
+  const builder: Record<string, unknown> = {}
+  const chainable = ['select','eq','neq','in','ilike','or','is','gte','lt','order','range','single','maybeSingle']
+  for (const method of chainable) {
+    builder[method] = vi.fn().mockReturnValue(builder)
+  }
+  Object.assign(builder, {
+    then: (resolve) => resolve(defaults),
+  })
+  return builder
+}
+function makeSupabase(queryResult = {}) {
+  const builder = makeQueryBuilder(queryResult)
+  return { from: vi.fn().mockReturnValue(builder), _builder: builder }
+}
+```
+
+Não use `vi.mock('@/lib/repositories', ...)` para testar repositories — instancie diretamente com `new PessoaRepository(supabase as never)`.
+
+## Armadilha: builder compartilhado entre chamadas encadeadas
+
+Todos os métodos retornam o mesmo `builder`. Quando o código faz `query = query.eq(...)` e depois outro `.eq(...)`, ambas as chamadas vão para o mesmo `vi.fn()`. Ao verificar chamadas específicas, use `.mock.calls.find(c => c[0] === 'campo')` em vez de `toHaveBeenCalledWith` direto (que pode colidir com chamadas de outros filtros da mesma cadeia).
