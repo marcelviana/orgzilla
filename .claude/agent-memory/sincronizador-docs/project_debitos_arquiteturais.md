@@ -1,16 +1,18 @@
 ---
 name: debitos-arquiteturais-pendentes
-description: Débitos 🟡 identificados pelo revisor-camadas e registrados em §3.3 do STATUS.md — padrão de como registrar e onde colocar débitos pendentes
+description: Padrão de como registrar débitos 🟡 em §3.3 e marcar como ✅ quando resolvidos; histórico dos débitos do commit c6b4e97
 metadata:
   type: project
 ---
 
-Débitos pendentes registrados em §3.3 após revisão do commit c6b4e97 (2026-06-01):
+Débitos identificados pelo revisor-camadas no commit c6b4e97 e **resolvidos em 2026-06-01**:
 
-1. `pessoas.actions.ts` linhas 262–296: `anexarRemuneracaoLista` — lógica LGPD de negócio fora do Service.
-2. `dashboard.actions.ts` linhas 124/185/238/336: `console.error` em vez de `handleError`.
-3. `times.actions.ts` linhas 628–671: `buildTimeHierarchy` recursiva sem proteção a ciclos, duplicata fora do `TimeService`.
+1. `pessoas.actions.ts`: `anexarRemuneracaoLista` — extraída para `PessoaService.enriquecerListaComRemuneracao`. ✅
+2. `dashboard.actions.ts`: `console.error` → `handleError`. ✅
+3. `times.actions.ts`: `buildTimeHierarchy` → `TimeService.buscarHierarquiaComEstatisticas` (com proteção a ciclos via Set). ✅
 
-**Why:** o revisor-camadas detecta débitos mas não corrige código; o sincronizador-docs os registra em §3.3 com símbolo 🟡 e referência de arquivo:linha para que o mantenedor possa priorizar e corrigir.
+**Why:** o revisor-camadas detecta débitos mas não corrige código; o sincronizador-docs os registra em §3.3 com símbolo 🟡 e referência de arquivo:linha. Quando corrigidos, os itens 🟡 viram ✅ com breve descrição do que foi feito — nunca removidos silenciosamente.
 
-**How to apply:** ao receber achados do revisor-camadas, adicionar cada débito como item 🟡 na subseção "Débitos pendentes" de §3.3, com arquivo, linhas e descrição do problema. Não confundir com itens ✅ (resolvidos) que ficam na lista numerada acima. Manter os 🟡 até que sejam corrigidos e confirmados.
+**How to apply:** débitos novos entram como 🟡 na subseção "Débitos pendentes" de §3.3. Quando resolvidos, reescrever o item como ✅ descrevendo a solução. Não apagar — manter o histórico visível na seção.
+
+Novos tipos exportados por esta resolução: `TimeComEstatisticas` e `TimeHierarquico` em `lib/services/time.service.ts`, re-exportados via `lib/services/index.ts`.

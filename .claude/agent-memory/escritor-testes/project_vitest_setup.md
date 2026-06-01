@@ -56,6 +56,10 @@ function makeSupabase(queryResult = {}) {
 
 Não use `vi.mock('@/lib/repositories', ...)` para testar repositories — instancie diretamente com `new PessoaRepository(supabase as never)`.
 
+## Mock de findByPessoaIds (PessoaRemuneracaoRepository)
+
+O método `enriquecerListaComRemuneracao` usa `findByPessoaIds` (plural), que não existia no mock de `remuneracao.separacao.test.ts`. Ao criar testes para esse método, o `mockRemuneracaoRepo` deve incluir `findByPessoaIds: vi.fn()` e `findComCargoETimes: vi.fn()` além dos já existentes.
+
 ## Armadilha: builder compartilhado entre chamadas encadeadas
 
 Todos os métodos retornam o mesmo `builder`. Quando o código faz `query = query.eq(...)` e depois outro `.eq(...)`, ambas as chamadas vão para o mesmo `vi.fn()`. Ao verificar chamadas específicas, use `.mock.calls.find(c => c[0] === 'campo')` em vez de `toHaveBeenCalledWith` direto (que pode colidir com chamadas de outros filtros da mesma cadeia).
