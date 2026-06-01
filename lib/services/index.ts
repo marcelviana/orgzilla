@@ -36,6 +36,8 @@ export type { TimeComHierarquia } from './time.service'
 
 export { VagaService } from './vaga.service'
 
+export { AnotacaoService } from './anotacao.service'
+
 // =============================================================================
 // FACTORY FUNCTIONS
 // =============================================================================

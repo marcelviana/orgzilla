@@ -19,8 +19,9 @@ import {
 import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, ChevronRight, Home, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getPessoaById } from '@/app/actions/pessoas.actions'
+import { getAnotacoesDaPessoa, criarAnotacaoDaPessoa } from '@/app/actions/anotacoes.actions'
+import type { AnotacaoComUsuario } from '@/lib/repositories/anotacao.repository'
 
-// Type for person data
 type PessoaData = {
   id: string
   nome: string
@@ -29,6 +30,7 @@ type PessoaData = {
   email_pessoal: string | null
   telefone: string | null
   foto_url: string | null
+  data_inicio_cargo_atual: string | null
   cargo: {
     nome: string
     trilha?: { nome: string }
@@ -39,11 +41,18 @@ type PessoaData = {
     nome: string
     gestor?: { id: string; nome: string } | null
   } | null
+  tags?: Array<{
+    tag: { id: string; nome: string; cor: string }
+  }>
+  projetos?: Array<{
+    id: string
+    data_inicio: string
+    data_fim: string | null
+    ativo: boolean
+    projeto_produto?: { id: string; nome: string; ativo: boolean } | null
+  }>
   data_entrada: string | null
-  data_inicio_cargo_atual: string | null
   status: string
-  // Remuneração (SENSÍVEL - LGPD): presente apenas quando o usuário pode ver
-  // salário (gestor da hierarquia). Vive na tabela pessoa_remuneracao.
   remuneracao?: {
     salario_atual: number | null
     data_ultimo_reajuste: string | null
@@ -53,69 +62,12 @@ type PessoaData = {
   created_at: string
 }
 
-// Keep mock data for now for items not yet implemented
-const PERSON_DATA_MOCK = {
-  id: 'p1',
-  nome: 'Maria Santos',
-  nomeSocial: null,
-  emailCorporativo: 'maria@orgzilla.com',
-  emailPessoal: 'maria.santos@gmail.com',
-  telefone: '(11) 98765-4321',
-  avatar: '/avatar-maria.jpg',
-  cargo: { 
-    id: 'c1', 
-    nome: 'Senior Engineer', 
-    nivel: 'L4', 
-    trilha: 'Engenharia de Software',
-    dataInicio: '2024-06-20'
-  },
-  time: { 
-    id: 't1', 
-    nome: 'Engenharia', 
-    breadcrumb: 'Tecnologia > Engenharia' 
-  },
-  gestorDireto: { 
-    id: 'g1', 
-    nome: 'João Silva', 
-    avatar: '/avatar-joao.jpg' 
-  },
-  dataEntrada: '2023-01-15',
-  status: 'Ativo',
-  salarioAtual: 15000.00,
-  dataUltimoReajuste: '2024-06-20',
-  motivoUltimoReajuste: 'Promoção para L4',
-  tags: ['Frontend', 'React', 'Leadership', 'Mentor'],
-  projetosAtivos: [
-    { id: 'proj1', nome: 'Projeto Alpha', status: 'Ativo', dataInicio: '2024-01-15' }
-  ],
-  projetosAnteriores: [
-    { id: 'proj2', nome: 'Sistema Core', status: 'Concluído', dataInicio: '2023-06-01', dataFim: '2023-12-31' }
-  ]
-}
-
 const TIMELINE_DATA = [
   { tipo: 'entrada', titulo: 'Entrou na empresa', data: '2023-01-15', detalhes: 'Como Engineer I no time de Backend' },
   { tipo: 'promocao', titulo: 'Promovido para Engineer II', data: '2023-07-01', detalhes: 'De L2 para L3' },
   { tipo: 'mudanca_time', titulo: 'Mudou para time de Engenharia', data: '2023-10-15', detalhes: 'De Backend para Engenharia (time pai)' },
   { tipo: 'projeto', titulo: 'Alocado no Projeto Alpha', data: '2024-01-15', detalhes: 'Início da alocação' },
   { tipo: 'promocao', titulo: 'Promovido para Senior Engineer', data: '2024-06-20', detalhes: 'De L3 para L4' }
-]
-
-const MOCK_NOTES = [
-  { 
-    id: '1',
-    autor: 'João Silva', 
-    autorAvatar: '/avatar-joao.jpg', 
-    data: '2024-11-10T14:30:00', 
-    conteudo: 'Maria mostrou excelente liderança no Projeto Alpha. Considerar para próxima promoção.' 
-  },
-  { 
-    id: '2',
-    autor: 'Carlos Mendes', 
-    autorAvatar: '/avatar-carlos.jpg', 
-    data: '2024-09-15T09:20:00', 
-    conteudo: 'Participou como mentor no onboarding de 3 novos engenheiros.' 
-  }
 ]
 
 export default function PersonProfilePage() {
@@ -127,22 +79,30 @@ export default function PersonProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [pessoa, setPessoa] = useState<PessoaData | null>(null)
   const [canViewSalary, setCanViewSalary] = useState(false)
-  const [notes, setNotes] = useState(MOCK_NOTES)
+  const [notes, setNotes] = useState<AnotacaoComUsuario[]>([])
   const [newNote, setNewNote] = useState('')
+  const [isSavingNote, setIsSavingNote] = useState(false)
 
-  // Load person data on mount
   useEffect(() => {
     async function loadPessoa() {
       setIsLoading(true)
       try {
-        const result = await getPessoaById(pessoaId)
-        if (result.success && result.data) {
-          setPessoa(result.data as PessoaData)
-          // A presença da chave `remuneracao` indica que o usuário pode ver salário
-          setCanViewSalary('remuneracao' in result.data)
+        const [pessoaResult, anotacoesResult] = await Promise.all([
+          getPessoaById(pessoaId),
+          getAnotacoesDaPessoa(pessoaId),
+        ])
+
+        if (pessoaResult.success && pessoaResult.data) {
+          setPessoa(pessoaResult.data as PessoaData)
+          setCanViewSalary('remuneracao' in pessoaResult.data)
         } else {
-          toast.error(result.error || 'Erro ao carregar pessoa')
+          toast.error(pessoaResult.error || 'Erro ao carregar pessoa')
           router.push('/pessoas')
+          return
+        }
+
+        if (anotacoesResult.success && anotacoesResult.data) {
+          setNotes(anotacoesResult.data)
         }
       } catch (error) {
         console.error('Erro ao carregar pessoa:', error)
@@ -188,20 +148,24 @@ export default function PersonProfilePage() {
     return `há ${months} meses`
   }
 
-  const handleAddNote = () => {
+  const handleAddNote = async () => {
     if (!newNote.trim()) return
-    
-    const note = {
-      id: Date.now().toString(),
-      autor: 'Você',
-      autorAvatar: '/avatar-current-user.jpg',
-      data: new Date().toISOString(),
-      conteudo: newNote
+
+    setIsSavingNote(true)
+    try {
+      const result = await criarAnotacaoDaPessoa(pessoaId, newNote)
+      if (result.success && result.data) {
+        setNotes([result.data, ...notes])
+        setNewNote('')
+        toast.success('🦖 Anotação salva com sucesso!')
+      } else {
+        toast.error(result.error || 'Erro ao salvar anotação')
+      }
+    } catch {
+      toast.error('Erro inesperado ao salvar anotação')
+    } finally {
+      setIsSavingNote(false)
     }
-    
-    setNotes([note, ...notes])
-    setNewNote('')
-    toast.success('Anotação adicionada com sucesso!')
   }
 
   const getEventIcon = (tipo: string) => {
@@ -225,7 +189,9 @@ export default function PersonProfilePage() {
     }
   }
 
-  // Loading state
+  const projetosAtivos = pessoa?.projetos?.filter(p => p.ativo && !p.data_fim) ?? []
+  const projetosAnteriores = pessoa?.projetos?.filter(p => !p.ativo || p.data_fim) ?? []
+
   if (isLoading) {
     return (
       <DashboardShell>
@@ -239,7 +205,6 @@ export default function PersonProfilePage() {
     )
   }
 
-  // Error state (pessoa not found)
   if (!pessoa) {
     return (
       <DashboardShell>
@@ -273,7 +238,6 @@ export default function PersonProfilePage() {
           </Button>
 
           <div className="flex items-start gap-6">
-            {/* Avatar */}
             <div className="relative group">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={pessoa.foto_url || "/placeholder.svg"} alt={pessoa.nome} />
@@ -283,7 +247,6 @@ export default function PersonProfilePage() {
               </Avatar>
             </div>
 
-            {/* Name and Status */}
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-[#1A2734]">{pessoa.nome}</h1>
               {pessoa.nome_social && (
@@ -294,7 +257,6 @@ export default function PersonProfilePage() {
               </Badge>
             </div>
 
-            {/* Contact Info */}
             <div className="flex flex-col gap-2 text-sm">
               <a href={`mailto:${pessoa.email_corporativo}`} className="flex items-center gap-2 text-accent hover:underline">
                 <Mail className="h-4 w-4" />
@@ -308,7 +270,6 @@ export default function PersonProfilePage() {
               )}
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-2">
               <Link href={`/pessoas/${pessoa.id}/editar`}>
                 <Button>
@@ -344,7 +305,6 @@ export default function PersonProfilePage() {
         {/* Profile Summary Card */}
         <Card className="bg-gradient-to-r from-primary/10 to-white p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Position */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Posição Atual</p>
               {pessoa.cargo ? (
@@ -368,7 +328,6 @@ export default function PersonProfilePage() {
               )}
             </div>
 
-            {/* Team */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Time</p>
               {pessoa.time ? (
@@ -383,7 +342,6 @@ export default function PersonProfilePage() {
               )}
             </div>
 
-            {/* Time in Company */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Tempo de Casa</p>
               <p className="text-lg font-semibold">{calculateTimeInCompany(pessoa.data_entrada)}</p>
@@ -394,7 +352,6 @@ export default function PersonProfilePage() {
               )}
             </div>
 
-            {/* Career Track */}
             <div>
               <p className="text-sm text-muted-foreground mb-1">Trilha</p>
               {pessoa.cargo?.trilha ? (
@@ -421,7 +378,6 @@ export default function PersonProfilePage() {
 
           {/* TAB 1: General Information */}
           <TabsContent value="geral" className="space-y-4">
-            {/* Personal Data */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Dados Pessoais</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -450,7 +406,6 @@ export default function PersonProfilePage() {
               </div>
             </Card>
 
-            {/* Professional Data */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Dados Profissionais</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -510,7 +465,7 @@ export default function PersonProfilePage() {
               </div>
             </Card>
 
-            {/* Current Projects */}
+            {/* Projetos Atuais (resumo) */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Projetos Atuais</h3>
@@ -518,23 +473,21 @@ export default function PersonProfilePage() {
                   Ver Todos os Projetos
                 </Button>
               </div>
-              {PERSON_DATA_MOCK.projetosAtivos.length === 0 ? (
+              {projetosAtivos.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Não está alocado em projetos atualmente
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {PERSON_DATA_MOCK.projetosAtivos.map(projeto => (
+                  {projetosAtivos.map(projeto => (
                     <div key={projeto.id} className="flex items-center justify-between border rounded-lg p-4">
                       <div>
-                        <Link href={`/projetos/${projeto.id}`} className="font-medium text-accent hover:underline">
-                          {projeto.nome}
-                        </Link>
+                        <p className="font-medium">{projeto.projeto_produto?.nome ?? '-'}</p>
                         <p className="text-sm text-muted-foreground">
-                          Desde: {formatDateShort(projeto.dataInicio)}
+                          Desde: {formatDateShort(projeto.data_inicio)}
                         </p>
                       </div>
-                      <Badge className={getStatusColor(projeto.status)}>{projeto.status}</Badge>
+                      <Badge className="bg-green-100 text-green-800">Ativo</Badge>
                     </div>
                   ))}
                 </div>
@@ -544,13 +497,13 @@ export default function PersonProfilePage() {
             {/* Tags */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Tags</h3>
-              {PERSON_DATA_MOCK.tags.length === 0 ? (
+              {!pessoa.tags || pessoa.tags.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">Sem tags</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {PERSON_DATA_MOCK.tags.map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-sm text-white">
-                      {tag}
+                  {pessoa.tags.map(({ tag }) => (
+                    <Badge key={tag.id} variant="secondary" className="text-sm text-white" style={{ backgroundColor: tag.cor || undefined }}>
+                      {tag.nome}
                     </Badge>
                   ))}
                 </div>
@@ -598,7 +551,6 @@ export default function PersonProfilePage() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {/* Current Salary */}
                 <Card className="bg-gray-50 p-6">
                   <p className="text-sm text-muted-foreground mb-2">Salário Atual</p>
                   <p className="text-3xl font-bold">
@@ -619,7 +571,6 @@ export default function PersonProfilePage() {
                   )}
                 </Card>
 
-                {/* Placeholder for future history */}
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Histórico de Reajustes</h3>
                   <p className="text-sm text-muted-foreground text-center py-8">
@@ -632,72 +583,64 @@ export default function PersonProfilePage() {
 
           {/* TAB 4: Projects */}
           <TabsContent value="projetos" className="space-y-4">
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-4">
               <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Total Projetos</p>
                 <p className="text-2xl font-bold">
-                  {PERSON_DATA_MOCK.projetosAtivos.length + PERSON_DATA_MOCK.projetosAnteriores.length}
+                  {(pessoa.projetos?.length ?? 0)}
                 </p>
               </Card>
               <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Projetos Ativos</p>
-                <p className="text-2xl font-bold">{PERSON_DATA_MOCK.projetosAtivos.length}</p>
+                <p className="text-2xl font-bold">{projetosAtivos.length}</p>
               </Card>
               <Card className="p-4">
-                <p className="text-sm text-muted-foreground">Tempo Médio por Projeto</p>
-                <p className="text-2xl font-bold">6 meses</p>
+                <p className="text-sm text-muted-foreground">Projetos Anteriores</p>
+                <p className="text-2xl font-bold">{projetosAnteriores.length}</p>
               </Card>
             </div>
 
-            {/* Active Projects */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Projetos Ativos</h3>
-              {PERSON_DATA_MOCK.projetosAtivos.length === 0 ? (
+              {projetosAtivos.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Não está alocado em projetos atualmente
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {PERSON_DATA_MOCK.projetosAtivos.map(projeto => (
+                  {projetosAtivos.map(projeto => (
                     <div key={projeto.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-lg font-bold">{projeto.nome}</p>
-                        <Badge className={getStatusColor(projeto.status)}>{projeto.status}</Badge>
+                        <p className="text-lg font-bold">{projeto.projeto_produto?.nome ?? '-'}</p>
+                        <Badge className="bg-green-100 text-green-800">Ativo</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
-                        Desde {formatDate(projeto.dataInicio)}
+                        Desde {formatDate(projeto.data_inicio)}
                       </p>
-                      <Link href={`/projetos/${projeto.id}`}>
-                        <Button variant="link" className="p-0 h-auto">Ver Projeto</Button>
-                      </Link>
                     </div>
                   ))}
                 </div>
               )}
             </Card>
 
-            {/* Past Projects */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Projetos Anteriores</h3>
-              {PERSON_DATA_MOCK.projetosAnteriores.length === 0 ? (
+              {projetosAnteriores.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Sem projetos anteriores
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {PERSON_DATA_MOCK.projetosAnteriores.map(projeto => (
+                  {projetosAnteriores.map(projeto => (
                     <div key={projeto.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-lg font-bold">{projeto.nome}</p>
-                        <Badge className={getStatusColor(projeto.status)}>{projeto.status}</Badge>
+                        <p className="text-lg font-bold">{projeto.projeto_produto?.nome ?? '-'}</p>
+                        <Badge className="bg-gray-100 text-gray-800">Encerrado</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
-                        {formatDateShort(projeto.dataInicio)} até {formatDateShort(projeto.dataFim)} (5 meses)
+                        {formatDateShort(projeto.data_inicio)}
+                        {projeto.data_fim ? ` até ${formatDateShort(projeto.data_fim)}` : ''}
                       </p>
-                      <Link href={`/projetos/${projeto.id}`}>
-                        <Button variant="link" className="p-0 h-auto">Ver Projeto</Button>
-                      </Link>
                     </div>
                   ))}
                 </div>
@@ -707,7 +650,6 @@ export default function PersonProfilePage() {
 
           {/* TAB 5: Notes */}
           <TabsContent value="anotacoes" className="space-y-4">
-            {/* Add Note */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Adicionar Nova Anotação</h3>
               <Textarea
@@ -719,13 +661,13 @@ export default function PersonProfilePage() {
               />
               <div className="flex items-center justify-between mt-2">
                 <p className="text-xs text-muted-foreground">{newNote.length}/1000 caracteres</p>
-                <Button onClick={handleAddNote} disabled={!newNote.trim()}>
+                <Button onClick={handleAddNote} disabled={!newNote.trim() || isSavingNote}>
+                  {isSavingNote ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   Salvar Anotação
                 </Button>
               </div>
             </Card>
 
-            {/* Notes List */}
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Anotações</h3>
               {notes.length === 0 ? (
@@ -738,13 +680,12 @@ export default function PersonProfilePage() {
                     <div key={note.id} className="border rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={note.autorAvatar || "/placeholder.svg"} />
-                          <AvatarFallback>{note.autor[0]}</AvatarFallback>
+                          <AvatarFallback>{note.criado_por?.nome?.[0] ?? '?'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <p className="font-semibold">{note.autor}</p>
-                            <p className="text-sm text-muted-foreground">{getTimeAgo(note.data)}</p>
+                            <p className="font-semibold">{note.criado_por?.nome ?? 'Usuário'}</p>
+                            <p className="text-sm text-muted-foreground">{getTimeAgo(note.created_at)}</p>
                           </div>
                           <p className="text-sm">{note.conteudo}</p>
                         </div>
