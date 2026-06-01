@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getUsuarioLogado } from '@/lib/middleware'
 import { PermissaoService } from '@/lib/services'
+import { handleError } from '@/lib/errors/error-handler'
 import {
   PessoaRepository,
   TimeRepository,
@@ -121,11 +122,8 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
       },
     }
   } catch (error) {
-    console.error('[getDashboardMetrics] Erro:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar métricas',
-    }
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
   }
 }
 
@@ -182,11 +180,8 @@ export async function getNivelDistribution(): Promise<ActionResult<NivelDistribu
       data: distribution,
     }
   } catch (error) {
-    console.error('[getNivelDistribution] Erro:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar distribuição por nível',
-    }
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
   }
 }
 
@@ -235,11 +230,8 @@ export async function getTimeDistribution(): Promise<ActionResult<TimeDistributi
       data: distribution,
     }
   } catch (error) {
-    console.error('[getTimeDistribution] Erro:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar distribuição por time',
-    }
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
   }
 }
 
@@ -333,11 +325,8 @@ export async function getRecentActivities(): Promise<ActionResult<RecentActivity
       data: activities,
     }
   } catch (error) {
-    console.error('[getRecentActivities] Erro:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro ao buscar atividades',
-    }
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
   }
 }
 

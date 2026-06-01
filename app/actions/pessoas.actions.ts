@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
-import { PessoaRepository, PessoaRemuneracaoRepository, CargoRepository, TimeRepository } from '@/lib/repositories'
+import { PessoaRepository, CargoRepository, TimeRepository } from '@/lib/repositories'
 import { PessoaService, PermissaoService } from '@/lib/services'
 import type { PessoaInsert, PessoaUpdate, PessoaComRelacionamentos, PessoaRemuneracao } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
@@ -130,7 +130,8 @@ export async function getPessoasComFiltros(
     // Remuneração (SENSÍVEL - LGPD): apenas gestores, e somente para pessoas da
     // sua hierarquia. Admin e visualizador nunca recebem salário.
     if (isGestor) {
-      pessoasList = await anexarRemuneracaoLista(supabase, pessoasList, timeIdsHierarquia)
+      const pessoaService = new PessoaService(supabase)
+      pessoasList = await pessoaService.enriquecerListaComRemuneracao(pessoasList, timeIdsHierarquia, usuario)
     }
 
     return {
@@ -251,49 +252,6 @@ export async function getPessoasParaGestor(): Promise<
       error: appError.message,
     }
   }
-}
-
-/**
- * Anexa a remuneração (SENSÍVEL - LGPD) aos itens da lista, somente para pessoas
- * dentro da hierarquia do gestor. Recebe a hierarquia já calculada
- * (PermissaoService.getTimesHierarquia, a fonte única). Admin e visualizador
- * nunca chegam aqui (o chamador só invoca quando isGestor).
- */
-async function anexarRemuneracaoLista(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  pessoas: PessoaListItem[],
-  hierarquiaIds: string[]
-): Promise<PessoaListItem[]> {
-  if (pessoas.length === 0 || hierarquiaIds.length === 0) {
-    return pessoas
-  }
-
-  // Apenas pessoas dentro da hierarquia do gestor podem ter salário exposto
-  const idsComSalario = pessoas
-    .filter((p) => p.time?.id && hierarquiaIds.includes(p.time.id))
-    .map((p) => p.id)
-
-  if (idsComSalario.length === 0) {
-    return pessoas
-  }
-
-  const remuneracaoRepo = new PessoaRemuneracaoRepository(supabase)
-  const remuneracoes = await remuneracaoRepo.findByPessoaIds(idsComSalario)
-  const mapa = new Map(remuneracoes.map((r) => [r.pessoa_id, r]))
-
-  return pessoas.map((p) => {
-    const rem = mapa.get(p.id)
-    if (!rem) {
-      return p
-    }
-    return {
-      ...p,
-      remuneracao: {
-        salario_atual: rem.salario_atual,
-        data_ultimo_reajuste: rem.data_ultimo_reajuste,
-      },
-    }
-  })
 }
 
 /**

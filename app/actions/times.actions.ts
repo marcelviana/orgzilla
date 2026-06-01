@@ -15,6 +15,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getUsuarioLogado } from '@/lib/middleware'
 import { PermissaoService, TimeService } from '@/lib/services'
+import type { TimeComEstatisticas, TimeHierarquico } from '@/lib/services'
 import { TimeRepository, PessoaRepository, UsuarioRepository } from '@/lib/repositories'
 import type { Time, TimeInsert, TimeUpdate } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
@@ -23,34 +24,7 @@ import { handleError } from '@/lib/errors/error-handler'
 // TYPES
 // =============================================================================
 
-export interface TimeComEstatisticas {
-  id: string
-  nome: string
-  descricao: string | null
-  time_pai_id: string | null
-  gestor_id: string | null
-  ativo: boolean
-  created_at: string
-  updated_at: string
-  // Relacionamentos
-  time_pai: {
-    id: string
-    nome: string
-  } | null
-  gestor: {
-    id: string
-    nome: string
-    email_corporativo: string | null
-  } | null
-  // Estatísticas
-  membros: number
-  vagas: number
-  times_filhos: number
-}
-
-export interface TimeHierarquico extends TimeComEstatisticas {
-  filhos: TimeHierarquico[]
-}
+export type { TimeComEstatisticas, TimeHierarquico }
 
 export interface TimeDetalhe {
   id: string
@@ -223,16 +197,15 @@ export async function getTimeById(id: string): Promise<ActionResult<TimeDetalhe>
 export async function getTimesHierarquia(): Promise<ActionResult<TimeHierarquico[]>> {
   try {
     const supabase = await createClient()
+    const timeService = new TimeService(supabase)
     const timeRepo = new TimeRepository(supabase)
 
     // Busca times raiz (sem time_pai)
     const timesRaiz = await timeRepo.findRootTeams()
 
-    // Para cada time raiz, busca hierarquia recursivamente
+    // Para cada time raiz, busca hierarquia recursivamente via TimeService (com proteção a ciclos)
     const hierarquias = await Promise.all(
-      timesRaiz.map(async (time) => {
-        return await buildTimeHierarchy(time.id, timeRepo)
-      })
+      timesRaiz.map((time) => timeService.buscarHierarquiaComEstatisticas(time.id))
     )
 
     return {
@@ -618,54 +591,3 @@ export async function softDeleteTime(id: string): Promise<ActionResult> {
   }
 }
 
-// =============================================================================
-// HELPERS
-// =============================================================================
-
-/**
- * Constrói hierarquia recursiva de um time
- */
-async function buildTimeHierarchy(timeId: string, timeRepo: TimeRepository): Promise<TimeHierarquico | null> {
-  const time = await timeRepo.findByIdWithBasicRelationships(timeId)
-
-  if (!time) {
-    return null
-  }
-
-  // Busca estatísticas
-  const [membrosCount, vagasCount, filhosCount] = await Promise.all([
-    timeRepo.countMembros(time.id),
-    timeRepo.countVagas(time.id),
-    timeRepo.countFilhos(time.id),
-  ])
-
-  // Busca filhos diretos
-  const filhosDirectos = await timeRepo.findByTimePaiId(timeId)
-
-  // Recursivamente busca hierarquia de cada filho
-  const filhosComHierarquia: TimeHierarquico[] = []
-
-  for (const filho of filhosDirectos) {
-    const hierarquiaFilho = await buildTimeHierarchy(filho.id, timeRepo)
-    if (hierarquiaFilho) {
-      filhosComHierarquia.push(hierarquiaFilho)
-    }
-  }
-
-  return {
-    id: time.id,
-    nome: time.nome,
-    descricao: time.descricao,
-    time_pai_id: time.time_pai_id,
-    gestor_id: time.gestor_id,
-    ativo: time.ativo,
-    created_at: time.created_at,
-    updated_at: time.updated_at,
-    time_pai: time.time_pai || null,
-    gestor: time.gestor || null,
-    membros: membrosCount,
-    vagas: vagasCount,
-    times_filhos: filhosCount,
-    filhos: filhosComHierarquia,
-  }
-}

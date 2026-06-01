@@ -470,11 +470,57 @@ export class PessoaService {
       return { success: false, error: 'Erro ao salvar remuneração. Tente novamente.' }
     }
   }
+
+  /**
+   * Enriquece uma lista de pessoas com dados salariais (SENSÍVEL - LGPD).
+   *
+   * Só executa para gestores. O chamador é responsável por calcular hierarquiaIds
+   * via PermissaoService.getTimesHierarquia antes de invocar.
+   * Defesa em profundidade: a guarda de perfil é verificada aqui também.
+   */
+  async enriquecerListaComRemuneracao<T extends PessoaItemComRemuneracao>(
+    pessoas: T[],
+    hierarquiaIds: string[],
+    usuario: Usuario
+  ): Promise<T[]> {
+    if (usuario.tipo_perfil !== 'gestor' || pessoas.length === 0 || hierarquiaIds.length === 0) {
+      return pessoas
+    }
+
+    const idsComSalario = pessoas
+      .filter((p) => p.time?.id && hierarquiaIds.includes(p.time.id))
+      .map((p) => p.id)
+
+    if (idsComSalario.length === 0) {
+      return pessoas
+    }
+
+    const remuneracoes = await this.remuneracaoRepo.findByPessoaIds(idsComSalario)
+    const mapa = new Map(remuneracoes.map((r) => [r.pessoa_id, r]))
+
+    return pessoas.map((p) => {
+      const rem = mapa.get(p.id)
+      if (!rem) return p
+      return {
+        ...p,
+        remuneracao: {
+          salario_atual: rem.salario_atual,
+          data_ultimo_reajuste: rem.data_ultimo_reajuste,
+        },
+      }
+    })
+  }
 }
 
 // =============================================================================
 // TYPES
 // =============================================================================
+
+interface PessoaItemComRemuneracao {
+  id: string
+  time?: { id: string } | null
+  remuneracao?: { salario_atual: number | null; data_ultimo_reajuste: string | null } | null
+}
 
 export interface ServiceResult<T> {
   success: boolean

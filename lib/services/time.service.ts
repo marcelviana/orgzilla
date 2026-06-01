@@ -204,6 +204,56 @@ export class TimeService {
   }
 
   /**
+   * Constrói hierarquia recursiva de um time incluindo estatísticas (membros, vagas, filhos).
+   * Fonte única para árvore hierárquica com proteção contra ciclos via Set de visitados.
+   */
+  async buscarHierarquiaComEstatisticas(
+    timeId: string,
+    visitados: Set<string> = new Set()
+  ): Promise<TimeHierarquico | null> {
+    if (visitados.has(timeId)) {
+      return null
+    }
+    visitados.add(timeId)
+
+    const time = await this.timeRepo.findByIdWithBasicRelationships(timeId)
+    if (!time) return null
+
+    const [membrosCount, vagasCount, filhosCount] = await Promise.all([
+      this.timeRepo.countMembros(time.id),
+      this.timeRepo.countVagas(time.id),
+      this.timeRepo.countFilhos(time.id),
+    ])
+
+    const filhosDirectos = await this.timeRepo.findByTimePaiId(timeId)
+    const filhosComHierarquia: TimeHierarquico[] = []
+
+    for (const filho of filhosDirectos) {
+      const hierarquiaFilho = await this.buscarHierarquiaComEstatisticas(filho.id, visitados)
+      if (hierarquiaFilho) {
+        filhosComHierarquia.push(hierarquiaFilho)
+      }
+    }
+
+    return {
+      id: time.id,
+      nome: time.nome,
+      descricao: time.descricao,
+      time_pai_id: time.time_pai_id,
+      gestor_id: time.gestor_id,
+      ativo: time.ativo,
+      created_at: time.created_at,
+      updated_at: time.updated_at,
+      time_pai: time.time_pai || null,
+      gestor: time.gestor || null,
+      membros: membrosCount,
+      vagas: vagasCount,
+      times_filhos: filhosCount,
+      filhos: filhosComHierarquia,
+    }
+  }
+
+  /**
    * Valida se há ciclos na hierarquia
    *
    * Previne que um time seja pai dele mesmo (direta ou indiretamente)
@@ -393,4 +443,24 @@ interface ValidationResult {
 
 export interface TimeComHierarquia extends Time {
   filhos: TimeComHierarquia[]
+}
+
+export interface TimeComEstatisticas {
+  id: string
+  nome: string
+  descricao: string | null
+  time_pai_id: string | null
+  gestor_id: string | null
+  ativo: boolean
+  created_at: string
+  updated_at: string
+  time_pai: { id: string; nome: string } | null
+  gestor: { id: string; nome: string; email_corporativo: string | null } | null
+  membros: number
+  vagas: number
+  times_filhos: number
+}
+
+export interface TimeHierarquico extends TimeComEstatisticas {
+  filhos: TimeHierarquico[]
 }

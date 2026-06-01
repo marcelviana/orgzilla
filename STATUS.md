@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (testes de repositories adicionados — 87 testes no total; bug documentado em PessoaRepository.findComFiltrosPaginados filtro timeId='todos'; débitos arquiteturais identificados pelo revisor-camadas registrados em §3.3)
+**Última atualização:** 1 de junho de 2026 (três débitos arquiteturais de §3.3 resolvidos: lógica LGPD extraída para PessoaService, buildTimeHierarchy eliminada em favor de TimeService, catch de dashboard padronizados com handleError)
 
 ---
 
@@ -84,7 +84,7 @@ Checklist de retomada do ambiente:
 > ⚠️ **Atenção LGPD ao migrar:** qualquer seção que exiba dados de pessoa deve garantir que salário passe pelo `PessoaService`/`PermissaoService` — nunca `supabase.from('pessoa_remuneracao')` direto na Action ou UI.
 
 ### 3.2 Testes
-**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 87 testes em 4 arquivos (`__tests__/`), todos passando.
+**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 98 testes em 5 arquivos (`__tests__/`), todos passando.
 
 | Arquivo | Testes | Estado |
 |---|---|---|
@@ -92,6 +92,7 @@ Checklist de retomada do ambiente:
 | `__tests__/time.service.test.ts` | 11 | ✅ passando |
 | `__tests__/remuneracao.separacao.test.ts` | 12 | ✅ passando |
 | `__tests__/repositories.test.ts` | 42 | ✅ passando |
+| `__tests__/pessoa.service.enriquecer.test.ts` | 11 | ✅ passando |
 
 **Bug resolvido:** `app/actions/relatorios.actions.ts` que acessava `supabase.from('pessoa_remuneracao')` diretamente foi migrado para `PessoaService.buscarAgregadosSalariais(usuario, timeIds)`. O teste `não há referência a supabase.from("pessoa_remuneracao") fora de lib/repositories` agora passa. Novos métodos introduzidos: `PessoaService.buscarAgregadosSalariais` (aplica guarda de perfil gestor + filtro de hierarquia) e `PessoaRemuneracaoRepository.findComCargoETimes` (query com join cargo/nível; tipo `RemuneracaoComCargo` definido no mesmo arquivo).
 
@@ -105,10 +106,10 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 3. ✅ Queries cruas de `pessoas.actions.ts` e `dashboard.actions.ts` migradas para repositories: `PessoaRepository.findComFiltrosPaginados`, `PessoaRepository.findParaSelecao`, `TimeRepository.findAtivosParaFiltro`, `CargoRepository.findAtivosParaFiltro` (pessoas); `PessoaRepository` (countAtivasComStatus, countCriadasNoPeriodo, findParaNivelDistribuicao, findParaTimeDistribuicao), `TimeRepository.countAtivos`, `VagaTimeRepository.sumQuantidadeAtivasEmTimes`, `ProjetoProdutoRepository.countActive`, `HistoricoMudancaRepository.findRecent` (dashboard). `projetos.actions.ts` e `tags.actions.ts` já eram ✅.
 4. ✅ `getTimesComEstatisticas` em `times.actions.ts` migrado para `TimeService.buscarComPermissao(usuario)` — não mais `timeRepo.findAll()` + filter manual.
 
-**Débitos pendentes (identificados pelo revisor-camadas):**
-- 🟡 `pessoas.actions.ts` linhas 262–296: função `anexarRemuneracaoLista` aplica lógica LGPD de negócio (guarda de perfil + enriquecimento de dados salariais) diretamente na Action, fora do `PessoaService`. Deve ser extraída para o Service.
-- 🟡 `dashboard.actions.ts` linhas 124/185/238/336: blocos `catch` usam `console.error` em vez de `handleError` (convenção de `lib/errors/error-handler.ts`). Não-bloqueante, mas fura a padronização de tratamento de erros.
-- 🟡 `times.actions.ts` linhas 628–671: função `buildTimeHierarchy` recursiva sem proteção a ciclos — é uma cópia fora do `TimeService`. Viola o princípio de fonte única para recursão de hierarquia (§3.3 item 2). Deve ser eliminada e substituída pela implementação já protegida em `TimeService`/`PermissaoService`.
+**Débitos pendentes — resolvidos nesta rodada:**
+- ✅ `pessoas.actions.ts`: função `anexarRemuneracaoLista` removida da Action; lógica LGPD de enriquecimento de lista com salário extraída para `PessoaService.enriquecerListaComRemuneracao`. Import direto de `PessoaRemuneracaoRepository` removido da Action.
+- ✅ `dashboard.actions.ts`: blocos `catch` migrados de `console.error` para `handleError` (convenção de `lib/errors/error-handler.ts`).
+- ✅ `times.actions.ts`: função `buildTimeHierarchy` eliminada; `getTimesHierarquia` usa `timeService.buscarHierarquiaComEstatisticas` (proteção a ciclos via Set de visitados). Tipos `TimeComEstatisticas` e `TimeHierarquico` definidos em `lib/services/time.service.ts`, re-exportados via `lib/services/index.ts` e `times.actions.ts`.
 
 **Consequências (resolvidas):**
 - ✅ Recursão de hierarquia não está mais duplicada nem desprotegida: era ilimitada (loop infinito em ciclo de `time_pai_id`); agora há uma única implementação com `Set` de visitados.
@@ -161,7 +162,8 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 1. ✅ **Terminar a migração para repositories** em `pessoas`/`dashboard`/`times` — concluído. Todas as queries cruas migradas para métodos de repository dedicados; `getTimesComEstatisticas` usa `TimeService.buscarComPermissao`.
 2. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
 3. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
-4. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 45 testes passando; Vitest 4.1.8 configurado.
+4. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 87 testes passando; Vitest 4.1.8 configurado.
+5. ✅ **Débitos arquiteturais de §3.3 resolvidos**: lógica LGPD extraída para `PessoaService.enriquecerListaComRemuneracao`; `buildTimeHierarchy` eliminada em favor de `TimeService.buscarHierarquiaComEstatisticas`; `catch` de dashboard padronizados com `handleError`.
 
 ### 🟩 Mais adiante
 5. Completar Phase 3 (busca avançada, exportação, viewer de auditoria, upload de avatar).

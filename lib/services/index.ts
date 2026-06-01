@@ -32,7 +32,7 @@ export { PessoaService } from './pessoa.service'
 export type { ServiceResult, RemuneracaoInput } from './pessoa.service'
 
 export { TimeService } from './time.service'
-export type { TimeComHierarquia } from './time.service'
+export type { TimeComHierarquia, TimeComEstatisticas, TimeHierarquico } from './time.service'
 
 export { VagaService } from './vaga.service'
 
