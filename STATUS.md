@@ -93,7 +93,7 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 
 1. ✅ A lógica de **salário** foi extraída para `PessoaService`/`PermissaoService` (o antigo `selectFields` por perfil saiu). Sem referências órfãs a `pessoa.salario_atual` (verificado por grep).
 2. ✅ **Hierarquia do gestor unificada (fonte única).** Removidas as cópias `getTimeHierarchyIds` (`pessoas.actions.ts` + `dashboard.actions.ts`) e `getTimeHierarchyIdsRecursive` (`times.actions.ts`). Todas as actions usam agora `PermissaoService.getTimesHierarquia` (regra correta: times que o gestor **gerencia** via `gestor_id` + descendentes). A recursão vive num só lugar — `PermissaoService.coletarSubarvore` (privado, **com proteção contra ciclos** por conjunto de visitados) — reutilizada por `getHierarquiaCompleta`, `TimeService.buscarDescendentes` e a checagem de ciclo de `times.actions`.
-3. ⚠️ O **restante** das queries de `pessoas.actions.ts`/`dashboard.actions.ts` ainda usa `supabase.from(...)` cru (apenas leitura com filtros) — migração para Services pendente (não-bloqueante).
+3. ⚠️ O **restante** das queries de `pessoas.actions.ts` (linhas 148, 238, 273, 316) e `dashboard.actions.ts` (linhas 78, 91, 103, 116, 127, 140, 199, 284) ainda usa `supabase.from(...)` cru (leitura com filtros) — migração para Services pendente (não-bloqueante).
 4. `times.actions.ts` usa `TimeRepository` direto (pula `TimeService`).
 
 **Consequências (resolvidas):**
@@ -153,7 +153,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
 
 ### 🟨 Em seguida — consolidar a arquitetura
-6. **Terminar a migração para Services** em `pessoas`/`dashboard` (a parte de salário já foi; falta o resto das queries sair do `supabase.from()` cru — `pessoas.actions.ts` ainda usa queries brutas para listagem, filtro de times e cargos).
+6. **Terminar a migração para Services** em `pessoas`/`dashboard` (a parte de salário já foi; falta o resto das queries sair do `supabase.from()` cru — `pessoas.actions.ts` linhas 148/238/273/316 e `dashboard.actions.ts` linhas 78/91/103/116/127/140/199/284).
 7. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
 8. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
 9. **Introduzir testes** para lógica crítica: hierarquia, permissões por perfil, separação de salário (Vitest).
