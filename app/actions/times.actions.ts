@@ -14,7 +14,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getUsuarioLogado } from '@/lib/middleware'
-import { PermissaoService } from '@/lib/services'
+import { PermissaoService, TimeService } from '@/lib/services'
 import { TimeRepository, PessoaRepository, UsuarioRepository } from '@/lib/repositories'
 import type { Time, TimeInsert, TimeUpdate } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
@@ -104,21 +104,10 @@ export async function getTimesComEstatisticas(): Promise<ActionResult<TimeComEst
       return { success: false, error: 'Não autenticado' }
     }
 
-    // Admin e Visualizador veem todos os times
-    // Gestor vê apenas sua hierarquia
-    let times: Time[] = []
-
-    if (usuario.tipo_perfil === 'gestor') {
-      // Hierarquia do gestor (times que ele gerencia + descendentes) — fonte única
-      const permissaoService = new PermissaoService(supabase)
-      const hierarquiaIds = await permissaoService.getTimesHierarquia(usuario)
-
-      // Buscar times da hierarquia
-      const allTimes = await timeRepo.findAll()
-      times = allTimes.filter(t => hierarquiaIds.includes(t.id))
-    } else {
-      times = await timeRepo.findAll()
-    }
+    // Admin e Visualizador veem todos os times; Gestor vê apenas sua hierarquia.
+    // TimeService.buscarComPermissao encapsula essa lógica.
+    const timeService = new TimeService(supabase)
+    const times = await timeService.buscarComPermissao(usuario)
 
     // Para cada time, busca estatísticas
     const timesComStats = await Promise.all(

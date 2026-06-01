@@ -3,6 +3,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { getUsuarioLogado } from '@/lib/middleware'
 import { PermissaoService } from '@/lib/services'
+import {
+  PessoaRepository,
+  TimeRepository,
+  VagaTimeRepository,
+  ProjetoProdutoRepository,
+  HistoricoMudancaRepository,
+} from '@/lib/repositories'
 
 export type DashboardMetrics = {
   totalPessoas: number
@@ -73,91 +80,40 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
       timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
-    // Total de pessoas ativas
-    let queryPessoas = supabase
-      .from('pessoa')
-      .select('*', { count: 'exact', head: true })
-      .eq('ativo', true)
-      .eq('status', 'ativo')
-
-    if (isGestor) {
-      queryPessoas = queryPessoas.in('time_id', timeIdsHierarquia)
-    }
-
-    const { count: totalPessoas } = await queryPessoas
-
-    // Total de times ativos
-    let queryTimes = supabase
-      .from('time')
-      .select('*', { count: 'exact', head: true })
-      .eq('ativo', true)
-
-    if (isGestor) {
-      queryTimes = queryTimes.in('id', timeIdsHierarquia)
-    }
-
-    const { count: totalTimes } = await queryTimes
-
-    // Total de vagas abertas
-    let queryVagas = supabase
-      .from('vaga_time')
-      .select('quantidade', { count: 'exact' })
-      .eq('ativo', true)
-
-    if (isGestor) {
-      queryVagas = queryVagas.in('time_id', timeIdsHierarquia)
-    }
-
-    const { data: vagas } = await queryVagas
-    const totalVagas = vagas?.reduce((sum, v) => sum + (v.quantidade || 0), 0) || 0
-
-    // Total de projetos ativos
-    const { count: totalProjetos } = await supabase
-      .from('projeto_produto')
-      .select('*', { count: 'exact', head: true })
-      .eq('ativo', true)
+    const hierarquia = isGestor ? timeIdsHierarquia : undefined
+    const pessoaRepo = new PessoaRepository(supabase)
+    const timeRepo = new TimeRepository(supabase)
+    const vagaRepo = new VagaTimeRepository(supabase)
+    const projetoRepo = new ProjetoProdutoRepository(supabase)
 
     // Calcular tendências (pessoas criadas este mês vs mês passado)
     const now = new Date()
     const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
 
-    // Pessoas criadas este mês
-    let queryPessoasEsteMes = supabase
-      .from('pessoa')
-      .select('*', { count: 'exact', head: true })
-      .eq('ativo', true)
-      .gte('created_at', firstDayThisMonth.toISOString())
+    const [totalPessoas, totalTimes, totalVagas, totalProjetos, pessoasEsteMes, pessoasMesPassado] =
+      await Promise.all([
+        pessoaRepo.countAtivasComStatus(hierarquia),
+        timeRepo.countAtivos(hierarquia),
+        vagaRepo.sumQuantidadeAtivasEmTimes(hierarquia),
+        projetoRepo.countActive(),
+        pessoaRepo.countCriadasNoPeriodo(firstDayThisMonth.toISOString(), undefined, hierarquia),
+        pessoaRepo.countCriadasNoPeriodo(
+          firstDayLastMonth.toISOString(),
+          firstDayThisMonth.toISOString(),
+          hierarquia
+        ),
+      ])
 
-    if (isGestor) {
-      queryPessoasEsteMes = queryPessoasEsteMes.in('time_id', timeIdsHierarquia)
-    }
-
-    const { count: pessoasEsteMes } = await queryPessoasEsteMes
-
-    // Pessoas criadas mês passado
-    let queryPessoasMesPassado = supabase
-      .from('pessoa')
-      .select('*', { count: 'exact', head: true })
-      .eq('ativo', true)
-      .gte('created_at', firstDayLastMonth.toISOString())
-      .lt('created_at', firstDayThisMonth.toISOString())
-
-    if (isGestor) {
-      queryPessoasMesPassado = queryPessoasMesPassado.in('time_id', timeIdsHierarquia)
-    }
-
-    const { count: pessoasMesPassado } = await queryPessoasMesPassado
-
-    const tendenciaPessoas = (pessoasEsteMes || 0) - (pessoasMesPassado || 0)
+    const tendenciaPessoas = pessoasEsteMes - pessoasMesPassado
 
     return {
       success: true,
       data: {
-        totalPessoas: totalPessoas || 0,
-        totalTimes: totalTimes || 0,
-        totalVagas: totalVagas,
-        totalProjetos: totalProjetos || 0,
+        totalPessoas,
+        totalTimes,
+        totalVagas,
+        totalProjetos,
         tendenciaPessoas,
         tendenciaTimes: 0, // Pode implementar lógica similar se necessário
         tendenciaVagas: 0,
@@ -194,36 +150,12 @@ export async function getNivelDistribution(): Promise<ActionResult<NivelDistribu
       timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
-    // Buscar pessoas com cargo e nível
-    let query = supabase
-      .from('pessoa')
-      .select(`
-        id,
-        cargo:cargo_id (
-          id,
-          nivel:nivel_id (
-            id,
-            nome
-          )
-        )
-      `)
-      .eq('ativo', true)
-      .eq('status', 'ativo')
-
-    if (isGestor) {
-      query = query.in('time_id', timeIdsHierarquia)
-    }
-
-    const { data: pessoas, error } = await query
-
-    if (error) throw error
+    const pessoaRepo = new PessoaRepository(supabase)
+    const pessoasNivel = await pessoaRepo.findParaNivelDistribuicao(isGestor ? timeIdsHierarquia : undefined)
 
     // Agrupar por nível
     const nivelMap = new Map<string, number>()
 
-    const pessoasNivel = (pessoas ?? []) as unknown as Array<{
-      cargo?: { nivel?: { nome?: string | null } | null } | null
-    }>
     pessoasNivel.forEach((pessoa) => {
       const nivelNome = pessoa.cargo?.nivel?.nome
       if (nivelNome) {
@@ -279,33 +211,12 @@ export async function getTimeDistribution(): Promise<ActionResult<TimeDistributi
       timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
-    // Buscar pessoas com time
-    let query = supabase
-      .from('pessoa')
-      .select(`
-        id,
-        time:time_id (
-          id,
-          nome
-        )
-      `)
-      .eq('ativo', true)
-      .eq('status', 'ativo')
-
-    if (isGestor) {
-      query = query.in('time_id', timeIdsHierarquia)
-    }
-
-    const { data: pessoas, error } = await query
-
-    if (error) throw error
+    const pessoaRepo = new PessoaRepository(supabase)
+    const pessoasTime = await pessoaRepo.findParaTimeDistribuicao(isGestor ? timeIdsHierarquia : undefined)
 
     // Agrupar por time
     const timeMap = new Map<string, number>()
 
-    const pessoasTime = (pessoas ?? []) as unknown as Array<{
-      time?: { nome?: string | null } | null
-    }>
     pessoasTime.forEach((pessoa) => {
       const timeNome = pessoa.time?.nome
       if (timeNome) {
@@ -344,14 +255,8 @@ export async function getRecentActivities(): Promise<ActionResult<RecentActivity
       return { success: false, error: 'Não autenticado' }
     }
 
-    // Buscar últimas 5 atividades
-    const { data: historico, error } = await supabase
-      .from('historico_mudanca')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(5)
-
-    if (error) throw error
+    const historicoRepo = new HistoricoMudancaRepository(supabase)
+    const historico = await historicoRepo.findRecent(5)
 
     // Formatar atividades
     const activities: RecentActivity[] =

@@ -251,6 +251,46 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
   }
 
   /**
+   * Busca times ativos para dropdown de filtro.
+   * Se timeIds for fornecido, restringe ao subconjunto (hierarquia do gestor).
+   */
+  async findAtivosParaFiltro(timeIds?: string[]): Promise<Array<{ id: string; nome: string }>> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('time')
+      .select('id, nome')
+      .eq('ativo', true)
+      .order('nome')
+
+    if (timeIds && timeIds.length > 0) {
+      query = query.in('id', timeIds)
+    }
+
+    const { data, error } = await query
+    if (error) throw new RepositoryError('Erro ao buscar times para filtro', error)
+    return (data ?? []) as Array<{ id: string; nome: string }>
+  }
+
+  /**
+   * Conta times ativos, opcionalmente restrito a um subconjunto de IDs.
+   */
+  async countAtivos(timeIds?: string[]): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('time')
+      .select('*', { count: 'exact', head: true })
+      .eq('ativo', true)
+
+    if (timeIds && timeIds.length > 0) {
+      query = query.in('id', timeIds)
+    }
+
+    const { count, error } = await query
+    if (error) throw new RepositoryError('Erro ao contar times ativos', error)
+    return count || 0
+  }
+
+  /**
    * Busca todos os IDs da hierarquia (time + todos os descendentes)
    * NOTA: Implementação simplificada (1 nível). Para hierarquia completa,
    * use o serviço.

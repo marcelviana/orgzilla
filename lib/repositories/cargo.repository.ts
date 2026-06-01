@@ -101,6 +101,20 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
   }
 
   /**
+   * Busca cargos ativos para dropdown de filtro.
+   */
+  async findAtivosParaFiltro(): Promise<Array<{ id: string; nome: string }>> {
+    const { data, error } = await this.supabase
+      .from('cargo')
+      .select('id, nome')
+      .eq('ativo', true)
+      .order('nome')
+
+    if (error) throw new RepositoryError('Erro ao buscar cargos para filtro', error)
+    return (data ?? []) as Array<{ id: string; nome: string }>
+  }
+
+  /**
    * Busca cargos ativos de uma trilha com o nome do nível
    */
   async findByTrilhaIdWithNivel(trilhaId: string): Promise<Array<Cargo & { nivel_nome: string | null }>> {

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
-import { PessoaRepository, PessoaRemuneracaoRepository } from '@/lib/repositories'
+import { PessoaRepository, PessoaRemuneracaoRepository, CargoRepository, TimeRepository } from '@/lib/repositories'
 import { PessoaService, PermissaoService } from '@/lib/services'
 import type { PessoaInsert, PessoaUpdate, PessoaComRelacionamentos, PessoaRemuneracao } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
@@ -110,86 +110,22 @@ export async function getPessoasComFiltros(
       timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
-    // Campos base (sem salários — remuneração vive em pessoa_remuneracao)
-    const selectFields = `
-      id,
-      nome,
-      nome_social,
-      email_corporativo,
-      email_pessoal,
-      foto_url,
-      status,
-      data_entrada,
-      time_id,
-      cargo:cargo_id (
-        id,
-        nome,
-        nivel:nivel_id (
-          nome
-        ),
-        trilha:trilha_id (
-          nome
-        )
-      ),
-      time:time_id (
-        id,
-        nome
-      ),
-      tags:pessoa_tag (
-        tag:tag_id (
-          id,
-          nome,
-          cor
-        )
-      )
-    `
-
-    // Query base
-    let query = supabase
-      .from('pessoa')
-      .select(selectFields, { count: 'exact' })
-      .eq('ativo', true)
-
-    // Aplicar filtro de hierarquia para gestores (estrito: sem hierarquia → nada).
-    if (isGestor) {
-      query = query.in('time_id', timeIdsHierarquia)
-    }
-
-    // Aplicar filtros
-    if (filters.search) {
-      // Busca por nome, email ou cargo (via ILIKE)
-      query = query.or(
-        `nome.ilike.%${filters.search}%,email_corporativo.ilike.%${filters.search}%,email_pessoal.ilike.%${filters.search}%`
-      )
-    }
-
-    if (filters.timeId && filters.timeId !== 'todos') {
-      query = query.eq('time_id', filters.timeId)
-    }
-
-    if (filters.cargoId && filters.cargoId !== 'todos') {
-      query = query.eq('cargo_id', filters.cargoId)
-    }
-
-    if (filters.status && filters.status !== 'todos') {
-      query = query.eq('status', filters.status)
-    }
-
-    // Ordenar por nome
-    query = query.order('nome')
-
-    // Aplicar paginação
-    const from = (pagination.page - 1) * pagination.itemsPerPage
-    const to = from + pagination.itemsPerPage - 1
-    query = query.range(from, to)
-
-    const { data: pessoas, error, count } = await query
-
-    if (error) throw error
+    const pessoaRepo = new PessoaRepository(supabase)
+    const { data: pessoas, count } = await pessoaRepo.findComFiltrosPaginados({
+      filters: {
+        search: filters.search,
+        // Normaliza sentinelas de UI antes de passar ao Repository
+        timeId: filters.timeId && filters.timeId !== 'todos' ? filters.timeId : undefined,
+        cargoId: filters.cargoId && filters.cargoId !== 'todos' ? filters.cargoId : undefined,
+        status: filters.status && filters.status !== 'todos' ? filters.status : undefined,
+      },
+      timeIdsHierarquia: isGestor ? timeIdsHierarquia : undefined,
+      pagination,
+    })
 
     const totalPages = Math.ceil((count || 0) / pagination.itemsPerPage)
 
-    let pessoasList = (pessoas ?? []) as unknown as PessoaListItem[]
+    let pessoasList = pessoas as unknown as PessoaListItem[]
 
     // Remuneração (SENSÍVEL - LGPD): apenas gestores, e somente para pessoas da
     // sua hierarquia. Admin e visualizador nunca recebem salário.
@@ -235,24 +171,12 @@ export async function getTimesParaFiltro(): Promise<ActionResult<Array<{ id: str
       timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
-    let query = supabase
-      .from('time')
-      .select('id, nome')
-      .eq('ativo', true)
-      .order('nome')
-
-    // Filtrar por hierarquia se for gestor (estrito: sem hierarquia → nada)
-    if (isGestor) {
-      query = query.in('id', timeIdsHierarquia)
-    }
-
-    const { data: times, error } = await query
-
-    if (error) throw error
+    const timeRepo = new TimeRepository(supabase)
+    const times = await timeRepo.findAtivosParaFiltro(isGestor ? timeIdsHierarquia : undefined)
 
     return {
       success: true,
-      data: times || [],
+      data: times,
     }
   } catch (error) {
     const appError = handleError(error, 'database')
@@ -269,18 +193,12 @@ export async function getTimesParaFiltro(): Promise<ActionResult<Array<{ id: str
 export async function getCargosParaFiltro(): Promise<ActionResult<Array<{ id: string; nome: string }>>> {
   try {
     const supabase = await createClient()
-
-    const { data: cargos, error } = await supabase
-      .from('cargo')
-      .select('id, nome')
-      .eq('ativo', true)
-      .order('nome')
-
-    if (error) throw error
+    const cargoRepo = new CargoRepository(supabase)
+    const cargos = await cargoRepo.findAtivosParaFiltro()
 
     return {
       success: true,
-      data: cargos || [],
+      data: cargos,
     }
   } catch (error) {
     const appError = handleError(error, 'database')
@@ -313,33 +231,8 @@ export async function getPessoasParaGestor(): Promise<
       timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
     }
 
-    let query = supabase
-      .from('pessoa')
-      .select(`
-        id,
-        nome,
-        cargo:cargo!cargo_id(nome),
-        time:time!time_id(nome)
-      `)
-      .eq('ativo', true)
-      .order('nome')
-
-    // Filtrar por hierarquia se for gestor (estrito: sem hierarquia → nada)
-    if (isGestor) {
-      query = query.in('time_id', timeIdsHierarquia)
-    }
-
-    const { data: pessoas, error } = await query
-
-    if (error) throw error
-
-    // Format response
-    const pessoasRaw = (pessoas ?? []) as unknown as Array<{
-      id: string
-      nome: string
-      cargo?: { nome?: string | null } | null
-      time?: { nome?: string | null } | null
-    }>
+    const pessoaRepo = new PessoaRepository(supabase)
+    const pessoasRaw = await pessoaRepo.findParaSelecao(isGestor ? timeIdsHierarquia : undefined)
     const formatted = pessoasRaw.map((p) => ({
       id: p.id,
       nome: p.nome,

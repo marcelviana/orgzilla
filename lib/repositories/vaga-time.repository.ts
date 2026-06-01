@@ -206,6 +206,25 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
   }
 
   /**
+   * Soma quantidade de vagas ativas, opcionalmente restrito a um subconjunto de times.
+   */
+  async sumQuantidadeAtivasEmTimes(timeIds?: string[]): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('vaga_time')
+      .select('quantidade')
+      .eq('ativo', true)
+
+    if (timeIds && timeIds.length > 0) {
+      query = query.in('time_id', timeIds)
+    }
+
+    const { data, error } = await query
+    if (error) throw new RepositoryError('Erro ao somar vagas ativas', error)
+    return (data ?? []).reduce((sum: number, v: { quantidade: number }) => sum + (v.quantidade || 0), 0)
+  }
+
+  /**
    * Conta total de vagas ativas
    */
   async countTotalVagasAtivas(): Promise<number> {

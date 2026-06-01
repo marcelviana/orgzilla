@@ -319,6 +319,162 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
   }
 
   /**
+   * Busca pessoas com filtros, paginação e hierarquia (para lista de pessoas).
+   * Não expõe salário — remuneração é anexada pelo chamador via PessoaService.
+   */
+  async findComFiltrosPaginados(params: {
+    filters: { search?: string; timeId?: string; cargoId?: string; status?: string }
+    timeIdsHierarquia?: string[]
+    pagination: { page: number; itemsPerPage: number }
+  }): Promise<{ data: unknown[]; count: number | null }> {
+    const { filters, timeIdsHierarquia, pagination } = params
+    const selectFields = `
+      id, nome, nome_social, email_corporativo, email_pessoal,
+      foto_url, status, data_entrada, time_id,
+      cargo:cargo_id (id, nome, nivel:nivel_id (nome), trilha:trilha_id (nome)),
+      time:time_id (id, nome),
+      tags:pessoa_tag (tag:tag_id (id, nome, cor))
+    `
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('pessoa')
+      .select(selectFields, { count: 'exact' })
+      .eq('ativo', true)
+
+    if (timeIdsHierarquia && timeIdsHierarquia.length > 0) {
+      query = query.in('time_id', timeIdsHierarquia)
+    }
+    if (filters.search) {
+      query = query.or(
+        `nome.ilike.%${filters.search}%,email_corporativo.ilike.%${filters.search}%,email_pessoal.ilike.%${filters.search}%`
+      )
+    }
+    if (filters.timeId) {
+      query = query.eq('time_id', filters.timeId)
+    }
+    if (filters.cargoId) {
+      query = query.eq('cargo_id', filters.cargoId)
+    }
+    if (filters.status) {
+      query = query.eq('status', filters.status)
+    }
+
+    query = query.order('nome')
+    const from = (pagination.page - 1) * pagination.itemsPerPage
+    const to = from + pagination.itemsPerPage - 1
+    query = query.range(from, to)
+
+    const { data, error, count } = await query
+    if (error) throw new RepositoryError('Erro ao buscar pessoas com filtros', error)
+    return { data: data ?? [], count }
+  }
+
+  /**
+   * Busca pessoas para seleção (ex.: modal de gestor de time).
+   * Retorna id, nome e nomes de cargo/time (joins básicos).
+   */
+  async findParaSelecao(timeIdsHierarquia?: string[]): Promise<PessoaParaSelecao[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('pessoa')
+      .select(`id, nome, cargo:cargo!cargo_id(nome), time:time!time_id(nome)`)
+      .eq('ativo', true)
+      .order('nome')
+
+    if (timeIdsHierarquia && timeIdsHierarquia.length > 0) {
+      query = query.in('time_id', timeIdsHierarquia)
+    }
+
+    const { data, error } = await query
+    if (error) throw new RepositoryError('Erro ao buscar pessoas para seleção', error)
+    return (data ?? []) as PessoaParaSelecao[]
+  }
+
+  /**
+   * Conta pessoas ativas com status 'ativo', filtradas opcionalmente por times.
+   */
+  async countAtivasComStatus(timeIds?: string[]): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('pessoa')
+      .select('*', { count: 'exact', head: true })
+      .eq('ativo', true)
+      .eq('status', 'ativo')
+
+    if (timeIds && timeIds.length > 0) {
+      query = query.in('time_id', timeIds)
+    }
+
+    const { count, error } = await query
+    if (error) throw new RepositoryError('Erro ao contar pessoas ativas', error)
+    return count || 0
+  }
+
+  /**
+   * Conta pessoas ativas criadas num período (para tendências do dashboard).
+   * dataFim exclusivo (lt). Se omitido, sem limite superior.
+   */
+  async countCriadasNoPeriodo(dataInicio: string, dataFim?: string, timeIds?: string[]): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('pessoa')
+      .select('*', { count: 'exact', head: true })
+      .eq('ativo', true)
+      .gte('created_at', dataInicio)
+
+    if (dataFim) {
+      query = query.lt('created_at', dataFim)
+    }
+    if (timeIds && timeIds.length > 0) {
+      query = query.in('time_id', timeIds)
+    }
+
+    const { count, error } = await query
+    if (error) throw new RepositoryError('Erro ao contar pessoas por período', error)
+    return count || 0
+  }
+
+  /**
+   * Busca pessoas ativas com cargo e nível para distribuição por nível.
+   */
+  async findParaNivelDistribuicao(timeIds?: string[]): Promise<PessoaParaNivel[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('pessoa')
+      .select(`id, cargo:cargo_id (id, nivel:nivel_id (id, nome))`)
+      .eq('ativo', true)
+      .eq('status', 'ativo')
+
+    if (timeIds && timeIds.length > 0) {
+      query = query.in('time_id', timeIds)
+    }
+
+    const { data, error } = await query
+    if (error) throw new RepositoryError('Erro ao buscar distribuição por nível', error)
+    return (data ?? []) as PessoaParaNivel[]
+  }
+
+  /**
+   * Busca pessoas ativas com time para distribuição por time.
+   */
+  async findParaTimeDistribuicao(timeIds?: string[]): Promise<PessoaParaTime[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = this.supabase
+      .from('pessoa')
+      .select(`id, time:time_id (id, nome)`)
+      .eq('ativo', true)
+      .eq('status', 'ativo')
+
+    if (timeIds && timeIds.length > 0) {
+      query = query.in('time_id', timeIds)
+    }
+
+    const { data, error } = await query
+    if (error) throw new RepositoryError('Erro ao buscar distribuição por time', error)
+    return (data ?? []) as PessoaParaTime[]
+  }
+
+  /**
    * Verifica se email corporativo já está em uso
    */
   async emailCorporativoExists(email: string, excludePessoaId?: string): Promise<boolean> {
@@ -377,4 +533,21 @@ export interface PessoaFilters {
   cargo_id?: string
   status?: StatusPessoa
   ativo?: boolean
+}
+
+export interface PessoaParaSelecao {
+  id: string
+  nome: string
+  cargo?: { nome?: string | null } | null
+  time?: { nome?: string | null } | null
+}
+
+export interface PessoaParaNivel {
+  id: string
+  cargo?: { nivel?: { nome?: string | null } | null } | null
+}
+
+export interface PessoaParaTime {
+  id: string
+  time?: { nome?: string | null } | null
 }

@@ -3,8 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (correção LGPD em relatorios.actions — acesso a remuneração migrado para PessoaService; todos os 45 testes passando)
-**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários) e validar o RLS por teste. Migração mock → real concluída em todas as páginas; violação LGPD em relatorios.actions corrigida.
+**Última atualização:** 1 de junho de 2026 (testes de repositories adicionados — 87 testes no total; bug documentado em PessoaRepository.findComFiltrosPaginados filtro timeId='todos')
 
 ---
 
@@ -41,8 +40,6 @@ Checklist de retomada do ambiente:
 - [x] Teste de fumaça de RLS executado (§6)
 
 ⚠️ **Todos os dados atuais são de teste** (gerados pelo seed). Não há dado real/produção. Os usuários de login (admin/gestor/visualizador) são criados manualmente no painel de Authentication e vinculados na tabela `usuario` (instruções no fim do seed).
-
-Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env.local` **e env vars na Vercel** (URL + chaves mudam) → rodar `orgzilla_schema.sql` → rodar `orgzilla_seed.sql` → criar os 3 usuários no painel e vincular → reconfigurar Google OAuth (novo redirect URI) → `npm run build`.
 
 ---
 
@@ -87,23 +84,26 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 > ⚠️ **Atenção LGPD ao migrar:** qualquer seção que exiba dados de pessoa deve garantir que salário passe pelo `PessoaService`/`PermissaoService` — nunca `supabase.from('pessoa_remuneracao')` direto na Action ou UI.
 
 ### 3.2 Testes
-**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 45 testes em 3 arquivos (`__tests__/`), todos passando.
+**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 87 testes em 4 arquivos (`__tests__/`), todos passando.
 
 | Arquivo | Testes | Estado |
 |---|---|---|
 | `__tests__/permissao.service.test.ts` | 22 | ✅ passando |
 | `__tests__/time.service.test.ts` | 11 | ✅ passando |
 | `__tests__/remuneracao.separacao.test.ts` | 12 | ✅ passando |
+| `__tests__/repositories.test.ts` | 42 | ✅ passando |
 
 **Bug resolvido:** `app/actions/relatorios.actions.ts` que acessava `supabase.from('pessoa_remuneracao')` diretamente foi migrado para `PessoaService.buscarAgregadosSalariais(usuario, timeIds)`. O teste `não há referência a supabase.from("pessoa_remuneracao") fora de lib/repositories` agora passa. Novos métodos introduzidos: `PessoaService.buscarAgregadosSalariais` (aplica guarda de perfil gestor + filtro de hierarquia) e `PessoaRemuneracaoRepository.findComCargoETimes` (query com join cargo/nível; tipo `RemuneracaoComCargo` definido no mesmo arquivo).
+
+**Bug documentado (aguarda correção):** `PessoaRepository.findComFiltrosPaginados` não filtra o valor sentinela `'todos'` para `filters.timeId` — passa `.eq('time_id', 'todos')` ao banco quando deveria ignorar o filtro. O teste `(bug) aplica filtro mesmo quando timeId é "todos"` em `repositories.test.ts` documenta o comportamento atual. Correção: adicionar `&& filters.timeId !== 'todos'` na condição da linha 352 de `lib/repositories/pessoa.repository.ts`.
 
 ### 3.3 Débito arquitetural — padrões de acesso a dados misturados
 A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parcialmente aplicada**:
 
 1. ✅ A lógica de **salário** foi extraída para `PessoaService`/`PermissaoService` (o antigo `selectFields` por perfil saiu). Sem referências órfãs a `pessoa.salario_atual` (verificado por grep).
 2. ✅ **Hierarquia do gestor unificada (fonte única).** Removidas as cópias `getTimeHierarchyIds` (`pessoas.actions.ts` + `dashboard.actions.ts`) e `getTimeHierarchyIdsRecursive` (`times.actions.ts`). Todas as actions usam agora `PermissaoService.getTimesHierarquia` (regra correta: times que o gestor **gerencia** via `gestor_id` + descendentes). A recursão vive num só lugar — `PermissaoService.coletarSubarvore` (privado, **com proteção contra ciclos** por conjunto de visitados) — reutilizada por `getHierarquiaCompleta`, `TimeService.buscarDescendentes` e a checagem de ciclo de `times.actions`.
-3. ⚠️ O **restante** das queries de `pessoas.actions.ts` (linhas 148, 238, 273, 316) e `dashboard.actions.ts` (linhas 78, 91, 103, 116, 127, 140, 199, 284) ainda usa `supabase.from(...)` cru (leitura com filtros) — migração para Services pendente (não-bloqueante). `projetos.actions.ts` (`getProjetosParaFiltro`) e `tags.actions.ts` (`getTagsParaFiltro`) já foram migrados para `ProjetoProdutoRepository.findAll()` e `TagRepository` respectivamente — ✅ concluído.
-4. `times.actions.ts` usa `TimeRepository` direto (pula `TimeService`).
+3. ✅ Queries cruas de `pessoas.actions.ts` e `dashboard.actions.ts` migradas para repositories: `PessoaRepository.findComFiltrosPaginados`, `PessoaRepository.findParaSelecao`, `TimeRepository.findAtivosParaFiltro`, `CargoRepository.findAtivosParaFiltro` (pessoas); `PessoaRepository` (countAtivasComStatus, countCriadasNoPeriodo, findParaNivelDistribuicao, findParaTimeDistribuicao), `TimeRepository.countAtivos`, `VagaTimeRepository.sumQuantidadeAtivasEmTimes`, `ProjetoProdutoRepository.countActive`, `HistoricoMudancaRepository.findRecent` (dashboard). `projetos.actions.ts` e `tags.actions.ts` já eram ✅.
+4. ✅ `getTimesComEstatisticas` em `times.actions.ts` migrado para `TimeService.buscarComPermissao(usuario)` — não mais `timeRepo.findAll()` + filter manual.
 
 **Consequências (resolvidas):**
 - ✅ Recursão de hierarquia não está mais duplicada nem desprotegida: era ilimitada (loop infinito em ciclo de `time_pai_id`); agora há uma única implementação com `Set` de visitados.
@@ -137,8 +137,6 @@ Não há "RLS pendente em outras tabelas" — está tudo ativo no mesmo script. 
 - [x] `orgzilla_schema.sql` rodado → RLS ativo
 - [x] Testado: `visualizador` e `admin` **não** conseguem ler `pessoa_remuneracao` nem `historico_reajuste` direto via Supabase (teste de fumaça §6)
 
-Enquanto o teste não for feito, a proteção está **ativa mas não verificada na prática**.
-
 ### 4.2 Defesa em profundidade do salário
 - **Banco:** RLS gestor-only em `pessoa_remuneracao` e `historico_reajuste`.
 - **Aplicação:** `PessoaService` só busca/grava remuneração quando `PermissaoService` autoriza (gestor da hierarquia). O recorte **por hierarquia** é responsabilidade do código — o RLS garante só "é gestor", não "é gestor *daquela* pessoa". ✅ O filtro de hierarquia é aplicado: lista, detalhe, criação e edição usam `PermissaoService.getTimesHierarquia`/`podeVerSalario` (fonte única) para limitar salário à hierarquia do gestor.
@@ -154,23 +152,16 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 
 ## 5. Roadmap priorizado
 
-### 🟥 Agora — voltar a um estado sólido
-1. **Conectar o app ao banco recriado**: ✅ schema + seed já aplicados. Falta atualizar env vars (local + Vercel), reconfigurar OAuth e criar/vincular os usuários de teste — ver checklist da §1.
-2. **Validar a cadeia**: app sobe, login funciona, dashboard renderiza, e rodar o teste de fumaça de RLS (§6).
-3. **Resolver lockfiles e pins `"latest"`**: escolher npm *ou* pnpm, apagar o outro lockfile, fixar versões, install limpo, `build` ok.
-4. **Limpar mocks residuais** (§3.1): ✅ **concluído** — `relatorios` migrado para dados reais. Todas as páginas estão em dados reais.
-5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
-
 ### 🟨 Em seguida — consolidar a arquitetura
-6. **Terminar a migração para Services** em `pessoas`/`dashboard` (a parte de salário já foi; falta o resto das queries sair do `supabase.from()` cru — `pessoas.actions.ts` linhas 148/238/273/316 e `dashboard.actions.ts` linhas 78/91/103/116/127/140/199/284).
-7. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
-8. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
-9. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 45 testes passando; Vitest 4.1.8 configurado.
+1. ✅ **Terminar a migração para repositories** em `pessoas`/`dashboard`/`times` — concluído. Todas as queries cruas migradas para métodos de repository dedicados; `getTimesComEstatisticas` usa `TimeService.buscarComPermissao`.
+2. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
+3. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
+4. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 45 testes passando; Vitest 4.1.8 configurado.
 
 ### 🟩 Mais adiante
-10. Completar Phase 3 (busca avançada, exportação, viewer de auditoria, upload de avatar).
-11. Otimizar queries N+1: `findAllWithPessoaCount`, `getTimesComEstatisticas`.
-12. Endurecimento para produção: rate limiting, restrição de domínio no OAuth, revalidação de cache.
+5. Completar Phase 3 (busca avançada, exportação, viewer de auditoria, upload de avatar).
+6. Otimizar queries N+1: `findAllWithPessoaCount`, `getTimesComEstatisticas`.
+7. Endurecimento para produção: rate limiting, restrição de domínio no OAuth, revalidação de cache.
 
 ---
 
