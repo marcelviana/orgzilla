@@ -94,12 +94,19 @@ Para cada item do plano, use este formato:
 
 ## Passo 5 — Checklist de execução por item
 
-Para cada grupo do plano, gere um checklist que será usado como prompt de execução depois. Formato:
+Para cada grupo do plano, gere um checklist que será usado como prompt de execução em uma **sessão nova e isolada** do Claude Code — sem acesso ao contexto desta sessão de planejamento. Por isso:
+
+- **Resolva todas as condicionais aqui.** Não deixe itens com "se criou um Service" para o executor decidir — decida agora e inclua ou omita o item já resolvido.
+- **Inclua a justificativa** em itens não-óbvios, para que o executor entenda o porquê sem precisar consultar este prompt.
+
+Formato base — adapte os itens para o que cada migração requer:
 
 ```
 ## Checklist — [Grupo N] `caminho/da/pagina`
 
-- [ ] Ler CLAUDE.md §[seção relevante] antes de começar
+**Contexto:** [1-2 linhas descrevendo o que este grupo faz e por quê esta ordem]
+
+- [ ] Ler STATUS.md §3.1 e CLAUDE.md §Arquitetura antes de começar
 - [ ] Criar `nomeDoMetodo()` em `lib/repositories/nome.repository.ts`
 - [ ] Criar Action `getNomeDaAction()` em `app/actions/nome.actions.ts`
 - [ ] Substituir `MOCK_X` na página por chamada à Action
@@ -107,15 +114,17 @@ Para cada grupo do plano, gere um checklist que será usado como prompt de execu
 - [ ] Verificar: nenhum `supabase.from()` cru na UI ou Action (deve passar por Repository)
 - [ ] Rodar `npm run build` — deve passar
 - [ ] Acionar subagente `revisor-camadas` — resolver todos os 🔴 antes de commitar
-- [ ] (se criou ou modificou um Service) Instalar Vitest com versão exata via pnpm, sem criar segundo lockfile — só no primeiro grupo que chegar aqui
-- [ ] (se criou ou modificou um Service) Acionar subagente `escritor-testes` — testes passando antes de commitar
 - [ ] Acionar subagente `sincronizador-docs` no mesmo commit
 - [ ] Mensagem de commit sugerida: `feat: migra [página] para dados reais`
 ```
 
-Adapte os itens para o que cada migração específica requer.
-
-> **Regra de testes:** inclua os itens de Vitest/`escritor-testes` **somente** se o grupo criar ou modificar um Service (`lib/services/`). Actions que apenas orquestram Repository existente não precisam de teste unitário — o `revisor-camadas` já garante que a camada está correta. Não force testes onde a regra de negócio está no banco ou no Repository.
+**Regra de testes (resolva aqui, não deixe para o executor):**
+- Se o grupo **cria ou modifica um Service** (`lib/services/`): adicione ao checklist os dois itens abaixo, com a justificativa específica do que testar:
+  ```
+  - [ ] Instalar Vitest com versão exata via pnpm — só se ainda não instalado (verificar package.json antes)
+  - [ ] Acionar subagente `escritor-testes`: cobrir [descreva aqui a lógica de negócio específica] — testes passando antes de commitar
+  ```
+- Se o grupo **só conecta Action a Repository existente** (sem lógica de negócio nova): omita os itens de teste completamente. Não deixe o item como condicional — simplesmente não inclua.
 
 ---
 

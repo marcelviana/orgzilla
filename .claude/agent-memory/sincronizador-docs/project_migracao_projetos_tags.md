@@ -1,16 +1,14 @@
 ---
 name: project-migracao-projetos-tags
-description: Estado da migração de projetos e tags para repositories em pessoas/nova e pessoas/[id]/editar
+description: Estado da migração mock → real para todas as rotas de pessoa (nova, editar, detalhe)
 metadata:
   type: project
 ---
 
-`getProjetosParaFiltro` em `projetos.actions.ts` foi migrado de `supabase.from()` cru para `ProjetoProdutoRepository.findAll()`.
+`getProjetosParaFiltro` em `projetos.actions.ts` migrado para `ProjetoProdutoRepository.findAll()`. `getTagsParaFiltro` usa `TagRepository`. `pessoas/nova` e `pessoas/[id]/editar` removeram `MOCK_PROJECTS`/`MOCK_TAGS`.
 
-`getTagsParaFiltro` foi adicionado em `tags.actions.ts` usando `TagRepository` (nunca usou supabase.from() cru).
+`pessoas/[id]` detalhe: `PERSON_DATA_MOCK` e `MOCK_NOTES` removidos. Projetos e tags vêm de `pessoa.projetos`/`pessoa.tags` retornados por `getPessoaById`; anotações via nova action `getAnotacoesDaPessoa` + `criarAnotacaoDaPessoa` (em `anotacoes.actions.ts`), com lógica em `AnotacaoService` (verificação de hierarquia via `PermissaoService`).
 
-`pessoas/nova` e `pessoas/[id]/editar` removeram `MOCK_PROJECTS` e `MOCK_TAGS` e agora chamam essas actions para preencher os seletores de projetos e tags.
+**Why:** todas as rotas de pessoa estavam parcialmente ou totalmente dependentes de mocks. A migração completa de `pessoas/[id]` fecha o §3.1 para toda a área de pessoa.
 
-**Why:** eram os únicos dois formulários de pessoa com mocks vivos em seletores de entidades auxiliares. A migração fecha o §3.1 para essas duas rotas.
-
-**How to apply:** ao auditar §3.1, `pessoas/nova` e `pessoas/[id]/editar` devem aparecer como ✅ — não como ⚠️. O único pendente de pessoa é `pessoas/[id]` detalhe (`PERSON_DATA_MOCK`, `MOCK_NOTES`).
+**How to apply:** ao auditar §3.1, `pessoas/nova`, `pessoas/[id]/editar` e `pessoas/[id]` detalhe devem aparecer como ✅. Pendentes restantes de mock: `busca`, `relatorios`, `configuracoes/*`, `perfil`.
