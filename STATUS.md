@@ -3,8 +3,8 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (migração mock → real: perfil/troca de senha migrada para atualizarSenhaAction → AuthService.atualizarSenha)
-**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real (restam: busca, relatórios, configuracoes).
+**Última atualização:** 1 de junho de 2026 (migração mock → real: configuracoes/tags migrada para `getPessoasComTag`; perfil/troca de senha migrada para `atualizarSenhaAction` → `AuthService.atualizarSenha`)
+**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real (restam: busca, relatórios, demais configuracoes).
 
 ---
 
@@ -70,7 +70,7 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 | `busca` | ❌ Mock puro (`mockPeople`, `mockTeams`, `mockProjects`, `mockPositions`) |
 | `relatorios` | ❌ Mock puro + `console.log('[v0]')` em export/filtro de data |
 | `configuracoes/page.tsx` (landing) | ❌ Mock puro (`mockLevels`, `mockTrilhas`, `mockTags`, `mockLoginActivity`) |
-| `configuracoes/tags` | ❌ Mock (`mockPeople`) + `console.log('[v0]')` em merge/import/export |
+| `configuracoes/tags` | ✅ Pessoas reais via `getPessoasComTag`; import/export pendentes (disabled) |
 | `perfil` (troca de senha) | ✅ Real: chama `atualizarSenhaAction` → `AuthService.atualizarSenha` |
 | `configuracoes/cargos` | ⚠️ Cargos via `cargos.actions` (real), mas painel de pessoas-no-cargo usa `mockPeople` hardcoded |
 | `configuracoes/trilhas` | ⚠️ Trilhas via `trilhas.actions` (real), mas seções de posições/pessoas usam `mockPositions`/`mockPeople` hardcoded |

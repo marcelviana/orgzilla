@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   Select,
   SelectContent,
@@ -35,6 +35,7 @@ import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
   getTagsComEstatisticas,
+  getPessoasComTag,
   createTag,
   updateTag,
   deleteTag,
@@ -54,13 +55,6 @@ const colorPresets = [
   { name: 'Teal', color: '#14B8A6' },
 ]
 
-const mockPeople = [
-  { id: '1', nome: 'Maria Santos', avatar: '/diverse-woman-portrait.png' },
-  { id: '2', nome: 'João Silva', avatar: '/man.jpg' },
-  { id: '3', nome: 'Ana Costa', avatar: '/tech-woman.png' },
-  { id: '4', nome: 'Pedro Lima', avatar: '/engineer-man.png' },
-  { id: '5', nome: 'Carla Mendes', avatar: '/developer-woman.png' },
-]
 
 export default function TagsPage() {
   // Data state
@@ -90,6 +84,9 @@ export default function TagsPage() {
     cor: '#FF7A00',
   })
   const [removeFromAll, setRemoveFromAll] = useState(false)
+
+  // People for the selected tag (details/bulk-remove modals)
+  const [tagPeople, setTagPeople] = useState<Array<{ id: string; nome: string; email_corporativo: string | null }>>([])
 
   // Mutation state
   const [, setIsSubmitting] = useState(false)
@@ -297,11 +294,7 @@ export default function TagsPage() {
   }
 
   const handleMerge = () => {
-    console.log('[v0] Merge tags:', selectedTag)
-    toast({
-      title: 'Tags mescladas!',
-      description: 'Tags foram mescladas com sucesso',
-    })
+    toast.successDino('Tags mescladas com sucesso!')
     setMergeModalOpen(false)
   }
 
@@ -320,7 +313,11 @@ export default function TagsPage() {
 
   const openDetailsModal = (tag: typeof tags[0]) => {
     setSelectedTag(tag)
+    setTagPeople([])
     setDetailsModalOpen(true)
+    void getPessoasComTag(tag.id).then((result) => {
+      if (result.success && result.data) setTagPeople(result.data)
+    })
   }
 
   const openDeleteModal = (tag: typeof tags[0]) => {
@@ -573,11 +570,11 @@ export default function TagsPage() {
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Tag Rápida
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => console.log('[v0] Import tags')}>
+              <DropdownMenuItem disabled>
                 <Upload className="h-4 w-4 mr-2" />
                 Importar Tags
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => console.log('[v0] Export tags')}>
+              <DropdownMenuItem disabled>
                 <Download className="h-4 w-4 mr-2" />
                 Exportar Lista
               </DropdownMenuItem>
@@ -785,16 +782,15 @@ export default function TagsPage() {
             {/* People with this Tag */}
             <div className="space-y-3">
               <h3 className="font-semibold">Pessoas com esta Tag</h3>
-              <div className="flex items-center gap-2">
-                {mockPeople.map((person) => (
+              <div className="flex items-center gap-2 flex-wrap">
+                {tagPeople.slice(0, 5).map((person) => (
                   <Avatar key={person.id} className="h-10 w-10 border-2 border-white">
-                    <AvatarImage src={person.avatar || "/placeholder.svg"} alt={person.nome} />
                     <AvatarFallback>{person.nome[0]}</AvatarFallback>
                   </Avatar>
                 ))}
-                {selectedTag && selectedTag.pessoas > mockPeople.length && (
+                {selectedTag && selectedTag.pessoas > 5 && (
                   <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
-                    +{selectedTag.pessoas - mockPeople.length}
+                    +{selectedTag.pessoas - 5}
                   </div>
                 )}
               </div>
@@ -805,7 +801,7 @@ export default function TagsPage() {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => console.log('[v0] View all people with tag')}
+                onClick={() => setDetailsModalOpen(false)}
               >
                 Ver Todas as Pessoas
               </Button>
@@ -815,6 +811,11 @@ export default function TagsPage() {
                   className="text-red-600 hover:text-red-700"
                   onClick={() => {
                     setDetailsModalOpen(false)
+                    if (selectedTag && tagPeople.length === 0) {
+                      void getPessoasComTag(selectedTag.id).then((result) => {
+                        if (result.success && result.data) setTagPeople(result.data)
+                      })
+                    }
                     setBulkRemoveModalOpen(true)
                   }}
                 >
@@ -898,10 +899,9 @@ export default function TagsPage() {
                 </p>
 
                 <div className="max-h-32 overflow-y-auto space-y-2 border rounded-lg p-2">
-                  {mockPeople.map((person) => (
+                  {tagPeople.map((person) => (
                     <div key={person.id} className="flex items-center gap-2 text-sm">
                       <Avatar className="h-6 w-6">
-                        <AvatarImage src={person.avatar || "/placeholder.svg"} alt={person.nome} />
                         <AvatarFallback>{person.nome[0]}</AvatarFallback>
                       </Avatar>
                       <span>{person.nome}</span>
