@@ -11,8 +11,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { requireAdmin } from '@/lib/middleware'
+import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
 import { TrilhaCarreiraRepository, CargoRepository } from '@/lib/repositories'
+import { PessoaService } from '@/lib/services/pessoa.service'
+import { CargoService } from '@/lib/services/cargo.service'
 import type { TrilhaCarreiraInsert, TrilhaCarreiraUpdate } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
 
@@ -147,6 +149,55 @@ export async function getTrilhaById(id: string): Promise<ActionResult<TrilhaComE
       success: false,
       error: appError.message,
     }
+  }
+}
+
+export type { CargoNaTrilha } from '@/lib/services/cargo.service'
+
+export interface PessoaNaTrilha {
+  id: string
+  nome: string
+  foto_url: string | null
+  cargo_nome: string | null
+  nivel_nome: string | null
+  time_nome: string | null
+}
+
+/**
+ * Busca cargos ativos de uma trilha com nome do nível e contagem de pessoas.
+ */
+export async function getCargosNaTrilha(trilhaId: string): Promise<ActionResult<import('@/lib/services/cargo.service').CargoNaTrilha[]>> {
+  try {
+    const usuario = await getUsuarioLogado()
+    if (!usuario) return { success: false, error: 'Usuário não autenticado' }
+
+    const supabase = await createClient()
+    const cargoService = new CargoService(supabase)
+    const cargos = await cargoService.buscarCargosNaTrilha(trilhaId)
+    return { success: true, data: cargos }
+  } catch (error) {
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
+  }
+}
+
+/**
+ * Busca pessoas em cargos de uma trilha.
+ * Gestor vê apenas pessoas da sua hierarquia; admin/visualizador vêem todas.
+ */
+export async function getPessoasNaTrilha(trilhaId: string): Promise<ActionResult<PessoaNaTrilha[]>> {
+  try {
+    const supabase = await createClient()
+    const pessoaService = new PessoaService(supabase)
+
+    const usuario = await getUsuarioLogado()
+    if (!usuario) return { success: false, error: 'Usuário não autenticado' }
+
+    const pessoas = await pessoaService.buscarPorTrilha(trilhaId, usuario)
+    return { success: true, data: pessoas }
+  } catch (error) {
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
   }
 }
 

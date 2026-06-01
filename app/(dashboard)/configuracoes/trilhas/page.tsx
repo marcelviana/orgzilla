@@ -31,10 +31,13 @@ import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
   getTrilhasComEstatisticas,
+  getCargosNaTrilha,
+  getPessoasNaTrilha,
   createTrilha,
   updateTrilha,
   softDeleteTrilha,
 } from '@/app/actions/trilhas.actions'
+import type { CargoNaTrilha, PessoaNaTrilha } from '@/app/actions/trilhas.actions'
 import { getCurrentUser, checkIsAdmin } from '@/app/actions/auth.actions'
 
 interface CareerTrack {
@@ -50,40 +53,6 @@ interface CareerTrack {
   cor: string
 }
 
-const mockPositions = [
-  { id: 1, name: 'Engineer I', level: 'L2', people: 12 },
-  { id: 2, name: 'Engineer II', level: 'L3', people: 18 },
-  { id: 3, name: 'Senior Engineer', level: 'L4', people: 15 },
-  { id: 4, name: 'Staff Engineer', level: 'L5', people: 8 },
-  { id: 5, name: 'Principal Engineer', level: 'L6', people: 5 },
-]
-
-const mockPeople = [
-  {
-    id: 1,
-    name: 'Maria Santos',
-    position: 'Senior Engineer',
-    level: 'L4',
-    team: 'Engenharia',
-    avatar: '/diverse-woman-portrait.png',
-  },
-  {
-    id: 2,
-    name: 'João Silva',
-    position: 'Staff Engineer',
-    level: 'L5',
-    team: 'Backend',
-    avatar: '/man.jpg',
-  },
-  {
-    id: 3,
-    name: 'Ana Costa',
-    position: 'Engineer II',
-    level: 'L3',
-    team: 'Frontend',
-    avatar: '/tech-woman.png',
-  },
-]
 
 export default function CareerTracksPage() {
   // Data state
@@ -115,6 +84,11 @@ export default function CareerTracksPage() {
     ativo: true,
   })
 
+  // Modal data state
+  const [cargosModal, setCargosModal] = useState<CargoNaTrilha[]>([])
+  const [pessoasModal, setPessoasModal] = useState<PessoaNaTrilha[]>([])
+  const [loadingModal, setLoadingModal] = useState(false)
+
   // Mutation state
   const [, setIsSubmitting] = useState(false)
 
@@ -142,6 +116,38 @@ export default function CareerTracksPage() {
       }
     } catch (error) {
       console.error('[Trilhas] Erro ao verificar permissões:', error)
+    }
+  }
+
+  async function loadCargos(trilhaId: string) {
+    try {
+      setLoadingModal(true)
+      const result = await getCargosNaTrilha(trilhaId)
+      if (result.success && result.data) {
+        setCargosModal(result.data)
+      } else {
+        toast.error(result.error || 'Erro ao carregar cargos')
+      }
+    } catch (error) {
+      toast.error(handleError(error, 'database'))
+    } finally {
+      setLoadingModal(false)
+    }
+  }
+
+  async function loadPessoas(trilhaId: string) {
+    try {
+      setLoadingModal(true)
+      const result = await getPessoasNaTrilha(trilhaId)
+      if (result.success && result.data) {
+        setPessoasModal(result.data)
+      } else {
+        toast.error(result.error || 'Erro ao carregar pessoas')
+      }
+    } catch (error) {
+      toast.error(handleError(error, 'database'))
+    } finally {
+      setLoadingModal(false)
     }
   }
 
@@ -325,6 +331,20 @@ export default function CareerTracksPage() {
         ? prev.filter((f) => f !== filter)
         : [...prev, filter]
     )
+  }
+
+  const openPositionsModal = (track: CareerTrack) => {
+    setSelectedTrack(track)
+    setCargosModal([])
+    setPositionsModalOpen(true)
+    void loadCargos(track.id)
+  }
+
+  const openPeopleModal = (track: CareerTrack) => {
+    setSelectedTrack(track)
+    setPessoasModal([])
+    setPeopleModalOpen(true)
+    void loadPessoas(track.id)
   }
 
   const openEditModal = (track: CareerTrack) => {
@@ -520,7 +540,9 @@ export default function CareerTracksPage() {
                       <DropdownMenuItem
                         onClick={() => {
                           setSelectedTrack(track)
+                          setCargosModal([])
                           setDetailsModalOpen(true)
+                          void loadCargos(track.id)
                         }}
                       >
                         <Eye className="h-4 w-4 mr-2" />
@@ -530,21 +552,11 @@ export default function CareerTracksPage() {
                         <Edit className="h-4 w-4 mr-2" />
                         Editar
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setSelectedTrack(track)
-                          setPositionsModalOpen(true)
-                        }}
-                      >
+                      <DropdownMenuItem onClick={() => openPositionsModal(track)}>
                         <Briefcase className="h-4 w-4 mr-2" />
                         Ver Cargos
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          setSelectedTrack(track)
-                          setPeopleModalOpen(true)
-                        }}
-                      >
+                      <DropdownMenuItem onClick={() => openPeopleModal(track)}>
                         <Users className="h-4 w-4 mr-2" />
                         Ver Pessoas
                       </DropdownMenuItem>
@@ -641,10 +653,7 @@ export default function CareerTracksPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => {
-                      setSelectedTrack(track)
-                      setPositionsModalOpen(true)
-                    }}
+                    onClick={() => openPositionsModal(track)}
                   >
                     Ver Todos os Cargos
                   </Button>
@@ -661,10 +670,7 @@ export default function CareerTracksPage() {
                       variant="ghost"
                       size="sm"
                       className="flex-1"
-                      onClick={() => {
-                        setSelectedTrack(track)
-                        setPeopleModalOpen(true)
-                      }}
+                      onClick={() => openPeopleModal(track)}
                     >
                       Gerenciar Pessoas
                     </Button>
@@ -715,10 +721,7 @@ export default function CareerTracksPage() {
                           variant="link"
                           size="sm"
                           className="p-0 h-auto"
-                          onClick={() => {
-                            setSelectedTrack(track)
-                            setPositionsModalOpen(true)
-                          }}
+                          onClick={() => openPositionsModal(track)}
                         >
                           {track.cargos} cargos
                         </Button>
@@ -728,10 +731,7 @@ export default function CareerTracksPage() {
                           variant="link"
                           size="sm"
                           className="p-0 h-auto"
-                          onClick={() => {
-                            setSelectedTrack(track)
-                            setPeopleModalOpen(true)
-                          }}
+                          onClick={() => openPeopleModal(track)}
                         >
                           {track.pessoas} pessoas
                         </Button>
@@ -1098,21 +1098,34 @@ export default function CareerTracksPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockPositions.map((position) => (
-                        <tr
-                          key={position.id}
-                          className="border-b hover:bg-muted/50 cursor-pointer"
-                        >
-                          <td className="p-4 font-medium">{position.name}</td>
-                          <td className="p-4">
-                            <Badge variant="outline">{position.level}</Badge>
-                          </td>
-                          <td className="p-4">{position.people}</td>
-                          <td className="p-4">
-                            <Badge className="bg-green-500">Ativo</Badge>
+                      {loadingModal ? (
+                        <tr>
+                          <td colSpan={4} className="p-8 text-center">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
                           </td>
                         </tr>
-                      ))}
+                      ) : cargosModal.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="p-8 text-center text-sm text-muted-foreground">
+                            Nenhum cargo nesta trilha.
+                          </td>
+                        </tr>
+                      ) : (
+                        cargosModal.map((cargo) => (
+                          <tr key={cargo.id} className="border-b hover:bg-muted/50 cursor-pointer">
+                            <td className="p-4 font-medium">{cargo.nome}</td>
+                            <td className="p-4">
+                              {cargo.nivel_nome ? (
+                                <Badge variant="outline">{cargo.nivel_nome}</Badge>
+                              ) : '—'}
+                            </td>
+                            <td className="p-4">{cargo.pessoas_count}</td>
+                            <td className="p-4">
+                              <Badge className="bg-green-500">Ativo</Badge>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </Card>
@@ -1141,24 +1154,33 @@ export default function CareerTracksPage() {
             </div>
 
             <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-              {mockPositions.map((position) => (
-                <Card key={position.id} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">{position.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline">{position.level}</Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {position.people} pessoas
-                        </span>
+              {loadingModal ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : cargosModal.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Nenhum cargo encontrado nesta trilha.
+                </p>
+              ) : (
+                cargosModal.map((cargo) => (
+                  <Card key={cargo.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold">{cargo.nome}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          {cargo.nivel_nome && (
+                            <Badge variant="outline">{cargo.nivel_nome}</Badge>
+                          )}
+                          <span className="text-sm text-muted-foreground">
+                            {cargo.pessoas_count} {cargo.pessoas_count === 1 ? 'pessoa' : 'pessoas'}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Ver Cargo
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))
+              )}
             </div>
 
             <div className="p-6 pt-4 border-t flex justify-between">
@@ -1198,29 +1220,42 @@ export default function CareerTracksPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {mockPeople.map((person) => (
-                      <tr key={person.id} className="border-b hover:bg-muted/50">
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={person.avatar || "/placeholder.svg"} />
-                              <AvatarFallback>
-                                {person.name
-                                  .split(' ')
-                                  .map((n) => n[0])
-                                  .join('')}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="font-medium">{person.name}</span>
-                          </div>
+                    {loadingModal ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
                         </td>
-                        <td className="p-4">{person.position}</td>
-                        <td className="p-4">
-                          <Badge variant="outline">{person.level}</Badge>
-                        </td>
-                        <td className="p-4">{person.team}</td>
                       </tr>
-                    ))}
+                    ) : pessoasModal.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-sm text-muted-foreground">
+                          Nenhuma pessoa encontrada nesta trilha.
+                        </td>
+                      </tr>
+                    ) : (
+                      pessoasModal.map((person) => (
+                        <tr key={person.id} className="border-b hover:bg-muted/50">
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={person.foto_url || "/placeholder.svg"} />
+                                <AvatarFallback>
+                                  {person.nome.split(' ').map((n) => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{person.nome}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">{person.cargo_nome ?? '—'}</td>
+                          <td className="p-4">
+                            {person.nivel_nome ? (
+                              <Badge variant="outline">{person.nivel_nome}</Badge>
+                            ) : '—'}
+                          </td>
+                          <td className="p-4">{person.time_nome ?? '—'}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </Card>

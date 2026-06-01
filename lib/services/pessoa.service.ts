@@ -69,6 +69,30 @@ export class PessoaService {
     }))
   }
 
+  /**
+   * Retorna pessoas em cargos de uma trilha, aplicando filtro de hierarquia para gestores.
+   */
+  async buscarPorTrilha(
+    trilhaId: string,
+    usuario: Usuario
+  ): Promise<Array<{ id: string; nome: string; foto_url: string | null; cargo_nome: string | null; nivel_nome: string | null; time_nome: string | null }>> {
+    let pessoas = await this.pessoaRepo.findByTrilhaId(trilhaId)
+
+    if (usuario.tipo_perfil === 'gestor') {
+      const timesIds = await this.permissaoService.getTimesHierarquia(usuario)
+      pessoas = pessoas.filter((p) => p.time_id && timesIds.includes(p.time_id))
+    }
+
+    return pessoas.map((p) => ({
+      id: p.id,
+      nome: p.nome,
+      foto_url: p.foto_url ?? null,
+      cargo_nome: p.cargo_nome,
+      nivel_nome: p.nivel_nome,
+      time_nome: p.time_nome,
+    }))
+  }
+
   // ==========================================================================
   // CRUD COM LÓGICA DE NEGÓCIO
   // ==========================================================================

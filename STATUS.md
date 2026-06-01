@@ -3,8 +3,8 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (migração mock → real: configuracoes/cargos — painel de pessoas-no-cargo migrado para `getPessoasNoCargo` com filtro de hierarquia via `PermissaoService`)
-**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real (restam: busca, relatórios, configuracoes/trilhas, configuracoes/page.tsx).
+**Última atualização:** 1 de junho de 2026 (migração mock → real: configuracoes/trilhas — cargos via `CargoService.buscarCargosNaTrilha` e pessoas via `PessoaService.buscarPorTrilha` com filtro de hierarquia para gestor)
+**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real (restam: busca, relatórios, configuracoes/page.tsx).
 
 ---
 
@@ -73,7 +73,7 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 | `configuracoes/tags` | ✅ Pessoas reais via `getPessoasComTag`; import/export pendentes (disabled) |
 | `perfil` (troca de senha) | ✅ Real: chama `atualizarSenhaAction` → `AuthService.atualizarSenha` |
 | `configuracoes/cargos` | ✅ Real: cargos via `cargos.actions`, pessoas via `getPessoasNoCargo` com filtro de hierarquia |
-| `configuracoes/trilhas` | ⚠️ Trilhas via `trilhas.actions` (real), mas seções de posições/pessoas usam `mockPositions`/`mockPeople` hardcoded |
+| `configuracoes/trilhas` | ✅ Real: cargos via `CargoService.buscarCargosNaTrilha` (`getCargosNaTrilha`) e pessoas via `PessoaService.buscarPorTrilha` (`getPessoasNaTrilha`) com filtro de hierarquia para gestor |
 | `pessoas/nova` | ✅ Dados reais (projetos e tags via `getProjetosParaFiltro`/`getTagsParaFiltro`) |
 | `pessoas/[id]` (detalhe) | ✅ Dados reais (projetos, tags e anotações via `AnotacaoService`) |
 | `pessoas/[id]/editar` | ✅ Dados reais (projetos e tags via `getProjetosParaFiltro`/`getTagsParaFiltro`) |
@@ -150,7 +150,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 1. **Conectar o app ao banco recriado**: ✅ schema + seed já aplicados. Falta atualizar env vars (local + Vercel), reconfigurar OAuth e criar/vincular os usuários de teste — ver checklist da §1.
 2. **Validar a cadeia**: app sobe, login funciona, dashboard renderiza, e rodar o teste de fumaça de RLS (§6).
 3. **Resolver lockfiles e pins `"latest"`**: escolher npm *ou* pnpm, apagar o outro lockfile, fixar versões, install limpo, `build` ok.
-4. **Limpar mocks residuais** (§3.1): arrays mortos em `configuracoes/cargos` e `configuracoes/trilhas`. (`pessoas/nova`, `pessoas/[id]/editar`, `pessoas/[id]` detalhe e `perfil` troca de senha já migrados — ✅ concluído.)
+4. **Limpar mocks residuais** (§3.1): restam `busca`, `relatorios` e `configuracoes/page.tsx`. (`pessoas/nova`, `pessoas/[id]/editar`, `pessoas/[id]` detalhe, `perfil` troca de senha, `configuracoes/cargos` e `configuracoes/trilhas` já migrados — ✅ concluído.)
 5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
 
 ### 🟨 Em seguida — consolidar a arquitetura

@@ -101,6 +101,25 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
   }
 
   /**
+   * Busca cargos ativos de uma trilha com o nome do nível
+   */
+  async findByTrilhaIdWithNivel(trilhaId: string): Promise<Array<Cargo & { nivel_nome: string | null }>> {
+    const { data, error } = await this.supabase
+      .from('cargo')
+      .select('*, nivel:nivel!cargo_nivel_id_fkey(nome)')
+      .eq('trilha_id', trilhaId)
+      .eq('ativo', true)
+      .order('nome')
+
+    if (error) throw new RepositoryError('Erro ao buscar cargos da trilha com nível', error)
+
+    return (data ?? []).map((c) => ({
+      ...c,
+      nivel_nome: (c.nivel as { nome: string } | null)?.nome ?? null,
+    }))
+  }
+
+  /**
    * Busca cargos ativos por trilha
    */
   async findActiveByTrilhaId(trilhaId: string): Promise<Cargo[]> {

@@ -194,6 +194,47 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
   }
 
   /**
+   * Busca pessoas ativas em cargos de uma trilha,
+   * incluindo nome do cargo, nível e time.
+   * Usa duas queries para evitar comportamento incerto do filtro PostgREST em colunas de join.
+   */
+  async findByTrilhaId(trilhaId: string): Promise<Array<Pessoa & { cargo_nome: string | null; nivel_nome: string | null; time_nome: string | null }>> {
+    // 1. Busca IDs de cargos ativos da trilha
+    const { data: cargos, error: cargoError } = await this.supabase
+      .from('cargo')
+      .select('id, nome, nivel:nivel!nivel_id(nome)')
+      .eq('trilha_id', trilhaId)
+      .eq('ativo', true)
+
+    if (cargoError) throw new RepositoryError('Erro ao buscar cargos da trilha', cargoError)
+    if (!cargos || cargos.length === 0) return []
+
+    const cargoMap = new Map(cargos.map((c) => [
+      c.id,
+      {
+        nome: c.nome,
+        nivel_nome: (c.nivel as { nome: string } | null)?.nome ?? null,
+      },
+    ]))
+
+    // 2. Busca pessoas ativas com esses cargo_ids
+    const { data, error } = await this.supabase
+      .from('pessoa')
+      .select('*, time:time!time_id(nome)')
+      .in('cargo_id', [...cargoMap.keys()])
+      .eq('ativo', true)
+
+    if (error) throw new RepositoryError('Erro ao buscar pessoas da trilha', error)
+
+    return (data ?? []).map((p) => ({
+      ...p,
+      cargo_nome: p.cargo_id ? (cargoMap.get(p.cargo_id)?.nome ?? null) : null,
+      nivel_nome: p.cargo_id ? (cargoMap.get(p.cargo_id)?.nivel_nome ?? null) : null,
+      time_nome: (p.time as { nome: string } | null)?.nome ?? null,
+    }))
+  }
+
+  /**
    * Busca pessoas por tag
    */
   async findByTagId(tagId: string): Promise<Pessoa[]> {
