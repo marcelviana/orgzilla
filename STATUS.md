@@ -3,8 +3,8 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (setup Vitest + testes iniciais de permissão, hierarquia e separação de remuneração)
-**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários) e validar o RLS por teste. Migração mock → real concluída em todas as páginas.
+**Última atualização:** 1 de junho de 2026 (correção LGPD em relatorios.actions — acesso a remuneração migrado para PessoaService; todos os 45 testes passando)
+**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários) e validar o RLS por teste. Migração mock → real concluída em todas as páginas; violação LGPD em relatorios.actions corrigida.
 
 ---
 
@@ -87,15 +87,15 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 > ⚠️ **Atenção LGPD ao migrar:** qualquer seção que exiba dados de pessoa deve garantir que salário passe pelo `PessoaService`/`PermissaoService` — nunca `supabase.from('pessoa_remuneracao')` direto na Action ou UI.
 
 ### 3.2 Testes
-**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 45 testes em 3 arquivos (`__tests__/`), todos passando exceto 1 que revelou um bug arquitetural (ver abaixo).
+**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 45 testes em 3 arquivos (`__tests__/`), todos passando.
 
 | Arquivo | Testes | Estado |
 |---|---|---|
 | `__tests__/permissao.service.test.ts` | 22 | ✅ passando |
 | `__tests__/time.service.test.ts` | 11 | ✅ passando |
-| `__tests__/remuneracao.separacao.test.ts` | 12 | 11 ✅ / 1 ❌ bug confirmado |
+| `__tests__/remuneracao.separacao.test.ts` | 12 | ✅ passando |
 
-**BUG DETECTADO:** `app/actions/relatorios.actions.ts:448` acessa `supabase.from('pessoa_remuneracao')` diretamente, violando a regra arquitetural (deve passar pelo `PessoaRemuneracaoRepository`). Teste `não há referência a supabase.from("pessoa_remuneracao") fora de lib/repositories` falha intencionalmente até a Action ser migrada para usar o repositório/service.
+**Bug resolvido:** `app/actions/relatorios.actions.ts` que acessava `supabase.from('pessoa_remuneracao')` diretamente foi migrado para `PessoaService.buscarAgregadosSalariais(usuario, timeIds)`. O teste `não há referência a supabase.from("pessoa_remuneracao") fora de lib/repositories` agora passa. Novos métodos introduzidos: `PessoaService.buscarAgregadosSalariais` (aplica guarda de perfil gestor + filtro de hierarquia) e `PessoaRemuneracaoRepository.findComCargoETimes` (query com join cargo/nível; tipo `RemuneracaoComCargo` definido no mesmo arquivo).
 
 ### 3.3 Débito arquitetural — padrões de acesso a dados misturados
 A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parcialmente aplicada**:
@@ -165,7 +165,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 6. **Terminar a migração para Services** em `pessoas`/`dashboard` (a parte de salário já foi; falta o resto das queries sair do `supabase.from()` cru — `pessoas.actions.ts` linhas 148/238/273/316 e `dashboard.actions.ts` linhas 78/91/103/116/127/140/199/284).
 7. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
 8. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
-9. **Introduzir testes** para lógica crítica: hierarquia, permissões por perfil, separação de salário (Vitest).
+9. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 45 testes passando; Vitest 4.1.8 configurado.
 
 ### 🟩 Mais adiante
 10. Completar Phase 3 (busca avançada, exportação, viewer de auditoria, upload de avatar).
