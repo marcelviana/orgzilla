@@ -54,7 +54,7 @@ Regras:
 - Não coloque lógica de negócio, permissão ou auditoria em Repository — isso é Service.
 - Não chame `supabase.from(...)` direto numa Action quando já existe Repository/Service para a entidade. Use a camada.
 - Não acesse o banco direto de componentes — sempre via Action → Service.
-- ⚠️ **Débito conhecido:** hoje há três padrões convivendo (Service, Repository direto e `supabase.from()` cru em Actions). Ao tocar em código que fura a camada, **migre para o padrão acima** em vez de replicar o atalho. Ver `STATUS.md` §2.3.
+- ⚠️ **Débito conhecido:** hoje há três padrões convivendo (Service, Repository direto e `supabase.from()` cru em Actions). Ao tocar em código que fura a camada, **migre para o padrão acima** em vez de replicar o atalho. Ver `STATUS.md` §3.3.
 - A recursão de hierarquia de times deve viver num **único lugar** (`TimeService`), com proteção contra ciclos. Não crie novas cópias.
 - Sempre obtenha o usuário atual do contexto de auth; nunca hardcode UUIDs.
 
@@ -124,7 +124,7 @@ Histórico (gerenciado pela aplicação):
 
 ## Dependências
 
-- **Um único lockfile.** O repo tem `package-lock.json` e `pnpm-lock.yaml` conflitantes (ver `STATUS.md` §2.4). Use o gerenciador definido lá e não recrie o outro lockfile.
+- **Um único lockfile.** Use **pnpm** — apenas `pnpm-lock.yaml` existe no repo (ver `STATUS.md` §3.4). Não crie `package-lock.json`.
 - **Sem `"latest"`:** ao adicionar/ajustar dependências, fixe versão exata. Não introduza novos pins `"latest"`.
 
 ---

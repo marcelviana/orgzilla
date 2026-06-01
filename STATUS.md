@@ -3,8 +3,8 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 31 de maio de 2026
-**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real.
+**Última atualização:** 31 de maio de 2026 (auditoria de sincronização)
+**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real em várias páginas.
 
 ---
 
@@ -54,7 +54,7 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
   > ✅ Verificado contra o código: os nomes acima existem como descritos. Nenhuma query lê `salario_atual`/`data_ultimo_reajuste`/`motivo_ultimo_reajuste` da tabela `pessoa` (sem referências órfãs — grep limpo); o salário só é buscado de `pessoa_remuneracao` via `PessoaService`.
 - **Repositories** (`lib/repositories/`): `base.repository.ts` (CRUD genérico, soft delete, contagens, existência) + repositories por entidade.
 - **Services** (`lib/services/`): `AuthService`, `PermissaoService`, `AuditoriaService`, `HistoricoService`, `PessoaService`, `TimeService`, `VagaService`, `PessoaRemuneracaoRepository`, factory `createServices()`.
-- **Server Actions**: pessoas, times, projetos, usuários, níveis, dashboard.
+- **Server Actions**: auth, cargos, dashboard, níveis, pessoas, projetos, tags, times, trilhas, usuários.
 - **Dashboard** (`dashboard.actions.ts`): métricas, distribuições por nível/time, filtragem por hierarquia de gestor.
 - **Autenticação**: email/senha + Google OAuth, middleware de rotas, auto-criação de usuário no 1º login.
 
@@ -66,14 +66,24 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 
 | Página | Estado |
 |---|---|
-| `configuracoes/cargos` | ❌ Mock puro (`mockCargos` hardcoded) |
-| `configuracoes/trilhas` | ❌ Mock puro (`mockTracks` hardcoded) |
-| `relatorios` | ❌ Mock puro |
-| `configuracoes/usuarios` | ⚠️ Usa actions reais, **mas ainda mantém `mockUsers` no arquivo** |
-| `perfil` (troca de senha) | ❌ Falsa: `console.log("[v0]")` + `setTimeout(1500)` + toast de sucesso, sem chamar API |
-| Dashboard / Pessoas / Times | ✅ Dados reais |
+| `busca` | ❌ Mock puro (`mockPeople`, `mockTeams`, `mockProjects`, `mockPositions`) |
+| `relatorios` | ❌ Mock puro + `console.log('[v0]')` em export/filtro de data |
+| `configuracoes/page.tsx` (landing) | ❌ Mock puro (`mockLevels`, `mockTrilhas`, `mockTags`, `mockLoginActivity`) |
+| `configuracoes/tags` | ❌ Mock (`mockPeople`) + `console.log('[v0]')` em merge/import/export |
+| `perfil` (troca de senha) | ❌ Falsa: `console.log("[v0]")` + `setTimeout` + toast de sucesso sem chamar API |
+| `configuracoes/cargos` | ⚠️ Cargos via `cargos.actions` (real), mas painel de pessoas-no-cargo usa `mockPeople` hardcoded |
+| `configuracoes/trilhas` | ⚠️ Trilhas via `trilhas.actions` (real), mas seções de posições/pessoas usam `mockPositions`/`mockPeople` hardcoded |
+| `pessoas/nova` | ⚠️ Formulário real, mas seleção de projetos e tags usa `MOCK_PROJECTS`/`MOCK_TAGS` |
+| `pessoas/[id]` (detalhe) | ⚠️ Dados da pessoa reais, mas seções de projetos e tags usam `PERSON_DATA_MOCK`/`MOCK_NOTES` |
+| `pessoas/[id]/editar` | ⚠️ Formulário real, mas seleção de projetos e tags usa `MOCK_PROJECTS`/`MOCK_TAGS` |
+| `configuracoes/usuarios` | ✅ Usa actions reais; `mockUsers` removido |
+| Dashboard | ✅ Dados reais |
+| `pessoas` (lista) | ✅ Dados reais |
+| `times` | ✅ Dados reais |
 
-> Rastros `console.log('[v0]...')` confirmam origem v0.dev.
+> Rastros `console.log('[v0]...')` confirmam origem v0.dev. Ao migrar seções com mock de projetos/tags, passar obrigatoriamente pelas actions correspondentes — nunca `supabase.from()` direto na UI.
+
+> ⚠️ **Atenção LGPD ao migrar:** qualquer seção que exiba dados de pessoa deve garantir que salário passe pelo `PessoaService`/`PermissaoService` — nunca `supabase.from('pessoa_remuneracao')` direto na Action ou UI.
 
 ### 3.2 Testes
 **Cobertura zero.** Sem script de teste no `package.json`, sem framework instalado, sem arquivos de teste.
@@ -88,11 +98,11 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 
 **Consequências (resolvidas):**
 - ✅ Recursão de hierarquia não está mais duplicada nem desprotegida: era ilimitada (loop infinito em ciclo de `time_pai_id`); agora há uma única implementação com `Set` de visitados.
-- Auto-criação de usuário ainda em **3 lugares**: `app/(dashboard)/layout.tsx`, `auth.middleware.ts`, `auth.service.ts` (pendente).
+- ✅ **Auto-criação de usuário unificada**: ocorre em **1 lugar** (`lib/middleware/auth.middleware.ts:73` via `usuarioRepo.create`). O layout e o `auth.service.ts` não criam usuários — apenas consultam.
 
 ### 3.4 Dependências — builds não reprodutíveis
-- **Lockfiles conflitantes**: `package-lock.json` **e** `pnpm-lock.yaml` (versões divergentes: `package.json` pede `next 16.0.10`; `pnpm-lock` tem `16.0.10`; `package-lock` registra `16.0.3`).
-- **Pins `"latest"`** em várias deps (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`, `react-day-picker`, `vaul`).
+- **Lockfile:** apenas `pnpm-lock.yaml` (o `package-lock.json` foi removido). Use **pnpm** como gerenciador único.
+- **Pins `"latest"`** em várias deps (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`, `react-day-picker`). `vaul` já usa `"^0.9.9"` (OK).
 - Stack bleeding edge (Next 16 + React 19.2) + pins `"latest"` = risco de quebras silenciosas.
 
 ### 3.5 Erros de TypeScript mascarados no build
@@ -143,9 +153,9 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
 
 ### 🟨 Em seguida — consolidar a arquitetura
-6. **Terminar a migração para Services** em `pessoas`/`dashboard` (a parte de salário já foi; falta o resto da query sair do `supabase.from()` cru).
-7. **Extrair a recursão de hierarquia** para um único lugar (`TimeService`), com proteção contra ciclos. Eliminar cópias.
-8. **Unificar auto-criação de usuário** num único ponto.
+6. **Terminar a migração para Services** em `pessoas`/`dashboard` (a parte de salário já foi; falta o resto das queries sair do `supabase.from()` cru — `pessoas.actions.ts` ainda usa queries brutas para listagem, filtro de times e cargos).
+7. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
+8. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
 9. **Introduzir testes** para lógica crítica: hierarquia, permissões por perfil, separação de salário (Vitest).
 
 ### 🟩 Mais adiante
