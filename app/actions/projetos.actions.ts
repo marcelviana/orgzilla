@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth.actions'
 import { handleError } from '@/lib/errors/error-handler'
+import { ProjetoProdutoRepository } from '@/lib/repositories'
 
 export type ActionResult<T = void> =
   | { success: true; data?: T }
@@ -421,18 +422,16 @@ export async function removePessoaDoProjeto(
 export async function getProjetosParaFiltro(): Promise<ActionResult<Array<{ id: string; nome: string }>>> {
   try {
     const supabase = await createClient()
+    const projetoRepo = new ProjetoProdutoRepository(supabase)
 
-    const { data: projetos, error } = await supabase
-      .from('projeto_produto')
-      .select('id, nome')
-      .eq('ativo', true)
-      .order('nome')
-
-    if (error) throw error
+    const projetos = await projetoRepo.findAll()
 
     return {
       success: true,
-      data: projetos || [],
+      data: projetos
+        .filter(p => p.ativo)
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+        .map(p => ({ id: p.id, nome: p.nome })),
     }
   } catch (error) {
     const appError = handleError(error, 'database')

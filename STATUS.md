@@ -3,8 +3,8 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 31 de maio de 2026 (auditoria de sincronização)
-**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real em várias páginas.
+**Última atualização:** 1 de junho de 2026 (migração mock → real: projetos e tags em pessoas/nova e pessoas/[id]/editar)
+**Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários), validar o RLS por teste e terminar a migração mock → real (restam: busca, relatórios, configuracoes, perfil, pessoas/[id] detalhe).
 
 ---
 
@@ -74,9 +74,9 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 | `perfil` (troca de senha) | ❌ Falsa: `console.log("[v0]")` + `setTimeout` + toast de sucesso sem chamar API |
 | `configuracoes/cargos` | ⚠️ Cargos via `cargos.actions` (real), mas painel de pessoas-no-cargo usa `mockPeople` hardcoded |
 | `configuracoes/trilhas` | ⚠️ Trilhas via `trilhas.actions` (real), mas seções de posições/pessoas usam `mockPositions`/`mockPeople` hardcoded |
-| `pessoas/nova` | ⚠️ Formulário real, mas seleção de projetos e tags usa `MOCK_PROJECTS`/`MOCK_TAGS` |
+| `pessoas/nova` | ✅ Dados reais (projetos e tags via `getProjetosParaFiltro`/`getTagsParaFiltro`) |
 | `pessoas/[id]` (detalhe) | ⚠️ Dados da pessoa reais, mas seções de projetos e tags usam `PERSON_DATA_MOCK`/`MOCK_NOTES` |
-| `pessoas/[id]/editar` | ⚠️ Formulário real, mas seleção de projetos e tags usa `MOCK_PROJECTS`/`MOCK_TAGS` |
+| `pessoas/[id]/editar` | ✅ Dados reais (projetos e tags via `getProjetosParaFiltro`/`getTagsParaFiltro`) |
 | `configuracoes/usuarios` | ✅ Usa actions reais; `mockUsers` removido |
 | Dashboard | ✅ Dados reais |
 | `pessoas` (lista) | ✅ Dados reais |
@@ -94,7 +94,7 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 
 1. ✅ A lógica de **salário** foi extraída para `PessoaService`/`PermissaoService` (o antigo `selectFields` por perfil saiu). Sem referências órfãs a `pessoa.salario_atual` (verificado por grep).
 2. ✅ **Hierarquia do gestor unificada (fonte única).** Removidas as cópias `getTimeHierarchyIds` (`pessoas.actions.ts` + `dashboard.actions.ts`) e `getTimeHierarchyIdsRecursive` (`times.actions.ts`). Todas as actions usam agora `PermissaoService.getTimesHierarquia` (regra correta: times que o gestor **gerencia** via `gestor_id` + descendentes). A recursão vive num só lugar — `PermissaoService.coletarSubarvore` (privado, **com proteção contra ciclos** por conjunto de visitados) — reutilizada por `getHierarquiaCompleta`, `TimeService.buscarDescendentes` e a checagem de ciclo de `times.actions`.
-3. ⚠️ O **restante** das queries de `pessoas.actions.ts` (linhas 148, 238, 273, 316) e `dashboard.actions.ts` (linhas 78, 91, 103, 116, 127, 140, 199, 284) ainda usa `supabase.from(...)` cru (leitura com filtros) — migração para Services pendente (não-bloqueante).
+3. ⚠️ O **restante** das queries de `pessoas.actions.ts` (linhas 148, 238, 273, 316) e `dashboard.actions.ts` (linhas 78, 91, 103, 116, 127, 140, 199, 284) ainda usa `supabase.from(...)` cru (leitura com filtros) — migração para Services pendente (não-bloqueante). `projetos.actions.ts` (`getProjetosParaFiltro`) e `tags.actions.ts` (`getTagsParaFiltro`) já foram migrados para `ProjetoProdutoRepository.findAll()` e `TagRepository` respectivamente — ✅ concluído.
 4. `times.actions.ts` usa `TimeRepository` direto (pula `TimeService`).
 
 **Consequências (resolvidas):**
@@ -150,7 +150,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 1. **Conectar o app ao banco recriado**: ✅ schema + seed já aplicados. Falta atualizar env vars (local + Vercel), reconfigurar OAuth e criar/vincular os usuários de teste — ver checklist da §1.
 2. **Validar a cadeia**: app sobe, login funciona, dashboard renderiza, e rodar o teste de fumaça de RLS (§6).
 3. **Resolver lockfiles e pins `"latest"`**: escolher npm *ou* pnpm, apagar o outro lockfile, fixar versões, install limpo, `build` ok.
-4. **Limpar mocks residuais** (§3.1): troca de senha falsa em `perfil` (ligar `AuthService.atualizarSenha`); mocks de projetos/tags em `pessoas/nova`, `pessoas/[id]` e `pessoas/[id]/editar` (`MOCK_PROJECTS`, `MOCK_TAGS`, `PERSON_DATA_MOCK`); arrays mortos em `configuracoes/cargos` e `configuracoes/trilhas`.
+4. **Limpar mocks residuais** (§3.1): troca de senha falsa em `perfil` (ligar `AuthService.atualizarSenha`); mock de projetos/tags em `pessoas/[id]` detalhe (`PERSON_DATA_MOCK`, `MOCK_NOTES`); arrays mortos em `configuracoes/cargos` e `configuracoes/trilhas`. (`pessoas/nova` e `pessoas/[id]/editar` já migrados — ✅ concluído.)
 5. ✅ **Corrigir docs**: feito — os retratos de momento desatualizados (incl. `CONFIGURAR-SUPABASE.md` sem RLS e o claim falso de RLS em `AUTENTICACAO.md`) foram removidos; a doc ficou nos canônicos + `DESIGN_SYSTEM.md`/`PADROES-ERRO.md` (ver §0).
 
 ### 🟨 Em seguida — consolidar a arquitetura

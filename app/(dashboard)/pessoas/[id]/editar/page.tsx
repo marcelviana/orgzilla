@@ -19,6 +19,8 @@ import { ptBR } from 'date-fns/locale'
 import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getPessoaById, updatePessoa, getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
+import { getProjetosParaFiltro } from '@/app/actions/projetos.actions'
+import { getTagsParaFiltro } from '@/app/actions/tags.actions'
 
 interface Project {
   id: string
@@ -26,9 +28,6 @@ interface Project {
   dataInicio: Date | undefined
   dataFim: Date | undefined
 }
-
-const MOCK_PROJECTS = ['Projeto Alpha', 'Projeto Beta', 'Sistema Core', 'App Mobile']
-const MOCK_TAGS = ['Frontend', 'Backend', 'Full Stack', 'Leadership', 'Mentor', 'React', 'Node.js', 'Python', 'DevOps', 'Mobile']
 
 export default function EditPessoaPage() {
   const router = useRouter()
@@ -44,6 +43,8 @@ export default function EditPessoaPage() {
   // Dynamic data
   const [times, setTimes] = useState<Array<{ id: string; nome: string }>>([])
   const [cargos, setCargos] = useState<Array<{ id: string; nome: string }>>([])
+  const [projetos, setProjetos] = useState<Array<{ id: string; nome: string }>>([])
+  const [tags, setTags] = useState<Array<{ id: string; nome: string }>>([])
 
   // Form fields - will be loaded from database
   const [nome, setNome] = useState('')
@@ -73,10 +74,12 @@ export default function EditPessoaPage() {
   useEffect(() => {
     async function loadData() {
     try {
-      const [pessoaResult, timesResult, cargosResult] = await Promise.all([
+      const [pessoaResult, timesResult, cargosResult, projetosResult, tagsResult] = await Promise.all([
         getPessoaById(pessoaId),
         getTimesParaFiltro(),
         getCargosParaFiltro(),
+        getProjetosParaFiltro(),
+        getTagsParaFiltro(),
       ])
 
       // Load pessoa data
@@ -127,6 +130,14 @@ export default function EditPessoaPage() {
       }
       if (cargosResult.success && cargosResult.data) {
         setCargos(cargosResult.data)
+      }
+
+      if (projetosResult.success && projetosResult.data) {
+        setProjetos(projetosResult.data)
+      }
+
+      if (tagsResult.success && tagsResult.data) {
+        setTags(tagsResult.data)
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
@@ -690,8 +701,8 @@ export default function EditPessoaPage() {
                             <SelectValue placeholder="Selecione o projeto" />
                           </SelectTrigger>
                           <SelectContent>
-                            {MOCK_PROJECTS.map(p => (
-                              <SelectItem key={p} value={p}>{p}</SelectItem>
+                            {projetos.map(p => (
+                              <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -781,13 +792,13 @@ export default function EditPessoaPage() {
               <div>
                 <Label>Selecionar tags existentes</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {MOCK_TAGS.filter(tag => !selectedTags.includes(tag)).map(tag => (
+                  {tags.filter(t => !selectedTags.includes(t.nome)).map(t => (
                     <button
-                      key={tag}
-                      onClick={() => handleAddTag(tag)}
+                      key={t.id}
+                      onClick={() => handleAddTag(t.nome)}
                       className="px-3 py-1 text-sm border rounded-full hover:bg-accent/10 hover:border-accent transition-colors"
                     >
-                      + {tag}
+                      + {t.nome}
                     </button>
                   ))}
                 </div>

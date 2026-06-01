@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils'
 import { createPessoa } from '@/app/actions/pessoas.actions'
 import { getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
 import { getCurrentUser } from '@/app/actions/auth.actions'
+import { getProjetosParaFiltro } from '@/app/actions/projetos.actions'
+import { getTagsParaFiltro } from '@/app/actions/tags.actions'
 
 interface Project {
   id: string
@@ -28,9 +30,6 @@ interface Project {
   dataInicio: Date | undefined
   dataFim: Date | undefined
 }
-
-const MOCK_PROJECTS = ['Projeto Alpha', 'Projeto Beta', 'Sistema Core', 'App Mobile']
-const MOCK_TAGS = ['Frontend', 'Backend', 'Full Stack', 'Leadership', 'Mentor', 'React', 'Node.js', 'Python', 'DevOps', 'Mobile']
 
 export default function NovasPessoasPage() {
   const router = useRouter()
@@ -40,6 +39,8 @@ export default function NovasPessoasPage() {
   // Dados dinâmicos
   const [times, setTimes] = useState<Array<{ id: string; nome: string }>>([])
   const [cargos, setCargos] = useState<Array<{ id: string; nome: string }>>([])
+  const [projetos, setProjetos] = useState<Array<{ id: string; nome: string }>>([])
+  const [tags, setTags] = useState<Array<{ id: string; nome: string }>>([])
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [activeTab, setActiveTab] = useState('pessoais')
@@ -70,9 +71,11 @@ export default function NovasPessoasPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [timesResult, cargosResult, usuario] = await Promise.all([
+        const [timesResult, cargosResult, projetosResult, tagsResult, usuario] = await Promise.all([
           getTimesParaFiltro(),
           getCargosParaFiltro(),
+          getProjetosParaFiltro(),
+          getTagsParaFiltro(),
           getCurrentUser(),
         ])
 
@@ -82,6 +85,14 @@ export default function NovasPessoasPage() {
 
         if (cargosResult.success && cargosResult.data) {
           setCargos(cargosResult.data)
+        }
+
+        if (projetosResult.success && projetosResult.data) {
+          setProjetos(projetosResult.data)
+        }
+
+        if (tagsResult.success && tagsResult.data) {
+          setTags(tagsResult.data)
         }
 
         // Apenas gestores podem informar remuneração (SENSÍVEL - LGPD)
@@ -642,8 +653,8 @@ export default function NovasPessoasPage() {
                             <SelectValue placeholder="Selecione o projeto" />
                           </SelectTrigger>
                           <SelectContent>
-                            {MOCK_PROJECTS.map(p => (
-                              <SelectItem key={p} value={p}>{p}</SelectItem>
+                            {projetos.map(p => (
+                              <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -733,13 +744,13 @@ export default function NovasPessoasPage() {
               <div>
                 <Label>Selecionar tags existentes</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {MOCK_TAGS.filter(tag => !selectedTags.includes(tag)).map(tag => (
+                  {tags.filter(t => !selectedTags.includes(t.nome)).map(t => (
                     <button
-                      key={tag}
-                      onClick={() => handleAddTag(tag)}
+                      key={t.id}
+                      onClick={() => handleAddTag(t.nome)}
                       className="px-3 py-1 text-sm border rounded-full hover:bg-accent/10 hover:border-accent transition-colors"
                     >
-                      + {tag}
+                      + {t.nome}
                     </button>
                   ))}
                 </div>

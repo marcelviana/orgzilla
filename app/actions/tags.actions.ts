@@ -149,6 +149,29 @@ export async function getPessoasComTag(tagId: string): Promise<ActionResult<Arra
   }
 }
 
+/**
+ * Busca tags para seleção (dropdown)
+ */
+export async function getTagsParaFiltro(): Promise<ActionResult<Array<{ id: string; nome: string }>>> {
+  try {
+    const supabase = await createClient()
+    const tagRepo = new TagRepository(supabase)
+
+    const tags = await tagRepo.findAll({ orderBy: 'nome' })
+
+    return {
+      success: true,
+      data: tags.map(t => ({ id: t.id, nome: t.nome })),
+    }
+  } catch (error) {
+    const appError = handleError(error, 'database')
+    return {
+      success: false,
+      error: appError.message,
+    }
+  }
+}
+
 // =============================================================================
 // MUTATIONS
 // =============================================================================
