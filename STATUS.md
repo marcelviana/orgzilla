@@ -34,11 +34,11 @@ Checklist de retomada do ambiente:
 - [x] `orgzilla_schema.sql` rodado (RLS ativo em todas as tabelas)
 - [x] `orgzilla_seed.sql` rodado (dados de teste carregados)
 - [x] Cadeia Action → Service → Repository de pessoas/dashboard/times **validada em código**: filtro de hierarquia do gestor passou a aplicar de fato (BUG 2), hierarquia unificada numa fonte única com proteção contra ciclos (BUG 3), salário sem referências órfãs a `pessoa` (BUG 1); `npm run build` passa. (Re-teste de comportamento ponta-a-ponta depende de conectar o app ao banco — itens abaixo + §6.)
-- [ ] `.env.local` atualizado com URL + chaves do novo projeto
-- [ ] Mesmas variáveis configuradas na **Vercel**
+- [x] `.env.local` atualizado com URL + chaves do novo projeto
+- [x] Mesmas variáveis configuradas na **Vercel**
 - [ ] Google OAuth reconfigurado (novo redirect URI do projeto)
-- [ ] Usuários admin/gestor/visualizador criados no painel e vinculados em `usuario`
-- [ ] Teste de fumaça de RLS executado (§6)
+- [x] Usuários admin/gestor/visualizador criados no painel e vinculados em `usuario`
+- [x] Teste de fumaça de RLS executado (§6)
 
 ⚠️ **Todos os dados atuais são de teste** (gerados pelo seed). Não há dado real/produção. Os usuários de login (admin/gestor/visualizador) são criados manualmente no painel de Authentication e vinculados na tabela `usuario` (instruções no fim do seed).
 
