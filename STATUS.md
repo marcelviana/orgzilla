@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (três débitos arquiteturais de §3.3 resolvidos: lógica LGPD extraída para PessoaService, buildTimeHierarchy eliminada em favor de TimeService, catch de dashboard padronizados com handleError)
+**Última atualização:** 1 de junho de 2026 (bug do filtro sentinela `'todos'` em `PessoaRepository.findComFiltrosPaginados` corrigido; teste atualizado para verificar comportamento correto; 98 testes passando)
 
 ---
 
@@ -96,7 +96,7 @@ Checklist de retomada do ambiente:
 
 **Bug resolvido:** `app/actions/relatorios.actions.ts` que acessava `supabase.from('pessoa_remuneracao')` diretamente foi migrado para `PessoaService.buscarAgregadosSalariais(usuario, timeIds)`. O teste `não há referência a supabase.from("pessoa_remuneracao") fora de lib/repositories` agora passa. Novos métodos introduzidos: `PessoaService.buscarAgregadosSalariais` (aplica guarda de perfil gestor + filtro de hierarquia) e `PessoaRemuneracaoRepository.findComCargoETimes` (query com join cargo/nível; tipo `RemuneracaoComCargo` definido no mesmo arquivo).
 
-**Bug documentado (aguarda correção):** `PessoaRepository.findComFiltrosPaginados` não filtra o valor sentinela `'todos'` para `filters.timeId` — passa `.eq('time_id', 'todos')` ao banco quando deveria ignorar o filtro. O teste `(bug) aplica filtro mesmo quando timeId é "todos"` em `repositories.test.ts` documenta o comportamento atual. Correção: adicionar `&& filters.timeId !== 'todos'` na condição da linha 352 de `lib/repositories/pessoa.repository.ts`.
+**Bug resolvido:** `PessoaRepository.findComFiltrosPaginados` passava `.eq('time_id', 'todos')` ao banco quando `filters.timeId` era o sentinela `'todos'`, em vez de ignorar o filtro. Corrigido adicionando `&& filters.timeId !== 'todos'` na condição da linha 352 de `lib/repositories/pessoa.repository.ts`. Teste em `repositories.test.ts` atualizado para verificar que o filtro `.eq` **não** é aplicado quando `timeId` é `'todos'`.
 
 ### 3.3 Débito arquitetural — padrões de acesso a dados misturados
 A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parcialmente aplicada**:
@@ -162,13 +162,13 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 1. ✅ **Terminar a migração para repositories** em `pessoas`/`dashboard`/`times` — concluído. Todas as queries cruas migradas para métodos de repository dedicados; `getTimesComEstatisticas` usa `TimeService.buscarComPermissao`.
 2. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
 3. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
-4. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 87 testes passando; Vitest 4.1.8 configurado.
+4. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 98 testes passando; Vitest 4.1.8 configurado.
 5. ✅ **Débitos arquiteturais de §3.3 resolvidos**: lógica LGPD extraída para `PessoaService.enriquecerListaComRemuneracao`; `buildTimeHierarchy` eliminada em favor de `TimeService.buscarHierarquiaComEstatisticas`; `catch` de dashboard padronizados com `handleError`.
 
 ### 🟩 Mais adiante
-5. Completar Phase 3 (busca avançada, exportação, viewer de auditoria, upload de avatar).
-6. Otimizar queries N+1: `findAllWithPessoaCount`, `getTimesComEstatisticas`.
-7. Endurecimento para produção: rate limiting, restrição de domínio no OAuth, revalidação de cache.
+6. Completar Phase 3 (busca avançada, exportação, viewer de auditoria, upload de avatar).
+7. Otimizar queries N+1: `findAllWithPessoaCount`, `getTimesComEstatisticas`.
+8. Endurecimento para produção: rate limiting, restrição de domínio no OAuth, revalidação de cache.
 
 ---
 

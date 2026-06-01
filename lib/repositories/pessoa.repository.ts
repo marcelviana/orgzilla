@@ -349,7 +349,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
         `nome.ilike.%${filters.search}%,email_corporativo.ilike.%${filters.search}%,email_pessoal.ilike.%${filters.search}%`
       )
     }
-    if (filters.timeId) {
+    if (filters.timeId && filters.timeId !== 'todos') {
       query = query.eq('time_id', filters.timeId)
     }
     if (filters.cargoId) {

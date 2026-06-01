@@ -123,9 +123,7 @@ describe('PessoaRepository', () => {
       expect(orFn).toHaveBeenCalledWith(expect.stringContaining('maria'))
     })
 
-    // O Repository aplica qualquer valor truthy como filtro — normalização de
-    // sentinelas de UI (ex: 'todos' → undefined) é responsabilidade do chamador (Action).
-    it('aplica filtro para qualquer timeId truthy — normalização de sentinelas é responsabilidade do chamador', async () => {
+    it('NÃO aplica filtro .eq quando timeId é o sentinela "todos"', async () => {
       const supabase = makeSupabase({ data: [], count: 0 })
       const builder = supabase._builder
       const repo = new PessoaRepository(supabase as never)
@@ -137,8 +135,7 @@ describe('PessoaRepository', () => {
 
       const eqCalls = (builder.eq as ReturnType<typeof vi.fn>).mock.calls
       const timeIdEq = eqCalls.find((c: unknown[]) => c[0] === 'time_id')
-      expect(timeIdEq).toBeDefined()
-      expect(timeIdEq![1]).toBe('todos')
+      expect(timeIdEq).toBeUndefined()
     })
 
     it('aplica filtro timeId quando é um ID real', async () => {
