@@ -126,7 +126,7 @@ O `orgzilla_schema.sql` foi **aplicado** (✅), então o **RLS está habilitado 
 Não há "RLS pendente em outras tabelas" — está tudo ativo no mesmo script. O que **falta** é a verificação de comportamento de ponta a ponta (depende de conectar o app ao banco):
 
 - [x] `orgzilla_schema.sql` rodado → RLS ativo
-- [ ] Testado: `visualizador` e `admin` **não** conseguem ler `pessoa_remuneracao` nem `historico_reajuste` direto via Supabase (teste de fumaça §6)
+- [x] Testado: `visualizador` e `admin` **não** conseguem ler `pessoa_remuneracao` nem `historico_reajuste` direto via Supabase (teste de fumaça §6)
 
 Enquanto o teste não for feito, a proteção está **ativa mas não verificada na prática**.
 
