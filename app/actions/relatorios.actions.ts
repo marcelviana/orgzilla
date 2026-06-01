@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getUsuarioLogado } from '@/lib/middleware'
 import { PermissaoService } from '@/lib/services'
+import { PessoaService } from '@/lib/services/pessoa.service'
 
 type ActionResult<T> = {
   success: boolean
@@ -443,28 +444,8 @@ export async function getDadosFinanceiros(): Promise<ActionResult<DadosFinanceir
       return { success: true, data: { salariosPorNivel: [], mediaSalarioPorTime: [], totalFolha: 0 } }
     }
 
-    // Busca remuneração das pessoas da hierarquia do gestor (RLS também protege no banco)
-    const { data: remuneracoes, error } = await supabase
-      .from('pessoa_remuneracao')
-      .select(`
-        salario_atual,
-        pessoa:pessoa_id(
-          time_id,
-          cargo:cargo_id(
-            nivel:nivel_id(nome),
-            nome
-          )
-        )
-      `)
-      .not('salario_atual', 'is', null)
-
-    if (error) throw error
-
-    // Filtra pela hierarquia do gestor (defesa em profundidade — RLS já garante no banco)
-    const remFiltered = (remuneracoes ?? []).filter((r) => {
-      const timeId = (r.pessoa as { time_id?: string } | null)?.time_id
-      return timeId && timeIds.includes(timeId)
-    })
+    const pessoaService = new PessoaService(supabase)
+    const remFiltered = await pessoaService.buscarAgregadosSalariais(usuario, timeIds)
 
     // Agrupa por nível
     const salariosPorNivelMap: Record<string, number[]> = {}
@@ -473,8 +454,8 @@ export async function getDadosFinanceiros(): Promise<ActionResult<DadosFinanceir
 
     for (const r of remFiltered) {
       const salario = r.salario_atual as number
-      const nivel = (r.pessoa as { cargo?: { nivel?: { nome?: string } } } | null)?.cargo?.nivel?.nome
-      const timeId = (r.pessoa as { time_id?: string } | null)?.time_id
+      const nivel = r.pessoa?.cargo?.nivel?.nome
+      const timeId = r.pessoa?.time_id
 
       if (nivel && salario) {
         salariosPorNivelMap[nivel] = salariosPorNivelMap[nivel] ?? []

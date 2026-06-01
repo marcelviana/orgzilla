@@ -1,0 +1,2 @@
+- [Configuração do Vitest e armadilhas de mock](project_vitest_setup.md) — Vitest 4.1.8, padrão de mock de classes com `function` constructor, import dinâmico para Services
+- [Bug: relatorios.actions.ts acessa pessoa_remuneracao diretamente](project_bug_relatorios_remuneracao.md) — violação arquitetural confirmada por teste (linha 448), aguarda correção

@@ -6,6 +6,17 @@ import type {
 } from '@/lib/types'
 import { RepositoryError } from './base.repository'
 
+export interface RemuneracaoComCargo {
+  salario_atual: number | null
+  pessoa: {
+    time_id: string | null
+    cargo: {
+      nivel: { nome: string } | null
+      nome: string
+    } | null
+  } | null
+}
+
 /**
  * PessoaRemuneracao Repository
  *
@@ -79,6 +90,33 @@ export class PessoaRemuneracaoRepository {
     }
 
     return data
+  }
+
+  /**
+   * Busca remunerações com cargo e time para agregações (relatórios financeiros).
+   * Retorna apenas pessoas com salário não-nulo; sem filtro de hierarquia — o
+   * chamador (PessoaService) é responsável por restringir aos timeIds permitidos.
+   */
+  async findComCargoETimes(): Promise<RemuneracaoComCargo[]> {
+    const { data, error } = await this.supabase
+      .from(this.tableName)
+      .select(`
+        salario_atual,
+        pessoa:pessoa_id(
+          time_id,
+          cargo:cargo_id(
+            nivel:nivel_id(nome),
+            nome
+          )
+        )
+      `)
+      .not('salario_atual', 'is', null)
+
+    if (error) {
+      throw new RepositoryError('Erro ao buscar remunerações para agregação', error)
+    }
+
+    return (data ?? []) as RemuneracaoComCargo[]
   }
 
   /**

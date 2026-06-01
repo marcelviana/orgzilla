@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (migração mock → real: relatorios — dados reais com proteção LGPD)
+**Última atualização:** 1 de junho de 2026 (setup Vitest + testes iniciais de permissão, hierarquia e separação de remuneração)
 **Resumo de uma linha:** Banco recriado do zero (schema + seed já aplicados, RLS ativo); falta conectar o app ao novo banco (env/OAuth/usuários) e validar o RLS por teste. Migração mock → real concluída em todas as páginas.
 
 ---
@@ -87,7 +87,15 @@ Sequência completa de retomada: recriar projeto no Supabase → atualizar `.env
 > ⚠️ **Atenção LGPD ao migrar:** qualquer seção que exiba dados de pessoa deve garantir que salário passe pelo `PessoaService`/`PermissaoService` — nunca `supabase.from('pessoa_remuneracao')` direto na Action ou UI.
 
 ### 3.2 Testes
-**Cobertura zero.** Sem script de teste no `package.json`, sem framework instalado, sem arquivos de teste.
+**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 45 testes em 3 arquivos (`__tests__/`), todos passando exceto 1 que revelou um bug arquitetural (ver abaixo).
+
+| Arquivo | Testes | Estado |
+|---|---|---|
+| `__tests__/permissao.service.test.ts` | 22 | ✅ passando |
+| `__tests__/time.service.test.ts` | 11 | ✅ passando |
+| `__tests__/remuneracao.separacao.test.ts` | 12 | 11 ✅ / 1 ❌ bug confirmado |
+
+**BUG DETECTADO:** `app/actions/relatorios.actions.ts:448` acessa `supabase.from('pessoa_remuneracao')` diretamente, violando a regra arquitetural (deve passar pelo `PessoaRemuneracaoRepository`). Teste `não há referência a supabase.from("pessoa_remuneracao") fora de lib/repositories` falha intencionalmente até a Action ser migrada para usar o repositório/service.
 
 ### 3.3 Débito arquitetural — padrões de acesso a dados misturados
 A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parcialmente aplicada**:

@@ -9,6 +9,7 @@ import type {
   StatusPessoa,
 } from '@/lib/types'
 import { PessoaRepository, PessoaRemuneracaoRepository } from '@/lib/repositories'
+import type { RemuneracaoComCargo } from '@/lib/repositories/pessoa-remuneracao.repository'
 import type { PessoaFilters } from '@/lib/repositories/pessoa.repository'
 import { AuditoriaService } from './auditoria.service'
 import { HistoricoService } from './historico.service'
@@ -401,6 +402,22 @@ export class PessoaService {
     }
 
     return await this.remuneracaoRepo.findByPessoaId(pessoaId)
+  }
+
+  /**
+   * Busca remunerações com cargo/time para agregações de relatórios financeiros.
+   * Apenas gestores têm acesso; retorna somente registros dentro da hierarquia
+   * do gestor (defesa em profundidade — RLS também protege no banco).
+   */
+  async buscarAgregadosSalariais(usuarioLogado: Usuario, timeIds: string[]): Promise<RemuneracaoComCargo[]> {
+    if (usuarioLogado.tipo_perfil !== 'gestor') return []
+    if (timeIds.length === 0) return []
+
+    const todos = await this.remuneracaoRepo.findComCargoETimes()
+    return todos.filter((r) => {
+      const timeId = r.pessoa?.time_id
+      return timeId && timeIds.includes(timeId)
+    })
   }
 
   /**
