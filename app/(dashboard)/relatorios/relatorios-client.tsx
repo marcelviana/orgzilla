@@ -153,7 +153,7 @@ export function RelatoriosClient({
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                           outerRadius={80}
                           dataKey="value"
                         >
@@ -190,7 +190,7 @@ export function RelatoriosClient({
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                           innerRadius={60}
                           outerRadius={80}
                           dataKey="value"
@@ -356,7 +356,7 @@ export function RelatoriosClient({
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis dataKey="team" stroke="#6b7280" />
                         <YAxis stroke="#6b7280" domain={[0, 100]} unit="%" />
-                        <Tooltip formatter={(v: number) => `${v}%`} />
+                        <Tooltip formatter={(v) => `${v}%`} />
                         <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
                           {ocupacaoData.map((entry, index) => (
                             <Cell key={`cell-ocup-${index}`} fill={entry.color} />
@@ -509,7 +509,7 @@ export function RelatoriosClient({
                           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                           <XAxis type="number" stroke="#6b7280" tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
                           <YAxis dataKey="team" type="category" stroke="#6b7280" width={110} />
-                          <Tooltip formatter={(v: number) => formatBRL(v)} />
+                          <Tooltip formatter={(v) => formatBRL(Number(v))} />
                           <Bar dataKey="avg" fill="#FF7A00" radius={[0, 4, 4, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
@@ -545,7 +545,7 @@ export function RelatoriosClient({
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                           innerRadius={60}
                           outerRadius={80}
                           dataKey="value"

@@ -89,7 +89,7 @@ export function FilterPanel({
                 </Label>
                 {filter.type === "select" && (
                   <Select
-                    value={values[filter.id] || ""}
+                    value={(values[filter.id] as string) || ""}
                     onValueChange={(value) => handleFilterChange(filter.id, value)}
                   >
                     <SelectTrigger id={filter.id}>

@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (erros TS G4 corrigidos: `findAll()` com argumentos inválidos migrado para `findMany()` em 4 actions — cargos, tags, times, trilhas; ~52 erros TS restantes, todos em páginas de configurações, organograma e pessoas.actions)
+**Última atualização:** 2 de junho de 2026 (erros TS G5/G6 corrigidos: componentes shadcn ausentes criados, casts de tipo e campos `percent??0` corrigidos em FilterPanel, dashboard-content e relatorios-client; ~41 erros TS restantes)
 
 ---
 
@@ -132,7 +132,13 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
   - `lib/services/auditoria.service.ts`: (a) cast explícito `Json | null` aplicado aos campos `valor_anterior`/`valor_novo` do tipo Supabase (TS2345 de tipo literal vs. union); (b) mapeamento camelCase→snake_case corrigido no método `buscarComFiltros` (chaves de filtro não batiam com as colunas do banco).
 - **Corrigidos — grupo G4:**
   - `app/actions/cargos.actions.ts`, `app/actions/tags.actions.ts`, `app/actions/times.actions.ts`, `app/actions/trilhas.actions.ts`: chamadas `findAll()` com argumentos inválidos (filters/orderBy/limit) migradas para `findMany()`, que aceita esses parâmetros — elimina erros TS2554 (argumentos inesperados) nesses 4 arquivos.
-- **Débito restante:** `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314`); erros em `configuracoes/cargos/page.tsx` (propriedade `trilha` em state), `configuracoes/niveis/page.tsx` (possibly null/undefined), `configuracoes/usuarios/page.tsx` (propriedade `error`/`avatar` ausentes), `configuracoes/configuracoes-client.tsx` (prop `readOnly` em Switch), `organograma/page.tsx` (TS2345 em `setNodes`), e `__tests__/pessoa.service.enriquecer.test.ts` (TS2339 `salario_atual` em `never`). Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
+- **Corrigidos — grupo G5:**
+  - `components/ui/tooltip.tsx` e `components/ui/skeleton.tsx` criados (componentes shadcn ausentes que causavam TS2307 — módulo não encontrado).
+  - `components/shared/FilterPanel.tsx:92`: cast de tipo corrigido (TS2345).
+- **Corrigidos — grupo G6:**
+  - `components/dashboard/dashboard-content.tsx:168`: campo `nome` renomeado para `name`; `percent ?? 0` adicionado onde o valor era possivelmente `undefined`.
+  - `app/(dashboard)/relatorios/relatorios-client.tsx`: `percent ?? 0` aplicado em 3 locais; tipo explícito adicionado em 2 formatters anônimos — elimina erros TS2345/TS7006 nesses pontos.
+- **Débito restante (~41 erros):** `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314`); erros em `configuracoes/cargos/page.tsx` (propriedade `trilha` em state), `configuracoes/niveis/page.tsx` (possibly null/undefined), `configuracoes/usuarios/page.tsx` (propriedade `error`/`avatar` ausentes), `configuracoes/configuracoes-client.tsx` (prop `readOnly` em Switch), `organograma/page.tsx` (TS2345 em `setNodes`), e `__tests__/pessoa.service.enriquecer.test.ts` (TS2339 `salario_atual` em `never`). Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
 
 ### 3.6 Padronização de toast/erros incompleta
 - A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `pessoas/*`). `perfil` já migrado ✅. Migração pendente (não-bloqueante); seguir a convenção em código novo.
