@@ -189,41 +189,49 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 
 ## 5. Roadmap priorizado
 
-### 🟨 Em seguida — consolidar a arquitetura
-1. ✅ **Terminar a migração para repositories** em `pessoas`/`dashboard`/`times` — concluído. Todas as queries cruas migradas para métodos de repository dedicados; `getTimesComEstatisticas` usa `TimeService.buscarComPermissao`.
-2. ✅ **Recursão de hierarquia unificada** (`PermissaoService.coletarSubarvore`, com proteção contra ciclos). Eliminadas as cópias anteriores.
-3. ✅ **Auto-criação de usuário unificada** em `lib/middleware/auth.middleware.ts`.
-4. ✅ **Testes introduzidos** para lógica crítica: hierarquia (`time.service`), permissões por perfil (`permissao.service`) e separação de salário (`remuneracao.separacao`). 98 testes passando; Vitest 4.1.8 configurado.
-5. ✅ **Débitos arquiteturais de §3.3 resolvidos**: lógica LGPD extraída para `PessoaService.enriquecerListaComRemuneracao`; `buildTimeHierarchy` eliminada em favor de `TimeService.buscarHierarquiaComEstatisticas`; `catch` de dashboard padronizados com `handleError`.
+### ✅ Concluído (anteriormente 🟨)
+1. ✅ Migração para repositories: `pessoas`/`dashboard`/`times` — queries cruas eliminadas.
+2. ✅ Recursão de hierarquia unificada em `PermissaoService.coletarSubarvore` (proteção a ciclos).
+3. ✅ Auto-criação de usuário unificada em `auth.middleware.ts`.
+4. ✅ Testes introduzidos — 98 testes passando (Vitest 4.1.8).
+5. ✅ Débitos §3.3 resolvidos: LGPD extraída para `PessoaService.enriquecerListaComRemuneracao`;
+   `buildTimeHierarchy` eliminada; `catch` de dashboard padronizados com `handleError`.
+6. ✅ TypeScript limpo: 0 erros em `tsc --noEmit`; `ignoreBuildErrors` removido de `next.config.mjs`.
 
-### 🟩 Mais adiante
-6. Completar Phase 3 (busca avançada, exportação, viewer de auditoria, upload de avatar).
-7. Otimizar queries N+1: `findAllWithPessoaCount`, `getTimesComEstatisticas`.
-8. Endurecimento para produção: rate limiting, restrição de domínio no OAuth, revalidação de cache.
+### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
+A. **Fixar toast misto em `projetos/page.tsx`** — substitui `sonner`+`useToast` por
+   `handleError`+`toast-config`. Trivial; remove inconsistência visível ao usuário.
+B. **Fixar pins `"latest"` nas deps** — rodar `pnpm outdated`, fixar versões atuais em
+   `package.json` (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`,
+   `react-day-picker`). Trivial; elimina risco de quebra silenciosa.
+C. **Migrar organograma de mock para real** — criar `getOrganograma()` chamando
+   `TimeService`; trocar `hierarchyData` hardcoded pelo resultado. Simples;
+   elimina a última página mock do projeto.
 
----
+### 🟨 Em seguida — padronização e segurança (sem decisão de produto)
+D. **Concluir migração de toasts restante** (§3.6) — `configuracoes/*`, `times/*`,
+   `pessoas/*` ainda usam `useToast`/`sonner` direto. Não-bloqueante; seguir a
+   convenção ao tocar cada arquivo.
+E. **Restringir domínio no Google OAuth** (§4.4) — puramente técnico; qualquer conta
+   Google hoje vira `visualizador` com leitura de todas as pessoas. Requer configuração
+   no Supabase Auth + variável de ambiente.
+F. **Otimizar queries N+1** — `findAllWithPessoaCount`, `getTimesComEstatisticas`.
+   Perfilar antes de otimizar; adiar até sentir lentidão real.
 
-## 6. Teste de fumaça de segurança (rodar após recriar o banco)
-Logado como **visualizador** (e depois como **admin**), tentar via client Supabase:
-```
-supabase.from('pessoa_remuneracao').select('*')
-supabase.from('historico_reajuste').select('*')
-```
-Ambos devem retornar **vazio / negado**. Só o **gestor** deve obter dados. Se visualizador ou admin obtiverem linhas, o RLS não está ativo — rodar/conferir o `orgzilla_schema.sql`.
+### 🟩 Mais adiante — Phase 3 (requer decisões de produto — ver abaixo)
+G. **Exportação** — formato, entidades e regras de acesso a definir.
+H. **Viewer de auditoria** — perfis de acesso, filtros mínimos e retenção a definir.
+I. **Upload de avatar** — bucket, tamanho máximo, campo no schema a definir.
+J. **Busca avançada** — delta em relação à busca atual já real a definir.
+K. **Endurecimento para produção** — rate limiting, revalidação de cache (após OAuth resolvido).
 
----
+### Decisões de produto pendentes antes da Phase 3
+> Responder estas perguntas desbloqueia G–J. Sem resposta, os itens ficam em 🟩.
 
-## 7. Artefatos de recriação (fora do repo, gerados nesta retomada)
-- `orgzilla_schema.sql` — schema + RLS (recria as 17 tabelas com RLS por perfil).
-- `orgzilla_seed.sql` — dados de teste.
-- `PROMPT-claude-code.md` — prompt que aplicou a separação de remuneração no código.
-
-> Considere versionar estes arquivos no repo (ex.: pasta `db/`) para a recriação ser reproduzível.
-
----
-
-## 8. Convenções deste arquivo
-- ✅ funcional / ❌ ausente ou falso / ⚠️ parcial ou a revisar / ☐ a verificar / 🔴 risco de segurança
-- 🟥 agora / 🟨 em seguida / 🟩 mais adiante
-- Distinga **código pronto** (verificável lendo o repo) de **banco ativo/verificado** (depende de rodar SQL e testar).
-- Atualize a data do topo e marque itens concluídos sempre que mexer no projeto.
+1. **Exportação:** formatos (CSV / Excel / PDF), entidades exportáveis, quem pode exportar
+   e se o gestor exporta apenas da sua hierarquia.
+2. **Auditoria:** quem acessa `historico_mudanca` (admin, gestor, ambos?), filtros
+   mínimos, política de retenção.
+3. **Avatar:** bucket público ou privado, tamanho/formatos, campo de destino no schema
+   (`pessoa.foto_url` — existe? precisa de migration?).
+4. **Busca avançada:** o que está faltando em relação à busca atual.
