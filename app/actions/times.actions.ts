@@ -593,3 +593,7 @@ export async function softDeleteTime(id: string): Promise<ActionResult> {
   }
 }
 
+
+export async function getOrganograma(): Promise<ActionResult<TimeHierarquico[]>> {
+  return getTimesHierarquia()
+}

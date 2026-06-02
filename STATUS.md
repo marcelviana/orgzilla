@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (toast misto em `projetos/page.tsx` corrigido: `sonner`+`useToast` substituídos por `handleError`+`toast-config`; build e 98 testes passando)
+**Última atualização:** 2 de junho de 2026 (organograma migrado de mock hardcoded para dados reais via `getOrganograma()`; build e 98 testes passando)
 
 ---
 
@@ -78,7 +78,7 @@ Checklist de retomada do ambiente:
 | Dashboard | ✅ Dados reais |
 | `pessoas` (lista) | ✅ Dados reais |
 | `times` | ✅ Dados reais |
-| `organograma` | 🔴 **Mock hardcoded** — `hierarchyData` é uma constante estática inline; a página não importa nenhuma Action ou Service. Migrar: criar `getOrganograma()` que chame `TimeService` e renderizar o resultado. |
+| `organograma` | ✅ Dados reais via `getOrganograma()` |
 
 > Rastros `console.log('[v0]...')` confirmam origem v0.dev. Ao migrar seções com mock de projetos/tags, passar obrigatoriamente pelas actions correspondentes — nunca `supabase.from()` direto na UI.
 
@@ -198,11 +198,9 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 6. ✅ TypeScript limpo: 0 erros em `tsc --noEmit`; `ignoreBuildErrors` removido de `next.config.mjs`.
 7. ✅ Concluído em 2 jun 2026 — pins `"latest"` substituídos por versões fixas (`^`) em 19 deps do `package.json`; lockfile consistente (`pnpm install --frozen-lockfile` passa); build e 98 testes passando.
 8. ✅ Concluído em 2 jun 2026 — toast misto em `projetos/page.tsx` corrigido: `sonner`+`useToast` substituídos por `handleError`+`toast-config`; build e 98 testes passando.
+9. ✅ Concluído em 2 jun 2026 — organograma migrado de mock hardcoded (`hierarchyData` estático) para dados reais via `getOrganograma()` chamando `TimeService`; elimina a última página mock do projeto.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
-C. **Migrar organograma de mock para real** — criar `getOrganograma()` chamando
-   `TimeService`; trocar `hierarchyData` hardcoded pelo resultado. Simples;
-   elimina a última página mock do projeto.
 
 ### 🟨 Em seguida — padronização e segurança (sem decisão de produto)
 D. **Concluir migração de toasts restante** (§3.6) — `configuracoes/*`, `times/*`,
