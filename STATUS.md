@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (erros TS G5/G6 corrigidos: componentes shadcn ausentes criados, casts de tipo e campos `percent??0` corrigidos em FilterPanel, dashboard-content e relatorios-client; ~41 erros TS restantes)
+**Última atualização:** 2 de junho de 2026 (erros TS G7 corrigidos: Switch `readOnly`→`disabled` em configuracoes-client, reset de formData `trilha`→`trilha_id`/`nivel`→`nivel_id` e null guards em cargos/page, `nivelAnteriorId`→`nivel_anterior_id` e null guards em niveis/page, `boolean|null`→`boolean` em tags/page, ActionResult narrowing + remoção de `user.avatar` + cast `TipoPerfil` em usuarios/page; ~16 erros TS restantes, todos em `times/novo/page.tsx` e `base.repository.ts`)
 
 ---
 
@@ -138,7 +138,13 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 - **Corrigidos — grupo G6:**
   - `components/dashboard/dashboard-content.tsx:168`: campo `nome` renomeado para `name`; `percent ?? 0` adicionado onde o valor era possivelmente `undefined`.
   - `app/(dashboard)/relatorios/relatorios-client.tsx`: `percent ?? 0` aplicado em 3 locais; tipo explícito adicionado em 2 formatters anônimos — elimina erros TS2345/TS7006 nesses pontos.
-- **Débito restante (~41 erros):** `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314`); erros em `configuracoes/cargos/page.tsx` (propriedade `trilha` em state), `configuracoes/niveis/page.tsx` (possibly null/undefined), `configuracoes/usuarios/page.tsx` (propriedade `error`/`avatar` ausentes), `configuracoes/configuracoes-client.tsx` (prop `readOnly` em Switch), `organograma/page.tsx` (TS2345 em `setNodes`), e `__tests__/pessoa.service.enriquecer.test.ts` (TS2339 `salario_atual` em `never`). Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
+- **Corrigidos — grupo G7:**
+  - `configuracoes/configuracoes-client.tsx`: prop `readOnly` trocada por `disabled` no componente `Switch` (TS2322 — propriedade não existe).
+  - `configuracoes/cargos/page.tsx`: estado inicial e reset do formulário corrigidos (`trilha`→`trilha_id`, `nivel`→`nivel_id`); null guards adicionados em `selectedPosition` (TS2322/TS18048).
+  - `configuracoes/niveis/page.tsx`: campo do estado corrigido (`nivelAnteriorId`→`nivel_anterior_id`); null guards adicionados em `selectedLevel` — 17 erros eliminados (TS2322/TS18048).
+  - `configuracoes/tags/page.tsx`: tipo `boolean|null` estreitado para `boolean` no prop `disabled` (TS2322).
+  - `configuracoes/usuarios/page.tsx`: narrowing de `ActionResult` corrigido, remoção de referência a `user.avatar` (campo inexistente) e cast explícito `TipoPerfil` — elimina TS2339/TS2352.
+- **Débito restante (~16 erros):** concentrados em `times/novo/page.tsx` e `lib/repositories/base.repository.ts` — fora do escopo do G7. Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
 
 ### 3.6 Padronização de toast/erros incompleta
 - A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `pessoas/*`). `perfil` já migrado ✅. Migração pendente (não-bloqueante); seguir a convenção em código novo.

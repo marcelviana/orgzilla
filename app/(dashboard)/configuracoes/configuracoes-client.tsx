@@ -487,7 +487,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                             <Badge variant="secondary" className="text-white">{nivel.cargos} cargos</Badge>
                           </td>
                           <td className="py-3">
-                            <Switch checked={nivel.ativo} readOnly />
+                            <Switch checked={nivel.ativo} disabled />
                           </td>
                           <td className="py-3">
                             <Button
@@ -582,7 +582,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                             <Badge variant="secondary" className="text-white">{trilha.pessoas}</Badge>
                           </td>
                           <td className="py-3">
-                            <Switch checked={trilha.ativo} readOnly />
+                            <Switch checked={trilha.ativo} disabled />
                           </td>
                           <td className="py-3">
                             <div className="flex gap-2">

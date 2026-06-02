@@ -262,8 +262,8 @@ export default function NiveisPage() {
     let current = levels.find((l) => l.id === levelId)
     while (current) {
       chain.unshift(current.nome)
-      if (!current.nivelAnteriorId) break
-      current = levels.find((l) => l.id === current!.nivelAnteriorId)
+      if (!current.nivel_anterior_id) break
+      current = levels.find((l) => l.id === current!.nivel_anterior_id)
     }
     return chain
   }
@@ -826,7 +826,7 @@ export default function NiveisPage() {
                     ))}
                 </SelectContent>
               </Select>
-              {selectedLevel?.pessoas > 0 && (
+              {selectedLevel != null && (selectedLevel.pessoas ?? 0) > 0 && (
                 <div className="flex items-start gap-2 text-sm text-amber-600">
                   <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                   <span>
@@ -901,7 +901,7 @@ export default function NiveisPage() {
           <DialogHeader>
             <DialogTitle>Excluir Nível?</DialogTitle>
             <DialogDescription>
-              {selectedLevel?.pessoas > 0 || selectedLevel?.cargos > 0 ? (
+              {selectedLevel != null && ((selectedLevel.pessoas ?? 0) > 0 || (selectedLevel.cargos ?? 0) > 0) ? (
                 <div className="space-y-2">
                   <div className="flex items-start gap-2 text-red-600">
                     <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -934,8 +934,8 @@ export default function NiveisPage() {
               onClick={() => { void handleDeleteLevel() }}
               disabled={
                 isSubmitting ||
-                selectedLevel?.pessoas > 0 ||
-                selectedLevel?.cargos > 0
+                (selectedLevel != null && (selectedLevel.pessoas ?? 0) > 0) ||
+                (selectedLevel != null && (selectedLevel.cargos ?? 0) > 0)
               }
             >
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -1008,7 +1008,7 @@ export default function NiveisPage() {
             </div>
 
             {/* Positions */}
-            {selectedLevel?.cargos > 0 && (
+            {selectedLevel != null && (selectedLevel.cargos ?? 0) > 0 && (
               <div>
                 <h3 className="font-semibold mb-3">Cargos neste Nível</h3>
                 <div className="space-y-2">
@@ -1049,7 +1049,7 @@ export default function NiveisPage() {
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-2">
-                {selectedLevel?.pessoas > 0
+                {selectedLevel != null && (selectedLevel.pessoas ?? 0) > 0
                   ? `${selectedLevel.pessoas} pessoas neste nível`
                   : 'Nenhuma pessoa neste nível ainda'
                 }
@@ -1081,7 +1081,7 @@ export default function NiveisPage() {
           </div>
 
           <div className="p-6">
-            {selectedLevel?.cargos > 0 ? (
+            {selectedLevel != null && (selectedLevel.cargos ?? 0) > 0 ? (
               <div className="space-y-3">
                 {selectedLevel.cargosLista.map((cargo: string, idx: number) => (
                   <div

@@ -124,8 +124,8 @@ export default function UsuariosPage() {
 
       if (usuariosResult.success && usuariosResult.data) {
         setUsers(usuariosResult.data)
-      } else {
-        sonnerToast.error(String(usuariosResult.error ?? 'Erro ao carregar usuários'))
+      } else if (!usuariosResult.success) {
+        sonnerToast.error(usuariosResult.error)
       }
 
       if (pessoasResult.success && pessoasResult.data) {
@@ -629,7 +629,7 @@ export default function UsuariosPage() {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={(user.avatar as string | undefined) ?? "/placeholder.svg"} />
+                        <AvatarImage src="/placeholder.svg" />
                         <AvatarFallback>
                           {user.nome
                             .split(" ")
@@ -917,7 +917,7 @@ export default function UsuariosPage() {
                       value="admin"
                       checked={formData.tipoPerfil === "admin"}
                       onChange={(e) =>
-                        setFormData({ ...formData, tipoPerfil: e.target.value })
+                        setFormData({ ...formData, tipoPerfil: e.target.value as 'admin' | 'gestor' | 'visualizador' })
                       }
                       className="mt-1"
                     />
@@ -939,7 +939,7 @@ export default function UsuariosPage() {
                       value="gestor"
                       checked={formData.tipoPerfil === "gestor"}
                       onChange={(e) =>
-                        setFormData({ ...formData, tipoPerfil: e.target.value })
+                        setFormData({ ...formData, tipoPerfil: e.target.value as 'admin' | 'gestor' | 'visualizador' })
                       }
                       className="mt-1"
                     />
@@ -961,7 +961,7 @@ export default function UsuariosPage() {
                       value="visualizador"
                       checked={formData.tipoPerfil === "visualizador"}
                       onChange={(e) =>
-                        setFormData({ ...formData, tipoPerfil: e.target.value })
+                        setFormData({ ...formData, tipoPerfil: e.target.value as 'admin' | 'gestor' | 'visualizador' })
                       }
                       className="mt-1"
                     />

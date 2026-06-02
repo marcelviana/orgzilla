@@ -878,7 +878,7 @@ export default function TagsPage() {
             <Button
               variant="destructive"
               onClick={() => { void handleDelete() }}
-              disabled={selectedTag && selectedTag.pessoas > 0 && !removeFromAll}
+              disabled={selectedTag !== null && selectedTag.pessoas > 0 && !removeFromAll}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Excluir Tag

@@ -786,7 +786,7 @@ export default function CargosPage() {
             setCreateModalOpen(false)
             setEditModalOpen(false)
             setSelectedPosition(null)
-            setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
+            setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
           }
         }}>
           <DialogContent 
@@ -794,13 +794,13 @@ export default function CargosPage() {
               setCreateModalOpen(false)
               setEditModalOpen(false)
               setSelectedPosition(null)
-              setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
+              setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
             }}
             onEscapeKeyDown={() => {
               setCreateModalOpen(false)
               setEditModalOpen(false)
               setSelectedPosition(null)
-              setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
+              setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
             }}
           >
             <DialogHeader>
@@ -896,7 +896,7 @@ export default function CargosPage() {
                 onClick={() => {
                   setCreateModalOpen(false)
                   setEditModalOpen(false)
-                  setFormData({ nome: '', trilha: '', nivel: '', ativo: true })
+                  setFormData({ nome: '', trilha_id: '', nivel_id: '', ativo: true })
                 }}
               >
                 Cancelar
@@ -922,7 +922,7 @@ export default function CargosPage() {
             <DialogHeader>
               <DialogTitle>Excluir Cargo?</DialogTitle>
               <DialogDescription>
-                {selectedPosition?.pessoas > 0 ? (
+                {selectedPosition && (selectedPosition.pessoas ?? 0) > 0 ? (
                   <span className="text-destructive">
                     Não é possível excluir. {selectedPosition.pessoas}{' '}
                     {selectedPosition.pessoas === 1 ? 'pessoa possui' : 'pessoas possuem'} este cargo.
@@ -940,7 +940,7 @@ export default function CargosPage() {
               <Button
                 variant="destructive"
                 onClick={() => { void handleDeletePosition() }}
-                disabled={selectedPosition?.pessoas > 0}
+                disabled={selectedPosition != null && (selectedPosition.pessoas ?? 0) > 0}
               >
                 Excluir
               </Button>
