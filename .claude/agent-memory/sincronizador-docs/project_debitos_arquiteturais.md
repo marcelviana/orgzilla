@@ -19,6 +19,17 @@ Novos tipos exportados pela resolução de débitos: `TimeComEstatisticas` e `Ti
 
 ---
 
+## Grupos de correção de TypeScript (§3.5)
+
+- **G1:** tipos de enum não importados (`lib/types/index.ts`) + generics do BaseRepository. ✅
+- **G2/G3:** shapes de JOIN Supabase (pessoa.repository, time.repository) + cast Json/mapeamento snake_case em auditoria.service. ✅
+- **G4:** `findAll()` com argumentos inválidos → `findMany()` em 4 actions (cargos, tags, times, trilhas). ✅
+- **Restante (~52 erros):** páginas `configuracoes/cargos`, `configuracoes/niveis`, `configuracoes/usuarios`, `configuracoes/configuracoes-client`, `organograma`, `pessoas.actions.ts`, e `__tests__/pessoa.service.enriquecer.test.ts`.
+
+**How to apply:** ao registrar novo grupo de correção TS no STATUS.md, manter a lista de grupos G1/G2/G3/G4... e atualizar a contagem de erros restantes com resultado real de `tsc --noEmit | grep "error TS" | wc -l`.
+
+---
+
 ## Padrão de shape de JOIN Supabase (identificado em 2026-06-01, erros G2/G3)
 
 JOINs do Supabase SDK retornam shapes aninhados que **não batem** com os tipos TypeScript da aplicação:
