@@ -229,9 +229,11 @@ export async function getTimesParaFiltro(): Promise<ActionResult<Array<{ id: str
     const supabase = await createClient()
     const timeRepo = new TimeRepository(supabase)
 
-    const times = await timeRepo.findAll({
-      where: { ativo: true },
-      orderBy: 'nome'
+    const { data: times } = await timeRepo.findMany({
+      filters: { ativo: true },
+      orderBy: 'nome',
+      orderDirection: 'asc',
+      limit: 1000,
     })
 
     return {

@@ -159,9 +159,11 @@ export async function getTrilhasParaFiltro(): Promise<ActionResult<Array<{ id: s
     const supabase = await createClient()
     const trilhaRepo = new TrilhaCarreiraRepository(supabase)
 
-    const trilhas = await trilhaRepo.findAll({
-      where: { ativo: true },
-      orderBy: 'nome'
+    const { data: trilhas } = await trilhaRepo.findMany({
+      filters: { ativo: true },
+      orderBy: 'nome',
+      orderDirection: 'asc',
+      limit: 1000,
     })
 
     return {

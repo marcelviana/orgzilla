@@ -49,7 +49,7 @@ export async function getTagsComEstatisticas(): Promise<ActionResult<TagComEstat
     const tagRepo = new TagRepository(supabase)
 
     // Busca todas as tags ordenadas por nome
-    const tags = await tagRepo.findAll({ orderBy: 'nome' })
+    const { data: tags } = await tagRepo.findMany({ orderBy: 'nome', orderDirection: 'asc', limit: 1000 })
 
     // Para cada tag, busca contagem de pessoas
     const tagsComStats = await Promise.all(
@@ -157,7 +157,7 @@ export async function getTagsParaFiltro(): Promise<ActionResult<Array<{ id: stri
     const supabase = await createClient()
     const tagRepo = new TagRepository(supabase)
 
-    const tags = await tagRepo.findAll({ orderBy: 'nome' })
+    const { data: tags } = await tagRepo.findMany({ orderBy: 'nome', orderDirection: 'asc', limit: 1000 })
 
     return {
       success: true,

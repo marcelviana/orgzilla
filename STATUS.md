@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 1 de junho de 2026 (erros TS G2/G3 corrigidos: shape de JOIN em `pessoa.repository.ts` e `time.repository.ts`, cast Json e mapeamento camelCase→snake_case em `auditoria.service.ts`; build passa, 98 testes passando)
+**Última atualização:** 2 de junho de 2026 (erros TS G4 corrigidos: `findAll()` com argumentos inválidos migrado para `findMany()` em 4 actions — cargos, tags, times, trilhas; ~52 erros TS restantes, todos em páginas de configurações, organograma e pessoas.actions)
 
 ---
 
@@ -122,7 +122,7 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 
 ### 3.5 Erros de TypeScript mascarados no build
 - `next.config.mjs` tem **`typescript.ignoreBuildErrors: true`**. Por isso `npm run build` passa **sem checagem de tipos** — "build ok" não significa "tipos ok".
-- Rodando `tsc --noEmit`: **~63 erros de tipo em ~16 arquivos** (actions de pessoas/times/projetos/tags/usuários/cargos/trilhas, `lib/services/auditoria.service.ts`, páginas de `configuracoes/*`, `organograma`, `relatorios`, `pessoas/[id]`, `projetos`, `times/novo`).
+- Rodando `tsc --noEmit`: partiu de ~63 erros; hoje **~52 erros** em páginas de `configuracoes/*`, `organograma`, `pessoas.actions.ts` e `__tests__/pessoa.service.enriquecer.test.ts`. Os arquivos de actions de cargos, tags, times e trilhas estão sem erros.
 - **Corrigidos — grupo G1:**
   - `lib/types/index.ts`: `import type { StatusPessoa, TipoPerfil, TipoEntidade, TipoMudanca }` adicionado — resolvia TS2304 (identificadores não encontrados).
   - `lib/repositories/base.repository.ts`: casts `as unknown as SelectQueryBuilder` e `as unknown as Update` adicionados nos métodos CRUD/soft-delete — resolvia TS2345 (incompatibilidade de generics do Supabase SDK).
@@ -130,7 +130,9 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
   - `lib/repositories/pessoa.repository.ts`: shape do JOIN `tags` normalizado — o Supabase retornava `{ tag: Tag }[]` (objeto aninhado) mas o cast esperava `Tag[]` direto. Desembrulhamento feito antes do cast.
   - `lib/repositories/time.repository.ts`: shape do JOIN `times_filhos` (auto-referência) normalizado — retornava `object | null` mas o cast esperava array. Normalizado para array vazio quando `null` antes do cast.
   - `lib/services/auditoria.service.ts`: (a) cast explícito `Json | null` aplicado aos campos `valor_anterior`/`valor_novo` do tipo Supabase (TS2345 de tipo literal vs. union); (b) mapeamento camelCase→snake_case corrigido no método `buscarComFiltros` (chaves de filtro não batiam com as colunas do banco).
-- **Débito restante:** `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314`); demais erros nos arquivos de actions e pages listados acima ainda presentes. Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
+- **Corrigidos — grupo G4:**
+  - `app/actions/cargos.actions.ts`, `app/actions/tags.actions.ts`, `app/actions/times.actions.ts`, `app/actions/trilhas.actions.ts`: chamadas `findAll()` com argumentos inválidos (filters/orderBy/limit) migradas para `findMany()`, que aceita esses parâmetros — elimina erros TS2554 (argumentos inesperados) nesses 4 arquivos.
+- **Débito restante:** `updatePessoa` (`pessoas.actions.ts:572`) e `softDeletePessoa` (`pessoas.actions.ts:663`) declaram `Promise<ActionResult>` **sem o argumento de tipo** (`TS2314`); erros em `configuracoes/cargos/page.tsx` (propriedade `trilha` em state), `configuracoes/niveis/page.tsx` (possibly null/undefined), `configuracoes/usuarios/page.tsx` (propriedade `error`/`avatar` ausentes), `configuracoes/configuracoes-client.tsx` (prop `readOnly` em Switch), `organograma/page.tsx` (TS2345 em `setNodes`), e `__tests__/pessoa.service.enriquecer.test.ts` (TS2339 `salario_atual` em `never`). Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
 
 ### 3.6 Padronização de toast/erros incompleta
 - A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `pessoas/*`). `perfil` já migrado ✅. Migração pendente (não-bloqueante); seguir a convenção em código novo.

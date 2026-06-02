@@ -55,7 +55,7 @@ export async function getTrilhasComEstatisticas(): Promise<ActionResult<TrilhaCo
     const cargoRepo = new CargoRepository(supabase)
 
     // Busca todas as trilhas ordenadas por nome
-    const trilhas = await trilhaRepo.findAll({ orderBy: 'nome' })
+    const { data: trilhas } = await trilhaRepo.findMany({ orderBy: 'nome', orderDirection: 'asc', limit: 1000 })
 
     // Para cada trilha, busca estatísticas
     const trilhasComStats = await Promise.all(
