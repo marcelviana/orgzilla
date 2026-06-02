@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { Usuario } from '@/lib/types'
+import type { Usuario, PessoaRemuneracao } from '@/lib/types'
 
 // ---------------------------------------------------------------------------
 // Mocks de repositórios e services dependentes
@@ -263,7 +263,12 @@ describe('PessoaService — enriquecerListaComRemuneracao (LGPD)', () => {
 
     it('retorna campos extras do objeto original intactos após enriquecimento', async () => {
       const service = await getPessoaService()
-      const pessoaComExtras = {
+      type PessoaComExtras = Omit<ReturnType<typeof makePessoa>, 'remuneracao'> & {
+        cargo: { nome: string }
+        status: string
+        remuneracao: Pick<PessoaRemuneracao, 'salario_atual' | 'data_ultimo_reajuste' | 'motivo_ultimo_reajuste'> | null
+      }
+      const pessoaComExtras: PessoaComExtras = {
         ...makePessoa('p-1', 'time-A'),
         cargo: { nome: 'Engenheiro' },
         status: 'ativo',

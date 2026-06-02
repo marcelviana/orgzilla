@@ -41,8 +41,8 @@ export default function ProjetosPage() {
       const result = await getProjetos()
       if (result.success && result.data) {
         setProjetos(result.data)
-      } else {
-        sonnerToast.error(String(result.error ?? 'Erro ao carregar projetos'))
+      } else if (!result.success) {
+        sonnerToast.error(result.error ?? 'Erro ao carregar projetos')
       }
     } catch (error) {
       console.error('Erro ao carregar projetos:', error)

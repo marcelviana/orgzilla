@@ -265,8 +265,8 @@ const nodeTypes = {
 }
 
 export default function OrganogramaPage() {
-  const [nodes, setNodes, onNodesChange] = useNodesState([])
-  const [edges, setEdges, onEdgesChange] = useEdgesState([])
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [selectedPerson, setSelectedPerson] = useState<PersonNode | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(["ceo"]))

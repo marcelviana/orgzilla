@@ -158,7 +158,7 @@ export default function PersonProfilePage() {
         setNotes([result.data, ...notes])
         setNewNote('')
         toast.success('🦖 Anotação salva com sucesso!')
-      } else {
+      } else if (!result.success) {
         toast.error(result.error || 'Erro ao salvar anotação')
       }
     } catch {

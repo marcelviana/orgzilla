@@ -25,7 +25,7 @@ export default function NovoTimePage() {
   const [dataLoading, setDataLoading] = useState(true)
 
   // Real data from database
-  const [availableTeams, setAvailableTeams] = useState<Array<{ id: string; nome: string }>>([])
+  const [availableTeams, setAvailableTeams] = useState<Array<{ id: string; nome: string; nivel?: number; path?: string }>>([])
   const [availableManagers, setAvailableManagers] = useState<Array<{ id: string; nome: string; cargo: string | null; time: string | null }>>([])
   const [availablePositions, setAvailablePositions] = useState<Array<{ id: string; nome: string }>>([])
 
@@ -238,7 +238,7 @@ export default function NovoTimePage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 Time Pai
-                <Info className="w-4 h-4 text-muted-foreground cursor-help" title="Time hierarquicamente superior. Deixe vazio para times de nível raiz" />
+                <Info className="w-4 h-4 text-muted-foreground cursor-help" aria-label="Time hierarquicamente superior. Deixe vazio para times de nível raiz" />
               </Label>
               <button
                 type="button"
@@ -448,7 +448,7 @@ export default function NovoTimePage() {
                     setShowParentSelect(false)
                   }}
                   className="w-full p-3 text-left border rounded-md hover:bg-accent transition-colors"
-                  style={{ paddingLeft: `${team.nivel * 20 + 12}px` }}
+                  style={{ paddingLeft: `${(team.nivel ?? 0) * 20 + 12}px` }}
                 >
                   <div className="font-medium">{team.nome}</div>
                   <div className="text-xs text-muted-foreground">{team.path}</div>

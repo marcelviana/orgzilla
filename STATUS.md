@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (erros TS G7 corrigidos: Switch `readOnly`→`disabled` em configuracoes-client, reset de formData `trilha`→`trilha_id`/`nivel`→`nivel_id` e null guards em cargos/page, `nivelAnteriorId`→`nivel_anterior_id` e null guards em niveis/page, `boolean|null`→`boolean` em tags/page, ActionResult narrowing + remoção de `user.avatar` + cast `TipoPerfil` em usuarios/page; ~16 erros TS restantes, todos em `times/novo/page.tsx` e `base.repository.ts`)
+**Última atualização:** 2 de junho de 2026 (erros TS G8/G9 corrigidos: tipos explícitos em `useNodesState`/`useEdgesState` em organograma, narrowing `ActionResult` em `pessoas/[id]` e `projetos`, prop `title` de ícone Lucide substituída por `aria-label` + tipo `availableTeams` ampliado + guard `nivel ?? 0` em `times/novo`, fixture de teste tipada explicitamente em `pessoa.service.enriquecer.test.ts`; 1 erro TS pré-existente restante em `base.repository.ts`; build passa, 98 testes passando)
 
 ---
 
@@ -78,6 +78,7 @@ Checklist de retomada do ambiente:
 | Dashboard | ✅ Dados reais |
 | `pessoas` (lista) | ✅ Dados reais |
 | `times` | ✅ Dados reais |
+| `organograma` | 🔴 **Mock hardcoded** — `hierarchyData` é uma constante estática inline; a página não importa nenhuma Action ou Service. Migrar: criar `getOrganograma()` que chame `TimeService` e renderizar o resultado. |
 
 > Rastros `console.log('[v0]...')` confirmam origem v0.dev. Ao migrar seções com mock de projetos/tags, passar obrigatoriamente pelas actions correspondentes — nunca `supabase.from()` direto na UI.
 
@@ -144,10 +145,18 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
   - `configuracoes/niveis/page.tsx`: campo do estado corrigido (`nivelAnteriorId`→`nivel_anterior_id`); null guards adicionados em `selectedLevel` — 17 erros eliminados (TS2322/TS18048).
   - `configuracoes/tags/page.tsx`: tipo `boolean|null` estreitado para `boolean` no prop `disabled` (TS2322).
   - `configuracoes/usuarios/page.tsx`: narrowing de `ActionResult` corrigido, remoção de referência a `user.avatar` (campo inexistente) e cast explícito `TipoPerfil` — elimina TS2339/TS2352.
-- **Débito restante (~16 erros):** concentrados em `times/novo/page.tsx` e `lib/repositories/base.repository.ts` — fora do escopo do G7. Ao mexer nesses arquivos, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
+- **Corrigidos — grupo G8:**
+  - `organograma/page.tsx`: parâmetros de tipo explícitos adicionados a `useNodesState<Node>` e `useEdgesState<Edge>` — elimina erros de inferência de tipo genérico.
+  - `pessoas/[id]/page.tsx`: narrowing de `ActionResult` corrigido com `else if (!result.success)` em vez de verificação isolada.
+  - `projetos/page.tsx`: mesmo padrão de narrowing `ActionResult` aplicado.
+- **Corrigidos — grupo G9:**
+  - `times/novo/page.tsx`: prop `title` de ícone Lucide substituída por `aria-label` (a propriedade não existe no tipo); tipo de `availableTeams` ampliado para incluir `nivel?: number; path?: string`; guard `(team.nivel ?? 0)` adicionado onde o valor era potencialmente `undefined`.
+  - `__tests__/pessoa.service.enriquecer.test.ts`: fixture `pessoaComExtras` tipada explicitamente com `Omit<...> & { remuneracao: Pick<PessoaRemuneracao, ...> | null }`.
+- **Débito restante (1 erro):** `lib/repositories/base.repository.ts` — pré-existente, fora do escopo dos grupos G8/G9. Ao mexer nesse arquivo, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
 
 ### 3.6 Padronização de toast/erros incompleta
 - A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `pessoas/*`). `perfil` já migrado ✅. Migração pendente (não-bloqueante); seguir a convenção em código novo.
+- 🔴 `projetos/page.tsx` mistura os dois sistemas no mesmo arquivo (`sonner` para erros de carga e `useToast` para erros de exclusão), criando comportamento inconsistente de UX. Prioridade maior que o restante da lista por ser visível ao usuário final.
 
 ---
 
