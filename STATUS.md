@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (limpeza completa de TypeScript: 0 erros em `tsc --noEmit`; `ignoreBuildErrors` removido de `next.config.mjs`; build passa com checagem de tipos ativa; 98 testes passando)
+**Última atualização:** 2 de junho de 2026 (pins `"latest"` substituídos por versões fixas no `package.json`; lockfile atualizado; build e 98 testes passando)
 
 ---
 
@@ -118,8 +118,8 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 
 ### 3.4 Dependências — builds não reprodutíveis
 - **Lockfile:** apenas `pnpm-lock.yaml` (o `package-lock.json` foi removido). Use **pnpm** como gerenciador único.
-- **Pins `"latest"`** em várias deps (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`, `react-day-picker`). `vaul` já usa `"^0.9.9"` (OK).
-- Stack bleeding edge (Next 16 + React 19.2) + pins `"latest"` = risco de quebras silenciosas.
+- **Pins `"latest"` resolvidos** (item B do roadmap): os 19 especificadores `"latest"` foram substituídos por versões concretas com prefixo `^`, espelhando as versões já resolvidas no `pnpm-lock.yaml` (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`, `react-day-picker`, `@xyflow/react`, entre outros). `vaul` já usava `"^0.9.9"` (OK). Nenhuma versão foi bumpada — apenas os especificadores foram corrigidos.
+- Stack bleeding edge (Next 16 + React 19.2) com versões agora fixadas; risco de quebra silenciosa por `"latest"` eliminado.
 
 ### 3.5 TypeScript — limpeza concluída
 - `typescript.ignoreBuildErrors: true` foi **removido** de `next.config.mjs`. O build agora passa **com checagem de tipos ativa**.
@@ -197,13 +197,11 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 5. ✅ Débitos §3.3 resolvidos: LGPD extraída para `PessoaService.enriquecerListaComRemuneracao`;
    `buildTimeHierarchy` eliminada; `catch` de dashboard padronizados com `handleError`.
 6. ✅ TypeScript limpo: 0 erros em `tsc --noEmit`; `ignoreBuildErrors` removido de `next.config.mjs`.
+7. ✅ Concluído em 2 jun 2026 — pins `"latest"` substituídos por versões fixas (`^`) em 19 deps do `package.json`; lockfile consistente (`pnpm install --frozen-lockfile` passa); build e 98 testes passando.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
 A. **Fixar toast misto em `projetos/page.tsx`** — substitui `sonner`+`useToast` por
    `handleError`+`toast-config`. Trivial; remove inconsistência visível ao usuário.
-B. **Fixar pins `"latest"` nas deps** — rodar `pnpm outdated`, fixar versões atuais em
-   `package.json` (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`,
-   `react-day-picker`). Trivial; elimina risco de quebra silenciosa.
 C. **Migrar organograma de mock para real** — criar `getOrganograma()` chamando
    `TimeService`; trocar `hierarchyData` hardcoded pelo resultado. Simples;
    elimina a última página mock do projeto.
