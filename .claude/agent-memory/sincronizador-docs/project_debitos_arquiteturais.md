@@ -26,7 +26,11 @@ Novos tipos exportados pela resolução de débitos: `TimeComEstatisticas` e `Ti
 - **G4:** `findAll()` com argumentos inválidos → `findMany()` em 4 actions (cargos, tags, times, trilhas). ✅
 - **G5:** componentes shadcn ausentes criados (`tooltip.tsx`, `skeleton.tsx`); cast de tipo em `FilterPanel.tsx:92`. ✅
 - **G6:** `nome`→`name` e `percent??0` em `dashboard-content.tsx:168`; `percent??0` (3x) e tipos explícitos em formatters (2x) em `relatorios-client.tsx`. ✅
-- **Restante (~41 erros):** páginas `configuracoes/cargos`, `configuracoes/niveis`, `configuracoes/usuarios`, `configuracoes/configuracoes-client`, `organograma`, `pessoas.actions.ts`, e `__tests__/pessoa.service.enriquecer.test.ts`.
+- **G7:** Switch/null guards em `configuracoes/*`, narrowing `ActionResult` em `usuarios`. ✅
+- **G8:** `useNodesState`/`useEdgesState` tipados explicitamente em `organograma`; narrowing `ActionResult` em `pessoas/[id]` e `projetos`. ✅
+- **G9:** prop `title` Lucide → `aria-label` em `times/novo`; fixture de teste tipada em `pessoa.service.enriquecer.test.ts`. ✅
+- **G10 (erro final):** método `select` adicionado a `SelectQueryBuilder`; `update` com cast `as unknown as SelectQueryBuilder` em `base.repository.ts:191`. ✅
+- **Estado atual: 0 erros TS. `ignoreBuildErrors` removido de `next.config.mjs`. Build passa com checagem de tipos ativa.**
 
 **How to apply:** ao registrar novo grupo de correção TS no STATUS.md, manter a lista de grupos G1/G2/G3/G4... e atualizar a contagem de erros restantes com resultado real de `tsc --noEmit | grep "error TS" | wc -l`.
 

@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (erros TS G8/G9 corrigidos: tipos explícitos em `useNodesState`/`useEdgesState` em organograma, narrowing `ActionResult` em `pessoas/[id]` e `projetos`, prop `title` de ícone Lucide substituída por `aria-label` + tipo `availableTeams` ampliado + guard `nivel ?? 0` em `times/novo`, fixture de teste tipada explicitamente em `pessoa.service.enriquecer.test.ts`; 1 erro TS pré-existente restante em `base.repository.ts`; build passa, 98 testes passando)
+**Última atualização:** 2 de junho de 2026 (limpeza completa de TypeScript: 0 erros em `tsc --noEmit`; `ignoreBuildErrors` removido de `next.config.mjs`; build passa com checagem de tipos ativa; 98 testes passando)
 
 ---
 
@@ -121,9 +121,9 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 - **Pins `"latest"`** em várias deps (`@radix-ui/*`, `recharts`, `sonner`, `date-fns`, `next-themes`, `react-day-picker`). `vaul` já usa `"^0.9.9"` (OK).
 - Stack bleeding edge (Next 16 + React 19.2) + pins `"latest"` = risco de quebras silenciosas.
 
-### 3.5 Erros de TypeScript mascarados no build
-- `next.config.mjs` tem **`typescript.ignoreBuildErrors: true`**. Por isso `npm run build` passa **sem checagem de tipos** — "build ok" não significa "tipos ok".
-- Rodando `tsc --noEmit`: partiu de ~63 erros; hoje **~52 erros** em páginas de `configuracoes/*`, `organograma`, `pessoas.actions.ts` e `__tests__/pessoa.service.enriquecer.test.ts`. Os arquivos de actions de cargos, tags, times e trilhas estão sem erros.
+### 3.5 TypeScript — limpeza concluída
+- `typescript.ignoreBuildErrors: true` foi **removido** de `next.config.mjs`. O build agora passa **com checagem de tipos ativa**.
+- `tsc --noEmit` retorna **0 erros**. Partiu de ~63 erros (antes dos grupos G1–G9); todos resolvidos.
 - **Corrigidos — grupo G1:**
   - `lib/types/index.ts`: `import type { StatusPessoa, TipoPerfil, TipoEntidade, TipoMudanca }` adicionado — resolvia TS2304 (identificadores não encontrados).
   - `lib/repositories/base.repository.ts`: casts `as unknown as SelectQueryBuilder` e `as unknown as Update` adicionados nos métodos CRUD/soft-delete — resolvia TS2345 (incompatibilidade de generics do Supabase SDK).
@@ -152,7 +152,9 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 - **Corrigidos — grupo G9:**
   - `times/novo/page.tsx`: prop `title` de ícone Lucide substituída por `aria-label` (a propriedade não existe no tipo); tipo de `availableTeams` ampliado para incluir `nivel?: number; path?: string`; guard `(team.nivel ?? 0)` adicionado onde o valor era potencialmente `undefined`.
   - `__tests__/pessoa.service.enriquecer.test.ts`: fixture `pessoaComExtras` tipada explicitamente com `Omit<...> & { remuneracao: Pick<PessoaRemuneracao, ...> | null }`.
-- **Débito restante (1 erro):** `lib/repositories/base.repository.ts` — pré-existente, fora do escopo dos grupos G8/G9. Ao mexer nesse arquivo, ajuste os tipos em vez de confiar no `ignoreBuildErrors`.
+- **Corrigidos — grupo G10 (erro final):**
+  - `lib/repositories/base.repository.ts:191`: método `select` adicionado ao `SelectQueryBuilder`; método `update` passou a usar cast `as unknown as SelectQueryBuilder` — eliminava o último erro TS restante.
+- **Total: 0 erros.** Todos os grupos G1–G10 resolvidos; `ignoreBuildErrors` removido.
 
 ### 3.6 Padronização de toast/erros incompleta
 - A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `pessoas/*`). `perfil` já migrado ✅. Migração pendente (não-bloqueante); seguir a convenção em código novo.

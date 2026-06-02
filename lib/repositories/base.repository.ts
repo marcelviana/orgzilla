@@ -31,6 +31,7 @@ interface SelectQueryBuilder extends PromiseLike<QueryResult> {
   order: (column: string, options?: { ascending?: boolean }) => SelectQueryBuilder
   range: (from: number, to: number) => SelectQueryBuilder
   limit: (count: number) => SelectQueryBuilder
+  select: (columns?: string) => SelectQueryBuilder
   single: () => PromiseLike<QueryResult>
   maybeSingle: () => PromiseLike<QueryResult>
 }
@@ -185,9 +186,9 @@ export abstract class BaseRepository<
    * Atualiza um registro por ID
    */
   async update(id: string, data: Update): Promise<Row> {
-    const { data: updated, error } = await this.supabase
+    const { data: updated, error } = await (this.supabase
       .from(this.tableName)
-      .update(data as never)
+      .update(data as never) as unknown as SelectQueryBuilder)
       .eq('id', id)
       .select()
       .single()
