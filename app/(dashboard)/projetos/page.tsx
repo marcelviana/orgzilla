@@ -15,8 +15,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Home, ChevronRight, Search, Loader2 } from 'lucide-react'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
-import { toast as sonnerToast } from 'sonner'
-import { useToast } from '@/hooks/use-toast'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 
 const statusColors = {
   Ativo: 'bg-green-100 text-green-800 border-green-200',
@@ -24,7 +24,6 @@ const statusColors = {
 }
 
 export default function ProjetosPage() {
-  const { toast } = useToast()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -42,11 +41,10 @@ export default function ProjetosPage() {
       if (result.success && result.data) {
         setProjetos(result.data)
       } else if (!result.success) {
-        sonnerToast.error(result.error ?? 'Erro ao carregar projetos')
+        toast.error(result.error ?? 'Erro ao carregar projetos')
       }
     } catch (error) {
-      console.error('Erro ao carregar projetos:', error)
-      sonnerToast.error('Erro inesperado ao carregar projetos')
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsLoading(false)
     }
@@ -60,22 +58,13 @@ export default function ProjetosPage() {
     try {
       const result = await softDeleteProjeto(id)
       if (result.success) {
-        sonnerToast.success('Projeto desativado com sucesso')
+        toast.successDino('Projeto desativado com sucesso!')
         await loadProjetos()
       } else {
-        toast({
-          title: 'Erro ao desativar projeto',
-          description: result.error,
-          variant: 'destructive',
-        })
+        toast.error(result.error ?? 'Erro ao desativar projeto')
       }
     } catch (error) {
-      console.error('Erro ao desativar projeto:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao desativar o projeto',
-        variant: 'destructive',
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 

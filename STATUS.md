@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (pins `"latest"` substituídos por versões fixas no `package.json`; lockfile atualizado; build e 98 testes passando)
+**Última atualização:** 2 de junho de 2026 (toast misto em `projetos/page.tsx` corrigido: `sonner`+`useToast` substituídos por `handleError`+`toast-config`; build e 98 testes passando)
 
 ---
 
@@ -157,8 +157,7 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 - **Total: 0 erros.** Todos os grupos G1–G10 resolvidos; `ignoreBuildErrors` removido.
 
 ### 3.6 Padronização de toast/erros incompleta
-- A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `projetos/*`, `pessoas/*`). `perfil` já migrado ✅. Migração pendente (não-bloqueante); seguir a convenção em código novo.
-- 🔴 `projetos/page.tsx` mistura os dois sistemas no mesmo arquivo (`sonner` para erros de carga e `useToast` para erros de exclusão), criando comportamento inconsistente de UX. Prioridade maior que o restante da lista por ser visível ao usuário final.
+- A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `pessoas/*`). `perfil` ✅ e `projetos/page.tsx` ✅ já migrados. Migração pendente nas demais (não-bloqueante); seguir a convenção em código novo.
 
 ---
 
@@ -198,10 +197,9 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
    `buildTimeHierarchy` eliminada; `catch` de dashboard padronizados com `handleError`.
 6. ✅ TypeScript limpo: 0 erros em `tsc --noEmit`; `ignoreBuildErrors` removido de `next.config.mjs`.
 7. ✅ Concluído em 2 jun 2026 — pins `"latest"` substituídos por versões fixas (`^`) em 19 deps do `package.json`; lockfile consistente (`pnpm install --frozen-lockfile` passa); build e 98 testes passando.
+8. ✅ Concluído em 2 jun 2026 — toast misto em `projetos/page.tsx` corrigido: `sonner`+`useToast` substituídos por `handleError`+`toast-config`; build e 98 testes passando.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
-A. **Fixar toast misto em `projetos/page.tsx`** — substitui `sonner`+`useToast` por
-   `handleError`+`toast-config`. Trivial; remove inconsistência visível ao usuário.
 C. **Migrar organograma de mock para real** — criar `getOrganograma()` chamando
    `TimeService`; trocar `hierarchyData` hardcoded pelo resultado. Simples;
    elimina a última página mock do projeto.
