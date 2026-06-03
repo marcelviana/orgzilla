@@ -9,7 +9,12 @@
   --color-primary: #ff7a00;
   --color-primary-hover: #e66d00;
   --color-primary-light: #ffa347;
-  
+  /* primary-strong: preenchimento para elementos interativos que carregam texto
+     branco (botão primário, item ativo de menu). #C85F00 + branco passa WCAG AA;
+     #FF7A00 + branco reprova (~2.9:1). Ver DESIGN_SYSTEM.md §3.1. */
+  --color-primary-strong: #c85f00;
+  --color-primary-strong-hover: #b35500;
+
   --color-secondary: #1a2734;
   --color-secondary-hover: #2a3744;
   --color-secondary-light: #3a4754;
@@ -25,10 +30,18 @@
   --color-error: #ff5a5f;
   --color-error-hover: #ff3d42;
   --color-error-light: #ff8a8e;
-  
-  --color-success: #00d68f;
-  --color-warning: #ffcc00;
-  
+
+  /* Cores semânticas (estado, não marca) — DESIGN_SYSTEM.md §3.1.
+     success/danger/warning/info expostas como classes do tema (bg-*, text-*). */
+  --color-success: #1fa971;
+  --color-success-light: #e3f5ec;
+  --color-warning: #e8a317;
+  --color-warning-light: #fcf1d9;
+  --color-danger: #ff5a5f;
+  --color-danger-light: #ffe2e3;
+  --color-info: #00c8ff;
+  --color-info-light: #d9f6ff;
+
   /* Semantic Colors */
   --color-background: #f4f5f7;
   --color-foreground: #1a2734;
