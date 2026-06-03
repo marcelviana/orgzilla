@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StatusBadge } from '@/components/shared/status-badge'
+import { PageHeader } from '@/components/shared'
 import { toast } from 'sonner'
 import type { PessoasResult } from '@/app/actions/pessoas.actions'
 import { exportPessoasCSV } from '@/app/actions/pessoas.actions'
@@ -189,17 +190,10 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
     <div className="p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <Link href="/" className="hover:text-primary">
-              Dashboard
-            </Link>
-            <span>&gt;</span>
-            <span className="text-foreground">Pessoas</span>
-          </div>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <h1 className="text-3xl font-bold text-foreground">Pessoas</h1>
-
+        <PageHeader
+          title="Pessoas"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas" }]}
+          actions={
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1 sm:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -218,14 +212,14 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                 Exportar
               </Button>
               <Link href="/pessoas/novo">
-                <Button className="gap-2 bg-primary-strong hover:bg-primary-strong/90">
+                <Button className="gap-2">
                   <Plus className="h-4 w-4" />
                   Adicionar Pessoa
                 </Button>
               </Link>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Filters Bar */}
         <div className="bg-white rounded-lg shadow-sm mb-6">

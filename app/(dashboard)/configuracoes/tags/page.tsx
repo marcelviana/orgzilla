@@ -29,8 +29,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2 } from 'lucide-react'
-import { TableSkeleton, Breadcrumb } from '@/components/shared'
+import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, Trash2 } from 'lucide-react'
+import { TableSkeleton, PageHeader } from '@/components/shared'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
@@ -347,15 +347,11 @@ export default function TagsPage() {
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Tags" }]} />
-
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">Tags</h1>
-              <ShieldAlert className="h-5 w-5 text-error" />
-            </div>
-
+        <PageHeader
+          title="Tags"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Tags" }]}
+          badge={{ label: "Admin", variant: "admin" }}
+          actions={
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -380,13 +376,13 @@ export default function TagsPage() {
                 </SelectContent>
               </Select>
 
-              <Button onClick={openCreateModal} className="bg-primary-strong hover:bg-primary-strong/90">
+              <Button onClick={openCreateModal}>
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Tag
               </Button>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -18,7 +18,7 @@ import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
+import { DetailsSkeleton, PageHeader } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { getPessoaById, updatePessoa, getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
 import { getProjetosParaFiltro } from '@/app/actions/projetos.actions'
@@ -314,13 +314,11 @@ export default function EditPessoaPage() {
   return (
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8 pb-32">
-        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Editar Pessoa" }]} />
-
-        {/* Title */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Editar Pessoa</h1>
-          <p className="text-muted-foreground mt-1">Atualize os dados de {nome}</p>
-        </div>
+        <PageHeader
+          title="Editar Pessoa"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Editar Pessoa" }]}
+          description={`Atualize os dados de ${nome}`}
+        />
 
         {/* Tabbed Form - Same structure as nova/page.tsx */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

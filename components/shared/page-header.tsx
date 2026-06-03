@@ -41,7 +41,7 @@ export function PageHeader({
   backButton = false,
 }: PageHeaderProps) {
   return (
-    <div className="border-b border-gray-200 pb-6 mb-6">
+    <div className="border-b border-border pb-6 mb-6">
       {breadcrumb && <Breadcrumb items={breadcrumb} className="mb-4" />}
 
       <div className="flex items-start justify-between">

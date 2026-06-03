@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Search, X, Users, Network, Briefcase, ChevronDown, ChevronUp, Star, Clock, Filter, SlidersHorizontal } from 'lucide-react'
-import { Breadcrumb } from '@/components/shared'
+import { PageHeader } from '@/components/shared'
 import { buscarEntidades, type BuscaEntidadesResult, type BuscaPessoaItem } from "@/app/actions/busca.actions"
 import { toast } from "@/lib/ui/toast-config"
 
@@ -122,12 +122,10 @@ export default function BuscaPage() {
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div className="space-y-2">
-          <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Busca" }]} />
-          <h1 className="text-3xl font-bold text-secondary">
-            {searchTerm ? `Resultados para "${searchTerm}"` : "Buscar no Orgzilla"}
-          </h1>
-        </div>
+        <PageHeader
+          title={searchTerm ? `Resultados para "${searchTerm}"` : "Buscar no Orgzilla"}
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Busca" }]}
+        />
 
         {/* Search Bar */}
         <Card className="p-6">

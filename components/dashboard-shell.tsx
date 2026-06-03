@@ -207,7 +207,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             {usuario?.pessoa?.foto_url ? (
               <AvatarImage src={usuario.pessoa.foto_url} alt={nomeExibicao} />
             ) : null}
-            <AvatarFallback className="bg-primary text-sm font-semibold text-white">
+            <AvatarFallback className="bg-primary-strong text-sm font-semibold text-white">
               {iniciais}
             </AvatarFallback>
           </Avatar>
@@ -261,11 +261,6 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 </Button>
               </SheetTrigger>
             </Sheet>
-
-            {/* Page Title */}
-            <h1 className="text-2xl font-bold capitalize text-secondary">
-              {activeRoute}
-            </h1>
           </div>
 
           {/* Right Side */}
@@ -303,7 +298,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 {usuario?.pessoa?.foto_url ? (
                   <AvatarImage src={usuario.pessoa.foto_url} alt={nomeExibicao} />
                 ) : null}
-                <AvatarFallback className="bg-primary text-sm font-semibold text-white">
+                <AvatarFallback className="bg-primary-strong text-sm font-semibold text-white">
                   {iniciais}
                 </AvatarFallback>
               </Avatar>
