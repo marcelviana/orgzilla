@@ -8,6 +8,7 @@ import type {
   PessoaComRelacionamentos,
 } from '@/lib/types'
 import { BaseRepository, RepositoryError } from './base.repository'
+import type { SelectQueryBuilder } from './base.repository'
 
 /**
  * Pessoa Repository
@@ -144,7 +145,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
 
     return (data ?? []).map((p) => ({
       ...p,
-      time_nome: (p.time as { nome: string } | null)?.nome ?? null,
+      time_nome: p.time?.nome ?? null,
     }))
   }
 
@@ -244,7 +245,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       ...p,
       cargo_nome: p.cargo_id ? (cargoMap.get(p.cargo_id)?.nome ?? null) : null,
       nivel_nome: p.cargo_id ? (cargoMap.get(p.cargo_id)?.nivel_nome ?? null) : null,
-      time_nome: (p.time as { nome: string } | null)?.nome ?? null,
+      time_nome: p.time?.nome ?? null,
     }))
   }
 
@@ -349,11 +350,10 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
       time:time_id (id, nome),
       tags:pessoa_tag (tag:tag_id (id, nome, cor))
     `
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('pessoa')
       .select(selectFields, { count: 'exact' })
-      .eq('ativo', true)
+      .eq('ativo', true) as unknown as SelectQueryBuilder
 
     if (timeIdsHierarquia && timeIdsHierarquia.length > 0) {
       query = query.in('time_id', timeIdsHierarquia)
@@ -380,7 +380,7 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
 
     const { data, error, count } = await query
     if (error) throw new RepositoryError('Erro ao buscar pessoas com filtros', error)
-    return { data: data ?? [], count }
+    return { data: (data as unknown[] | null) ?? [], count: count ?? null }
   }
 
   /**
@@ -388,12 +388,11 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
    * Retorna id, nome e nomes de cargo/time (joins básicos).
    */
   async findParaSelecao(timeIdsHierarquia?: string[]): Promise<PessoaParaSelecao[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('pessoa')
       .select(`id, nome, cargo:cargo!cargo_id(nome), time:time!time_id(nome)`)
       .eq('ativo', true)
-      .order('nome')
+      .order('nome') as unknown as SelectQueryBuilder
 
     if (timeIdsHierarquia && timeIdsHierarquia.length > 0) {
       query = query.in('time_id', timeIdsHierarquia)
@@ -408,12 +407,11 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
    * Conta pessoas ativas com status 'ativo', filtradas opcionalmente por times.
    */
   async countAtivasComStatus(timeIds?: string[]): Promise<number> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('pessoa')
       .select('*', { count: 'exact', head: true })
       .eq('ativo', true)
-      .eq('status', 'ativo')
+      .eq('status', 'ativo') as unknown as SelectQueryBuilder
 
     if (timeIds && timeIds.length > 0) {
       query = query.in('time_id', timeIds)
@@ -429,12 +427,11 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
    * dataFim exclusivo (lt). Se omitido, sem limite superior.
    */
   async countCriadasNoPeriodo(dataInicio: string, dataFim?: string, timeIds?: string[]): Promise<number> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('pessoa')
       .select('*', { count: 'exact', head: true })
       .eq('ativo', true)
-      .gte('created_at', dataInicio)
+      .gte('created_at', dataInicio) as unknown as SelectQueryBuilder
 
     if (dataFim) {
       query = query.lt('created_at', dataFim)
@@ -452,12 +449,11 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
    * Busca pessoas ativas com cargo e nível para distribuição por nível.
    */
   async findParaNivelDistribuicao(timeIds?: string[]): Promise<PessoaParaNivel[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('pessoa')
       .select(`id, cargo:cargo_id (id, nivel:nivel_id (id, nome))`)
       .eq('ativo', true)
-      .eq('status', 'ativo')
+      .eq('status', 'ativo') as unknown as SelectQueryBuilder
 
     if (timeIds && timeIds.length > 0) {
       query = query.in('time_id', timeIds)
@@ -472,12 +468,11 @@ export class PessoaRepository extends BaseRepository<'pessoa', Pessoa, PessoaIns
    * Busca pessoas ativas com time para distribuição por time.
    */
   async findParaTimeDistribuicao(timeIds?: string[]): Promise<PessoaParaTime[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('pessoa')
       .select(`id, time:time_id (id, nome)`)
       .eq('ativo', true)
-      .eq('status', 'ativo')
+      .eq('status', 'ativo') as unknown as SelectQueryBuilder
 
     if (timeIds && timeIds.length > 0) {
       query = query.in('time_id', timeIds)

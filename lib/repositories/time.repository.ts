@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, Time, TimeInsert, TimeUpdate, TimeComRelacionamentos } from '@/lib/types'
 import { BaseRepository, RepositoryError } from './base.repository'
+import type { SelectQueryBuilder } from './base.repository'
 
 /**
  * Time Repository
@@ -93,7 +94,7 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
           ? [data.times_filhos]
           : [],
     }
-    return normalizedBasico as unknown as TimeComRelacionamentosBasicos
+    return normalizedBasico
   }
 
   /**
@@ -272,12 +273,11 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
    * Se timeIds for fornecido, restringe ao subconjunto (hierarquia do gestor).
    */
   async findAtivosParaFiltro(timeIds?: string[]): Promise<Array<{ id: string; nome: string }>> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('time')
       .select('id, nome')
       .eq('ativo', true)
-      .order('nome')
+      .order('nome') as unknown as SelectQueryBuilder
 
     if (timeIds && timeIds.length > 0) {
       query = query.in('id', timeIds)
@@ -363,8 +363,8 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
         membros: membrosMap.get(rel.id) ?? 0,
         vagas: vagasMap.get(rel.id) ?? 0,
         filhos: filhosMap.get(rel.id) ?? 0,
-        gestor: (rel.gestor as { id: string; nome: string; email_corporativo: string | null } | null) ?? null,
-        time_pai: (rel.time_pai as { id: string; nome: string } | null) ?? null,
+        gestor: rel.gestor ?? null,
+        time_pai: rel.time_pai ?? null,
       })
     }
 
@@ -375,11 +375,10 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
    * Conta times ativos, opcionalmente restrito a um subconjunto de IDs.
    */
   async countAtivos(timeIds?: string[]): Promise<number> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('time')
       .select('*', { count: 'exact', head: true })
-      .eq('ativo', true)
+      .eq('ativo', true) as unknown as SelectQueryBuilder
 
     if (timeIds && timeIds.length > 0) {
       query = query.in('id', timeIds)

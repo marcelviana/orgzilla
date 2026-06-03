@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, VagaTime, VagaTimeInsert, VagaTimeUpdate } from '@/lib/types'
 import { BaseRepository, RepositoryError } from './base.repository'
+import type { SelectQueryBuilder } from './base.repository'
 
 /**
  * VagaTime Repository
@@ -209,11 +210,10 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
    * Soma quantidade de vagas ativas, opcionalmente restrito a um subconjunto de times.
    */
   async sumQuantidadeAtivasEmTimes(timeIds?: string[]): Promise<number> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query: any = this.supabase
+    let query = this.supabase
       .from('vaga_time')
       .select('quantidade')
-      .eq('ativo', true)
+      .eq('ativo', true) as unknown as SelectQueryBuilder
 
     if (timeIds && timeIds.length > 0) {
       query = query.in('time_id', timeIds)
@@ -221,7 +221,7 @@ export class VagaTimeRepository extends BaseRepository<'vaga_time', VagaTime, Va
 
     const { data, error } = await query
     if (error) throw new RepositoryError('Erro ao somar vagas ativas', error)
-    return (data ?? []).reduce((sum: number, v: { quantidade: number }) => sum + (v.quantidade || 0), 0)
+    return ((data ?? []) as Array<{ quantidade: number }>).reduce((sum, v) => sum + (v.quantidade || 0), 0)
   }
 
   /**

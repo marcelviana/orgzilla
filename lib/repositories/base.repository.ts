@@ -15,7 +15,7 @@ type QueryResult = { data: unknown; error: PostgrestError | null; count?: number
  * como `any`. Em vez de propagar `any`, descrevemos aqui apenas os métodos
  * encadeáveis que os repositories realmente usam, mantendo type-safety.
  */
-interface SelectQueryBuilder extends PromiseLike<QueryResult> {
+export interface SelectQueryBuilder extends PromiseLike<QueryResult> {
   eq: (column: string, value: FilterValue) => SelectQueryBuilder
   neq: (column: string, value: FilterValue) => SelectQueryBuilder
   in: (column: string, values: Array<string | number | boolean>) => SelectQueryBuilder
