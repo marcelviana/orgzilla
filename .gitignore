@@ -101,6 +101,10 @@ $RECYCLE.BIN/
 # Storybook
 storybook-static
 
+# Claude
+.claude/launch.json
+.claude/agent-memory/
+
 # Supabase (local development)
 supabase/.branches
 supabase/.temp
