@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -15,7 +14,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Users, MoreVertical, Briefcase } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
+import { DetailsSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
@@ -54,9 +53,6 @@ export default function TimeDetailPage() {
     return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
   }
 
-  const getStatusColor = (ativo: boolean) => {
-    return ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-foreground'
-  }
 
   // Loading state
   if (isLoading) {
@@ -95,9 +91,7 @@ export default function TimeDetailPage() {
             {time.descricao && (
               <p className="text-muted-foreground max-w-2xl">{time.descricao}</p>
             )}
-            <Badge className={getStatusColor(time.ativo)}>
-              {time.ativo ? 'Ativo' : 'Inativo'}
-            </Badge>
+            <StatusBadge status={time.ativo ? 'Ativo' : 'Inativo'} />
           </div>
 
           {/* Actions */}

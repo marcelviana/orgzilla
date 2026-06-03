@@ -41,9 +41,9 @@ interface RelatoriosClientProps {
 
 // Cor da barra de ocupação
 function ocupacaoCor(rate: number): string {
-  if (rate >= 90) return '#10b981'
-  if (rate >= 70) return '#f59e0b'
-  return '#ef4444'
+  if (rate >= 90) return 'var(--success)'
+  if (rate >= 70) return 'var(--warning)'
+  return 'var(--danger)'
 }
 
 // Formata moeda BRL
@@ -81,8 +81,8 @@ export function RelatoriosClient({
 
   // Projetos para gráfico de pizza
   const projectPieData = [
-    { name: 'Ativos', value: metricasProjetos.totalAtivos, color: '#10b981' },
-    { name: 'Inativos', value: metricasProjetos.totalInativos, color: '#6b7280' },
+    { name: 'Ativos', value: metricasProjetos.totalAtivos, color: 'var(--success)' },
+    { name: 'Inativos', value: metricasProjetos.totalInativos, color: 'var(--chart-8)' },
   ].filter((d) => d.value > 0)
 
   const totalPessoas = distribuicaoPorStatus.reduce((s, d) => s + d.value, 0)

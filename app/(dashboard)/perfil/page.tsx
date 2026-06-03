@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertCircle, Calendar, Check, ExternalLink, Eye, EyeOff, Info, Lock } from 'lucide-react'
 import { DetailsSkeleton } from '@/components/shared/loading-state'
 import Link from "next/link"
-import { Breadcrumb } from '@/components/shared'
+import { Breadcrumb, StatusBadge } from '@/components/shared'
 import { getUsuarioLogado, type UsuarioLogado } from "@/lib/middleware/auth.middleware"
 import { updateUsuario } from "@/app/actions/usuarios.actions"
 import { atualizarSenhaAction } from "@/app/actions/auth.actions"
@@ -313,9 +313,7 @@ export default function ProfilePage() {
             <div>
               <Label className="text-muted-foreground">Status</Label>
               <div className="mt-2">
-                <Badge className={user.ativo ? "bg-green-500 text-white" : "bg-gray-500 text-white"}>
-                  {user.ativo ? "Ativo" : "Inativo"}
-                </Badge>
+                <StatusBadge status={user.ativo ? "Ativo" : "Inativo"} />
               </div>
             </div>
 

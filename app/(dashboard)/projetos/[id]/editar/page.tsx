@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, X, Search } from 'lucide-react'
 import { toast } from '@/lib/ui/toast-config'
-import { Breadcrumb } from '@/components/shared'
+import { Breadcrumb, StatusBadge } from '@/components/shared'
 
 const availablePeople = [
   { id: 'p1', nome: 'Maria Santos', avatar: '', cargo: 'Tech Lead', time: 'Engenharia' },
@@ -122,7 +122,7 @@ export default function EditarProjeto() {
                     onChange={() => setStatus('Ativo')}
                     className="w-4 h-4 text-green-600"
                   />
-                  <Badge className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
+                  <StatusBadge status="Ativo" />
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -132,7 +132,7 @@ export default function EditarProjeto() {
                     onChange={() => setStatus('Inativo')}
                     className="w-4 h-4 text-muted-foreground"
                   />
-                  <Badge className="bg-gray-100 text-foreground border-gray-200">Inativo</Badge>
+                  <StatusBadge status="Inativo" />
                 </label>
               </div>
               <p className="text-sm text-muted-foreground">Projetos inativos não aparecem em filtros por padrão</p>
