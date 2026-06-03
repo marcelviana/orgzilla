@@ -116,7 +116,7 @@ export class PessoaRemuneracaoRepository {
       throw new RepositoryError('Erro ao buscar remunerações para agregação', error)
     }
 
-    return (data ?? []) as RemuneracaoComCargo[]
+    return data ?? []
   }
 
   /**

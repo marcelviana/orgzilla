@@ -356,7 +356,7 @@ export function RelatoriosClient({
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis dataKey="team" stroke="#6b7280" />
                         <YAxis stroke="#6b7280" domain={[0, 100]} unit="%" />
-                        <Tooltip formatter={(v) => `${v}%`} />
+                        <Tooltip formatter={(v) => `${String(v ?? 0)}%`} />
                         <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
                           {ocupacaoData.map((entry, index) => (
                             <Cell key={`cell-ocup-${index}`} fill={entry.color} />

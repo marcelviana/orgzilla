@@ -188,7 +188,7 @@ export default function OrganogramaPage() {
               return next
             })
           },
-        } as TimeNodeData,
+        },
       }
 
       let allNodes = [node]

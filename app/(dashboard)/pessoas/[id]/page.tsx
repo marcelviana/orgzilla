@@ -661,7 +661,7 @@ export default function PersonProfilePage() {
               />
               <div className="flex items-center justify-between mt-2">
                 <p className="text-xs text-muted-foreground">{newNote.length}/1000 caracteres</p>
-                <Button onClick={handleAddNote} disabled={!newNote.trim() || isSavingNote}>
+                <Button onClick={() => void handleAddNote()} disabled={!newNote.trim() || isSavingNote}>
                   {isSavingNote ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                   Salvar Anotação
                 </Button>

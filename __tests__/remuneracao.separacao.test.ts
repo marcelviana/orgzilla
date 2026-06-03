@@ -258,7 +258,7 @@ describe('PessoaService — separação de remuneração (LGPD)', () => {
       const projectRoot = '/Users/marcelviana/projects/orgzilla'
 
       // Grep: procura por pessoa_remuneracao fora de lib/ e __tests__/
-      let output = ''
+      let output: string
       try {
         output = execSync(
           `grep -r "pessoa_remuneracao" "${projectRoot}/app" "${projectRoot}/components" 2>/dev/null || true`,
@@ -283,7 +283,7 @@ describe('PessoaService — separação de remuneração (LGPD)', () => {
       const { execSync } = await import('child_process')
       const projectRoot = '/Users/marcelviana/projects/orgzilla'
 
-      let output = ''
+      let output: string
       try {
         output = execSync(
           `grep -r "salario_atual" "${projectRoot}/app" "${projectRoot}/components" 2>/dev/null || true`,

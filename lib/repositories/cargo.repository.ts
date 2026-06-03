@@ -111,7 +111,7 @@ export class CargoRepository extends BaseRepository<'cargo', Cargo, CargoInsert,
       .order('nome')
 
     if (error) throw new RepositoryError('Erro ao buscar cargos para filtro', error)
-    return (data ?? []) as Array<{ id: string; nome: string }>
+    return data ?? []
   }
 
   /**

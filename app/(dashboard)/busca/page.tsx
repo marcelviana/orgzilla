@@ -28,8 +28,12 @@ export default function BuscaPage() {
   const [searchQuery, setSearchQuery] = useState(queryParam)
   const [searchTerm, setSearchTerm] = useState(queryParam)
   const [showFilters, setShowFilters] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  // fetchedTerm rastreia qual termo já foi buscado; isLoading é derivado da diferença
+  const [fetchedTerm, setFetchedTerm] = useState('')
   const [results, setResults] = useState<BuscaEntidadesResult>(EMPTY_RESULTS)
+  const isLoading = !!searchTerm && searchTerm !== fetchedTerm
+  // displayResults evita mostrar resultados obsoletos quando searchTerm foi limpo
+  const displayResults = searchTerm ? results : EMPTY_RESULTS
 
   const [selectedTypes, setSelectedTypes] = useState<SearchResultType[]>([
     "pessoa", "time", "projeto", "cargo",
@@ -49,15 +53,11 @@ export default function BuscaPage() {
     return () => clearTimeout(timer)
   }, [searchQuery, router])
 
-  // Fetch results when searchTerm changes
+  // Fetch results when searchTerm changes — sem setState síncrono no corpo do efeito
   useEffect(() => {
-    if (!searchTerm) {
-      setResults(EMPTY_RESULTS)
-      return
-    }
+    if (!searchTerm) return
     let cancelled = false
-    setIsLoading(true)
-    buscarEntidades(searchTerm).then(res => {
+    void buscarEntidades(searchTerm).then(res => {
       if (!cancelled) {
         if (!res.success) {
           toast.error(res.error ?? 'Ops! Orgzilla tropeçou ao buscar. Tente novamente.')
@@ -65,17 +65,17 @@ export default function BuscaPage() {
         } else {
           setResults(res.data ?? EMPTY_RESULTS)
         }
-        setIsLoading(false)
+        setFetchedTerm(searchTerm)
       }
     })
     return () => { cancelled = true }
   }, [searchTerm])
 
   const totalResults =
-    results.pessoas.length +
-    results.times.length +
-    results.projetos.length +
-    results.cargos.length
+    displayResults.pessoas.length +
+    displayResults.times.length +
+    displayResults.projetos.length +
+    displayResults.cargos.length
 
   const toggleGroup = (tipo: SearchResultType) => {
     setExpandedGroups(prev =>
@@ -190,17 +190,17 @@ export default function BuscaPage() {
                   </span>
                 </div>
                 <Separator orientation="vertical" className="h-6" />
-                {results.pessoas.length > 0 && (
-                  <Badge variant="secondary" className="text-white">{results.pessoas.length} Pessoas</Badge>
+                {displayResults.pessoas.length > 0 && (
+                  <Badge variant="secondary" className="text-white">{displayResults.pessoas.length} Pessoas</Badge>
                 )}
-                {results.times.length > 0 && (
-                  <Badge variant="secondary" className="text-white">{results.times.length} Times</Badge>
+                {displayResults.times.length > 0 && (
+                  <Badge variant="secondary" className="text-white">{displayResults.times.length} Times</Badge>
                 )}
-                {results.projetos.length > 0 && (
-                  <Badge variant="secondary" className="text-white">{results.projetos.length} Projetos</Badge>
+                {displayResults.projetos.length > 0 && (
+                  <Badge variant="secondary" className="text-white">{displayResults.projetos.length} Projetos</Badge>
                 )}
-                {results.cargos.length > 0 && (
-                  <Badge variant="secondary" className="text-white">{results.cargos.length} Cargos</Badge>
+                {displayResults.cargos.length > 0 && (
+                  <Badge variant="secondary" className="text-white">{displayResults.cargos.length} Cargos</Badge>
                 )}
                 <div className="ml-auto text-xs text-muted-foreground">
                   <Clock className="mr-1 inline h-3 w-3" />
@@ -227,10 +227,10 @@ export default function BuscaPage() {
                     <h3 className="mb-3 font-semibold text-secondary">Tipo de Resultado</h3>
                     <div className="space-y-2">
                       {([
-                        { type: "pessoa" as SearchResultType, label: "Pessoas", count: results.pessoas.length },
-                        { type: "time" as SearchResultType, label: "Times", count: results.times.length },
-                        { type: "projeto" as SearchResultType, label: "Projetos", count: results.projetos.length },
-                        { type: "cargo" as SearchResultType, label: "Cargos", count: results.cargos.length },
+                        { type: "pessoa" as SearchResultType, label: "Pessoas", count: displayResults.pessoas.length },
+                        { type: "time" as SearchResultType, label: "Times", count: displayResults.times.length },
+                        { type: "projeto" as SearchResultType, label: "Projetos", count: displayResults.projetos.length },
+                        { type: "cargo" as SearchResultType, label: "Cargos", count: displayResults.cargos.length },
                       ]).map(({ type, label, count }) => (
                         <div key={type} className="flex items-center space-x-2">
                           <Checkbox
@@ -283,7 +283,7 @@ export default function BuscaPage() {
                 ) : (
                   <>
                     {/* Pessoas */}
-                    {selectedTypes.includes("pessoa") && results.pessoas.length > 0 && (
+                    {selectedTypes.includes("pessoa") && displayResults.pessoas.length > 0 && (
                       <div className="space-y-3">
                         <button
                           onClick={() => toggleGroup("pessoa")}
@@ -291,7 +291,7 @@ export default function BuscaPage() {
                         >
                           <Users className="h-5 w-5 text-primary" />
                           <h2 className="text-lg font-semibold text-secondary">Pessoas</h2>
-                          <Badge variant="secondary" className="text-white">{results.pessoas.length}</Badge>
+                          <Badge variant="secondary" className="text-white">{displayResults.pessoas.length}</Badge>
                           {expandedGroups.includes("pessoa")
                             ? <ChevronUp className="ml-auto h-5 w-5" />
                             : <ChevronDown className="ml-auto h-5 w-5" />}
@@ -299,7 +299,7 @@ export default function BuscaPage() {
 
                         {expandedGroups.includes("pessoa") && (
                           <div className="space-y-2">
-                            {results.pessoas.map((pessoa: BuscaPessoaItem) => (
+                            {displayResults.pessoas.map((pessoa: BuscaPessoaItem) => (
                               <Card key={pessoa.id} className="flex items-center gap-4 p-4 transition-all hover:shadow-md">
                                 <Avatar className="h-12 w-12">
                                   {pessoa.foto_url && <AvatarImage src={pessoa.foto_url} />}
@@ -333,7 +333,7 @@ export default function BuscaPage() {
                     )}
 
                     {/* Times */}
-                    {selectedTypes.includes("time") && results.times.length > 0 && (
+                    {selectedTypes.includes("time") && displayResults.times.length > 0 && (
                       <div className="space-y-3">
                         <button
                           onClick={() => toggleGroup("time")}
@@ -341,7 +341,7 @@ export default function BuscaPage() {
                         >
                           <Network className="h-5 w-5 text-accent" />
                           <h2 className="text-lg font-semibold text-secondary">Times</h2>
-                          <Badge variant="secondary" className="text-white">{results.times.length}</Badge>
+                          <Badge variant="secondary" className="text-white">{displayResults.times.length}</Badge>
                           {expandedGroups.includes("time")
                             ? <ChevronUp className="ml-auto h-5 w-5" />
                             : <ChevronDown className="ml-auto h-5 w-5" />}
@@ -349,7 +349,7 @@ export default function BuscaPage() {
 
                         {expandedGroups.includes("time") && (
                           <div className="space-y-2">
-                            {results.times.map(time => (
+                            {displayResults.times.map(time => (
                               <Card key={time.id} className="flex items-center gap-4 p-4 transition-all hover:shadow-md">
                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
                                   <Network className="h-6 w-6 text-accent" />
@@ -370,7 +370,7 @@ export default function BuscaPage() {
                     )}
 
                     {/* Projetos */}
-                    {selectedTypes.includes("projeto") && results.projetos.length > 0 && (
+                    {selectedTypes.includes("projeto") && displayResults.projetos.length > 0 && (
                       <div className="space-y-3">
                         <button
                           onClick={() => toggleGroup("projeto")}
@@ -378,7 +378,7 @@ export default function BuscaPage() {
                         >
                           <Briefcase className="h-5 w-5 text-primary" />
                           <h2 className="text-lg font-semibold text-secondary">Projetos</h2>
-                          <Badge variant="secondary" className="text-white">{results.projetos.length}</Badge>
+                          <Badge variant="secondary" className="text-white">{displayResults.projetos.length}</Badge>
                           {expandedGroups.includes("projeto")
                             ? <ChevronUp className="ml-auto h-5 w-5" />
                             : <ChevronDown className="ml-auto h-5 w-5" />}
@@ -386,7 +386,7 @@ export default function BuscaPage() {
 
                         {expandedGroups.includes("projeto") && (
                           <div className="space-y-2">
-                            {results.projetos.map(projeto => (
+                            {displayResults.projetos.map(projeto => (
                               <Card key={projeto.id} className="flex items-center gap-4 p-4 transition-all hover:shadow-md">
                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                                   <Briefcase className="h-6 w-6 text-primary" />
@@ -407,7 +407,7 @@ export default function BuscaPage() {
                     )}
 
                     {/* Cargos */}
-                    {selectedTypes.includes("cargo") && results.cargos.length > 0 && (
+                    {selectedTypes.includes("cargo") && displayResults.cargos.length > 0 && (
                       <div className="space-y-3">
                         <button
                           onClick={() => toggleGroup("cargo")}
@@ -415,7 +415,7 @@ export default function BuscaPage() {
                         >
                           <Briefcase className="h-5 w-5 text-accent" />
                           <h2 className="text-lg font-semibold text-secondary">Cargos</h2>
-                          <Badge variant="secondary" className="text-white">{results.cargos.length}</Badge>
+                          <Badge variant="secondary" className="text-white">{displayResults.cargos.length}</Badge>
                           {expandedGroups.includes("cargo")
                             ? <ChevronUp className="ml-auto h-5 w-5" />
                             : <ChevronDown className="ml-auto h-5 w-5" />}
@@ -423,7 +423,7 @@ export default function BuscaPage() {
 
                         {expandedGroups.includes("cargo") && (
                           <div className="space-y-2">
-                            {results.cargos.map(cargo => (
+                            {displayResults.cargos.map(cargo => (
                               <Card key={cargo.id} className="flex items-center gap-4 p-4 transition-all hover:shadow-md">
                                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/10">
                                   <Briefcase className="h-6 w-6 text-accent" />

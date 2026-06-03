@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { PessoaRepository } from '@/lib/repositories/pessoa.repository'
 import { TimeRepository } from '@/lib/repositories/time.repository'
 import { VagaTimeRepository } from '@/lib/repositories/vaga-time.repository'
@@ -23,7 +23,7 @@ function makeQueryBuilder(result: { data?: unknown; error?: unknown; count?: num
   }
 
   // Métodos terminais que devolvem resultado
-  ;(builder as Record<string, unknown>).then = undefined // não é thenable por default
+  builder.then = undefined // não é thenable por default
   Object.assign(builder, {
     // Torna o builder awaitable
     then: (resolve: (v: unknown) => unknown) => resolve(defaults),
@@ -555,7 +555,7 @@ describe('TimeRepository', () => {
 
       expect(result).toBeInstanceOf(Map)
       expect(result.size).toBe(0)
-      expect((supabase.from as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled()
+      expect(supabase.from).not.toHaveBeenCalled()
     })
 
     it('agrega membros corretamente para múltiplos times', async () => {

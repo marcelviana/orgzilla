@@ -29,13 +29,7 @@ export default function ProjetosPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [projetos, setProjetos] = useState<ProjetoListItem[]>([])
 
-  // Load projetos on mount
-  useEffect(() => {
-    void loadProjetos()
-  }, [])
-
   async function loadProjetos() {
-    setIsLoading(true)
     try {
       const result = await getProjetos()
       if (result.success && result.data) {
@@ -49,6 +43,24 @@ export default function ProjetosPage() {
       setIsLoading(false)
     }
   }
+
+  // Load projetos on mount — setState apenas em callbacks async para satisfazer set-state-in-effect
+  useEffect(() => {
+    void getProjetos()
+      .then((result) => {
+        if (result.success && result.data) {
+          setProjetos(result.data)
+        } else if (!result.success) {
+          toast.error(result.error ?? 'Erro ao carregar projetos')
+        }
+      })
+      .catch((error: unknown) => {
+        toast.error(handleError(error, 'database'))
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [])
 
   const handleDeleteProjeto = async (id: string, nome: string) => {
     if (!confirm(`Deseja realmente desativar o projeto "${nome}"?`)) {

@@ -104,7 +104,7 @@ describe('TimeService', () => {
       // mas time-C já tem time-A como ancestral (A é pai de B que é pai de C)
       // ancestrais de time-C: time-B → time-A
       mockTimeRepo.findById
-        .mockImplementation(async (id: string) => {
+        .mockImplementation((id: string) => {
           const tree: Record<string, { id: string; time_pai_id: string | null }> = {
             'time-C': { id: 'time-C', time_pai_id: 'time-B' },
             'time-B': { id: 'time-B', time_pai_id: 'time-A' },
@@ -123,7 +123,7 @@ describe('TimeService', () => {
       // time-A → time-B (time-A é pai de time-B); agora queremos time-C como pai de time-B
       // ancestrais de time-C: nenhum (time-C é raiz)
       mockTimeRepo.findById
-        .mockImplementation(async (id: string) => {
+        .mockImplementation((id: string) => {
           if (id === 'time-C') return { id: 'time-C', time_pai_id: null }
           return null
         })
@@ -141,7 +141,7 @@ describe('TimeService', () => {
     it('não entra em loop infinito em ciclo direto de time_pai_id', async () => {
       // time-A e time-B apontam um para o outro
       mockTimeRepo.findByTimePaiId
-        .mockImplementation(async (id: string) => {
+        .mockImplementation((id: string) => {
           if (id === 'time-A') return [{ id: 'time-B' }]
           if (id === 'time-B') return [{ id: 'time-A' }]
           return []
@@ -157,7 +157,7 @@ describe('TimeService', () => {
 
     it('não entra em loop em ciclo indireto: A → B → C → A', async () => {
       mockTimeRepo.findByTimePaiId
-        .mockImplementation(async (id: string) => {
+        .mockImplementation((id: string) => {
           if (id === 'time-A') return [{ id: 'time-B' }]
           if (id === 'time-B') return [{ id: 'time-C' }]
           if (id === 'time-C') return [{ id: 'time-A' }] // fecha o ciclo
@@ -173,7 +173,7 @@ describe('TimeService', () => {
     it('retorna todos os nós de hierarquia profunda sem ciclo', async () => {
       // A → B → C → D (linearmente)
       mockTimeRepo.findByTimePaiId
-        .mockImplementation(async (id: string) => {
+        .mockImplementation((id: string) => {
           const children: Record<string, { id: string }[]> = {
             'time-A': [{ id: 'time-B' }],
             'time-B': [{ id: 'time-C' }],
@@ -197,7 +197,7 @@ describe('TimeService', () => {
   describe('buscarDescendentes', () => {
     it('retorna descendentes sem incluir o time raiz', async () => {
       mockTimeRepo.findByTimePaiId
-        .mockImplementation(async (id: string) => {
+        .mockImplementation((id: string) => {
           if (id === 'time-raiz') return [{ id: 'time-filho' }]
           return []
         })

@@ -17,7 +17,7 @@ import { getUsuarioLogado } from '@/lib/middleware'
 import { PermissaoService, TimeService } from '@/lib/services'
 import type { TimeComEstatisticas, TimeHierarquico } from '@/lib/services'
 import { TimeRepository, PessoaRepository, UsuarioRepository } from '@/lib/repositories'
-import type { Time, TimeInsert, TimeUpdate } from '@/lib/types'
+import type { TimeInsert, TimeUpdate } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
 
 // =============================================================================

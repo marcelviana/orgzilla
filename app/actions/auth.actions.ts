@@ -3,7 +3,7 @@
 import { getUsuarioLogado, isAdmin } from '@/lib/middleware'
 import { createClient } from '@/lib/supabase/server'
 import { AuthService } from '@/lib/services/auth.service'
-import { handleError, type ErrorType } from '@/lib/errors/error-handler'
+import { handleError } from '@/lib/errors/error-handler'
 
 type ActionResult<T = void> = {
   success: boolean
@@ -21,7 +21,7 @@ export async function atualizarSenhaAction(novaSenha: string): Promise<ActionRes
     }
     return { success: true }
   } catch (error) {
-    return { success: false, error: handleError(error, 'auth' as ErrorType).message }
+    return { success: false, error: handleError(error, 'auth').message }
   }
 }
 

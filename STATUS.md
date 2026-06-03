@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 3 de junho de 2026 (tipagem do query builder Supabase nos repositories — padrão `query: any` eliminado; `no-unsafe-*` de lint zerados)
+**Última atualização:** 3 de junho de 2026 (lint zerado — 0 errors, 0 warnings; todos os débitos independentes corrigidos)
 
 ---
 
@@ -203,7 +203,8 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 9. ✅ Concluído em 2 jun 2026 — organograma migrado de mock hardcoded (`hierarchyData` estático) para dados reais via `getOrganograma()` chamando `TimeService`; elimina a última página mock do projeto.
 10. ✅ Concluído em 2 jun 2026 — migração de toasts concluída (item D): 11 arquivos em `times/*`, `projetos/*`, `configuracoes/usuarios`, `pessoas/*` migrados de `useToast`/`sonner` para `handleError`+`toast-config`; nenhum uso direto de `useToast`/`sonner` permanece em `app/`.
 11. ✅ Concluído em 2 jun 2026 — N+1 de times otimizado (item F, parcial): `TimeRepository.findEstatisticasAgregadas` reduz `getTimesComEstatisticas` de 4N+1 para 5 queries fixas; 7 novos testes; build e 106 testes passando.
-12. ✅ Concluído em 3 jun 2026 — tipagem do query builder Supabase nos repositories: padrão `let query: any` eliminado em `pessoa.repository.ts`, `time.repository.ts` e `vaga-time.repository.ts`. `SelectQueryBuilder` exportado de `base.repository.ts`; cast `as unknown as SelectQueryBuilder` aplicado nos métodos com filtros condicionais. ~74 erros `@typescript-eslint/no-unsafe-*` zerados; total de erros de lint: antes ~95, depois 21 (todos pré-existentes em outros arquivos, fora do escopo). `tsc --noEmit` e build passando.
+12. ✅ Concluído em 3 jun 2026 — tipagem do query builder Supabase nos repositories: padrão `let query: any` eliminado em `pessoa.repository.ts`, `time.repository.ts` e `vaga-time.repository.ts`. `SelectQueryBuilder` exportado de `base.repository.ts`; cast `as unknown as SelectQueryBuilder` aplicado nos métodos com filtros condicionais. ~74 erros `@typescript-eslint/no-unsafe-*` zerados.
+13. ✅ Concluído em 3 jun 2026 — lint zerado (0 errors, 0 warnings). Corrigidos: `no-useless-assignment` em testes de separação LGPD, `no-unused-vars`/`require-await` em testes, `no-unnecessary-type-assertion` em repositories/actions/organograma, `no-misused-promises` em `pessoas/[id]`, `restrict-template-expressions` em relatórios, `react-hooks/immutability` em projetos, `react-hooks/set-state-in-effect` em `busca/page.tsx` (bug real: estado derivado substituiu setStates síncronos no efeito) e em `projetos/page.tsx`. `tsc --noEmit`, 106 testes e build passando.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
 
