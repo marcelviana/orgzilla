@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Search, X, Users, Network, Briefcase, ChevronDown, ChevronUp, Star, Clock, Filter, SlidersHorizontal } from 'lucide-react'
-import { PageHeader } from '@/components/shared'
+import { PageHeader, EmptyState } from '@/components/shared'
 import { buscarEntidades, type BuscaEntidadesResult, type BuscaPessoaItem } from "@/app/actions/busca.actions"
 import { toast } from "@/lib/ui/toast-config"
 
@@ -268,13 +268,13 @@ export default function BuscaPage() {
               {/* Results */}
               <div className="space-y-6">
                 {totalResults === 0 ? (
-                  <Card className="flex flex-col items-center justify-center p-12 text-center">
-                    <div className="mb-4 text-6xl">🦖🔍</div>
-                    <h2 className="mb-2 text-xl font-semibold text-secondary">Nenhum resultado encontrado</h2>
-                    <p className="mb-6 text-muted-foreground">
-                      Tente usar termos diferentes ou verifique a ortografia
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-2">
+                  <Card>
+                    <EmptyState
+                      illustration="search"
+                      title="Nenhum resultado encontrado"
+                      description="Tente usar termos diferentes ou verifique a ortografia."
+                    />
+                    <div className="flex flex-wrap justify-center gap-2 pb-12">
                       <Button variant="outline" size="sm" onClick={() => setSelectedTypes(["pessoa"])}>
                         Buscar apenas em Pessoas
                       </Button>

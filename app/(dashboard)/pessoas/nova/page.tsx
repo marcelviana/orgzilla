@@ -18,7 +18,7 @@ import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
-import { TableSkeleton, PageHeader } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { createPessoa } from '@/app/actions/pessoas.actions'
 import { getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
@@ -615,10 +615,10 @@ export default function NovasPessoasPage() {
             </div>
 
             {projects.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>Nenhuma alocação de projeto ainda</p>
-                <p className="text-sm mt-1">Clique em "Adicionar Alocação" para começar</p>
-              </div>
+              <EmptyState
+                title="Nenhuma alocação de projeto ainda"
+                description='Clique em "Adicionar alocação" para começar.'
+              />
             ) : (
               <div className="space-y-4">
                 {projects.map((project) => (

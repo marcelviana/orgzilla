@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { DashboardShell } from "@/components/dashboard-shell"
-import { PageHeader } from "@/components/shared"
+import { PageHeader, EmptyState } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -462,7 +462,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 <h3 className="text-lg font-semibold text-secondary">Lista de Níveis</h3>
               </div>
               {niveis.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum nível cadastrado.</p>
+                <EmptyState title="Nenhum nível cadastrado" description="Os níveis aparecerão aqui quando forem criados." />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -557,7 +557,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 </Button>
               </div>
               {trilhas.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma trilha cadastrada. Adicione a primeira!</p>
+                <EmptyState title="Nenhuma trilha cadastrada" description="As trilhas aparecerão aqui quando forem criadas." />
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
@@ -634,7 +634,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 </Button>
               </div>
               {tags.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhuma tag cadastrada. Adicione a primeira!</p>
+                <EmptyState title="Nenhuma tag cadastrada" description="As tags aparecerão aqui quando forem criadas." />
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {tags.map((tag) => (

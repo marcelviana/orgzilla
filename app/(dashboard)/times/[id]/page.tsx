@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Users, MoreVertical, Briefcase } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
+import { DetailsSkeleton, Breadcrumb, StatusBadge, EmptyState } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
@@ -70,10 +70,12 @@ export default function TimeDetailPage() {
     return (
       <DashboardShell>
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold">Time não encontrado</p>
-            <Button onClick={() => router.push('/times')}>Voltar para a lista</Button>
-          </div>
+          <EmptyState
+            illustration="error"
+            title="Time não encontrado"
+            description="Ele pode ter sido removido ou o link está incorreto."
+            action={{ label: "Voltar para a lista", onClick: () => router.push('/times') }}
+          />
         </div>
       </DashboardShell>
     )

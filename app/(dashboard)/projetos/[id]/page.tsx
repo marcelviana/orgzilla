@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { MoreVertical, Plus, Search, Users, Calendar } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
+import { DetailsSkeleton, Breadcrumb, StatusBadge, EmptyState } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getProjetoById, removePessoaDoProjeto, addPessoaAoProjeto, softDeleteProjeto } from '@/app/actions/projetos.actions'
@@ -196,10 +196,12 @@ export default function ProjetoDetailPage() {
     return (
       <DashboardShell>
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold">Projeto não encontrado</p>
-            <Button onClick={() => router.push('/projetos')}>Voltar para a lista</Button>
-          </div>
+          <EmptyState
+            illustration="error"
+            title="Projeto não encontrado"
+            description="Ele pode ter sido removido ou o link está incorreto."
+            action={{ label: "Voltar para a lista", onClick: () => router.push('/projetos') }}
+          />
         </div>
       </DashboardShell>
     )
@@ -306,14 +308,19 @@ export default function ProjetoDetailPage() {
           </div>
 
           {filteredPeople.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>{searchTerm ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa alocada ainda'}</p>
-              {!searchTerm && (
-                <Button className="mt-4" onClick={handleOpenAddPeopleModal}>
-                  Adicionar Primeira Pessoa
-                </Button>
-              )}
-            </div>
+            searchTerm ? (
+              <EmptyState
+                illustration="search"
+                title="Nenhuma pessoa encontrada"
+                description="Tente outro termo de busca."
+              />
+            ) : (
+              <EmptyState
+                title="Nenhuma pessoa alocada ainda"
+                description="Adicione a primeira pessoa a este projeto."
+                action={{ label: "Adicionar primeira pessoa", onClick: handleOpenAddPeopleModal }}
+              />
+            )
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredPeople.map((alocacao) => (

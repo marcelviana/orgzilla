@@ -20,7 +20,7 @@ import { getOrganograma } from "@/app/actions/times.actions"
 import type { TimeHierarquico } from "@/lib/services/time.service"
 import { handleError } from "@/lib/errors/error-handler"
 import { toast } from "@/lib/ui/toast-config"
-import { Breadcrumb } from "@/components/shared"
+import { Breadcrumb, EmptyState } from "@/components/shared"
 
 interface TimeNodeData extends Record<string, unknown> {
   nomeTime: string
@@ -314,9 +314,10 @@ export default function OrganogramaPage() {
   if (timesRaiz.length === 0) {
     return (
       <DashboardShell>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Nenhum time encontrado. Crie o primeiro time!</p>
-        </div>
+        <EmptyState
+          title="Nenhum time encontrado"
+          description="Crie o primeiro time para visualizar o organograma."
+        />
       </DashboardShell>
     )
   }

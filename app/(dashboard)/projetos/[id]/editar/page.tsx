@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, X, Search } from 'lucide-react'
 import { toast } from '@/lib/ui/toast-config'
-import { PageHeader, StatusBadge } from '@/components/shared'
+import { PageHeader, StatusBadge, EmptyState } from '@/components/shared'
 
 const availablePeople = [
   { id: 'p1', nome: 'Maria Santos', avatar: '', cargo: 'Tech Lead', time: 'Engenharia' },
@@ -175,9 +175,10 @@ export default function EditarProjeto() {
                   ))}
                 </div>
               ) : (
-                <div className="border rounded-lg p-8 text-center">
-                  <p className="text-muted-foreground mb-4">Nenhuma pessoa alocada</p>
-                </div>
+                <EmptyState
+                  title="Nenhuma pessoa alocada"
+                  description="Adicione pessoas a este projeto abaixo."
+                />
               )}
 
               <Button
