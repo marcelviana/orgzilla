@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Home, ChevronRight, MoreVertical, Plus, Search, Users, Calendar } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/LoadingState'
+import { DetailsSkeleton } from '@/components/shared/loading-state'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getProjetoById, removePessoaDoProjeto, addPessoaAoProjeto, softDeleteProjeto } from '@/app/actions/projetos.actions'

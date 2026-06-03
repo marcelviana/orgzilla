@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertCircle, Calendar, Check, ExternalLink, Eye, EyeOff, Info, Lock } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/LoadingState'
+import { DetailsSkeleton } from '@/components/shared/loading-state'
 import Link from "next/link"
 import { getUsuarioLogado, type UsuarioLogado } from "@/lib/middleware/auth.middleware"
 import { updateUsuario } from "@/app/actions/usuarios.actions"

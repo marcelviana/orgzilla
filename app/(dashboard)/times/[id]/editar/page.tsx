@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Home, Loader2 } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/LoadingState'
+import { DetailsSkeleton } from '@/components/shared/loading-state'
 import { getTimeById, updateTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 

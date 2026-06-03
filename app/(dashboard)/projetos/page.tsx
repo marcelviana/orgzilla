@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Home, ChevronRight, Search } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/LoadingState'
+import { TableSkeleton } from '@/components/shared/loading-state'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'

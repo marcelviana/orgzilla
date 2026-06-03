@@ -1,15 +1,16 @@
-export { ConfirmDialog } from "./ConfirmDialog"
-export { toast, Toaster } from "./Toast"
-export { EmptyState } from "./EmptyState"
+export { ConfirmDialog } from "./confirm-dialog"
+export { toast, Toaster } from "./toast"
+export { EmptyState } from "./empty-state"
 export {
   TableSkeleton,
   CardSkeleton,
   DetailsSkeleton,
   ChartSkeleton,
-} from "./LoadingState"
-export { PageHeader } from "./PageHeader"
-export { StatsCard } from "./StatsCard"
-export { AvatarStack } from "./AvatarStack"
-export { StatusBadge } from "./StatusBadge"
-export { SearchInput } from "./SearchInput"
-export { FilterPanel } from "./FilterPanel"
+} from "./loading-state"
+export { PageHeader } from "./page-header"
+export { StatsCard } from "./stats-card"
+export { AvatarStack } from "./avatar-stack"
+export { StatusBadge } from "./status-badge"
+export { SearchInput } from "./search-input"
+export { FilterPanel } from "./filter-panel"
+export { ErrorPage } from "./error-page"

@@ -40,7 +40,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/LoadingState'
+import { TableSkeleton } from '@/components/shared/loading-state'
 import Link from "next/link"
 import {
   getUsuarios,

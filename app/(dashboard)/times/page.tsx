@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/LoadingState'
+import { TableSkeleton } from '@/components/shared/loading-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,

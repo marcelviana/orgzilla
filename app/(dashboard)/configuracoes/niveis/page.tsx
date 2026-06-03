@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/LoadingState'
+import { TableSkeleton } from '@/components/shared/loading-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'

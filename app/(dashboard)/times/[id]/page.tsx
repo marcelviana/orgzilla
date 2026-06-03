@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { ChevronRight, Home, Users, MoreVertical, Briefcase } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/LoadingState'
+import { DetailsSkeleton } from '@/components/shared/loading-state'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'

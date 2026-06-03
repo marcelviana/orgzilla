@@ -30,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2 } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/LoadingState'
+import { TableSkeleton } from '@/components/shared/loading-state'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'

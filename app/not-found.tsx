@@ -1,6 +1,6 @@
 'use client'
 
-import { ErrorPage } from '@/components/shared/ErrorPage'
+import { ErrorPage } from '@/components/shared/error-page'
 import { Home, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 

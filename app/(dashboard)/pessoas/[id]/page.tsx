@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, ChevronRight, Home, Loader2 } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/LoadingState'
+import { DetailsSkeleton } from '@/components/shared/loading-state'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getPessoaById } from '@/app/actions/pessoas.actions'

@@ -90,7 +90,7 @@ Não enfraqueça nem remova policies sem registrar o motivo no `STATUS.md`. Em q
 - Sempre cheque permissão antes de consultar/retornar dados; gestor só acessa a própria hierarquia (filtro recursivo).
 
 ### Nomenclatura
-- **Arquivos de componente:** kebab-case (`pessoa-form.tsx`, `dashboard-shell.tsx`).
+- **Arquivos de componente:** kebab-case SEM exceção (`pessoa-form.tsx`, `page-header.tsx`). Inclui `components/shared/` — nenhum arquivo PascalCase permitido. `components/ui/` segue o lowercase do shadcn, que já é compatível.
 - **Páginas:** `page.tsx`, `[id]/page.tsx`.
 - **Services/utils:** camelCase com sufixo (`pessoa.service.ts`, `format.ts`).
 - **Identificadores de componente:** PascalCase (`function PessoaForm() {}`).

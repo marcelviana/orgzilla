@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Info, Plus, X, Users, Loader2 } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/LoadingState'
+import { DetailsSkeleton } from '@/components/shared/loading-state'
 import { createTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
