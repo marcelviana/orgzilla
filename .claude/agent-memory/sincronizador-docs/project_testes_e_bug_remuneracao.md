@@ -1,11 +1,11 @@
 ---
 name: project_testes_e_bug_remuneracao
-description: Infraestrutura Vitest criada (45 testes passando); bug LGPD em relatorios.actions corrigido — padrão de como registrar bug detectado por teste e sua resolução no STATUS.md
+description: Infraestrutura Vitest criada (106 testes passando em 5 arquivos); bug LGPD em relatorios.actions corrigido — padrão de como registrar bug detectado por teste e sua resolução no STATUS.md
 metadata:
   type: project
 ---
 
-Vitest 4.1.8 instalado (commit c3ac8a2 precedente ao fix). 3 arquivos em `__tests__/`: `permissao.service.test.ts` (22), `time.service.test.ts` (11), `remuneracao.separacao.test.ts` (12). Todos os 45 passando após commit 672c47e.
+Vitest 4.1.8 instalado. 5 arquivos em `__tests__/`: `permissao.service.test.ts` (22), `time.service.test.ts` (11), `remuneracao.separacao.test.ts` (12), `repositories.test.ts` (49), `pessoa.service.enriquecer.test.ts` (11). Total: **106 testes passando** (atualizado em 2026-06-03).
 
 **Why:** Um dos testes de `remuneracao.separacao` fazia grep nos arquivos de `app/` e `lib/` para garantir que `supabase.from('pessoa_remuneracao')` não aparecesse fora de `lib/repositories`. Isso detectou a violação em `relatorios.actions.ts:448` que acessava diretamente, pulando o `PessoaService`.
 

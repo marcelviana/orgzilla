@@ -34,7 +34,7 @@ Perfis de acesso: **admin** (administração de sistema, sem acesso a salários)
 
 - Node.js compatível com Next 16
 - Conta no Supabase
-- Um gerenciador de pacotes — **escolha apenas um** (npm **ou** pnpm). O repo tem lockfiles conflitantes; ver `STATUS.md` §3.4 antes de instalar.
+- **pnpm** como gerenciador de pacotes (único lockfile: `pnpm-lock.yaml`). Não use npm nem yarn — ver `STATUS.md` §3.4.
 
 ---
 

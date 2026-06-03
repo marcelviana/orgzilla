@@ -5,3 +5,4 @@
 - [Testes Vitest e bug remuneração](project_testes_e_bug_remuneracao.md) — Vitest criado (45 testes); padrão de como registrar bug detectado por teste e resolução no STATUS.md
 - [Débitos arquiteturais pendentes](project_debitos_arquiteturais.md) — padrão 🟡 em §3.3 para débitos do revisor-camadas; 3 débitos pendentes identificados no commit c6b4e97
 - [Migração de toasts concluída](project_toast_migracao.md) — item D do roadmap encerrado em 2026-06-02; nenhum useToast/sonner direto permanece em app/
+- [CI e tipagem Supabase](project_ci_e_tipagem_supabase.md) — gate de CI em .github/workflows/ci.yml (2026-06-03); padrão SelectQueryBuilder documentado no CLAUDE.md

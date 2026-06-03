@@ -54,7 +54,7 @@ Regras:
 - Não coloque lógica de negócio, permissão ou auditoria em Repository — isso é Service.
 - Não chame `supabase.from(...)` direto numa Action quando já existe Repository/Service para a entidade. Use a camada.
 - Não acesse o banco direto de componentes — sempre via Action → Service.
-- ⚠️ **Débito conhecido:** hoje há três padrões convivendo (Service, Repository direto e `supabase.from()` cru em Actions). Ao tocar em código que fura a camada, **migre para o padrão acima** em vez de replicar o atalho. Ver `STATUS.md` §3.3.
+- Ao tocar em código que fura a camada (qualquer `supabase.from()` cru em Action ou lógica de negócio em Repository), **migre para o padrão acima** em vez de replicar o atalho. Ver `STATUS.md` §3.3.
 - A recursão de hierarquia de times deve viver num **único lugar** (`TimeService`), com proteção contra ciclos. Não crie novas cópias.
 - Sempre obtenha o usuário atual do contexto de auth; nunca hardcode UUIDs.
 
