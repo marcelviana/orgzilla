@@ -3,13 +3,13 @@
 import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, Users, Network, Workflow, Briefcase, BarChart3, Settings, LogOut, Bell, Menu, Search, ChevronDown, ChevronRight, Tag, TrendingUp, ShieldAlert } from 'lucide-react'
+import { LayoutDashboard, Users, Network, Workflow, Briefcase, BarChart3, Settings, LogOut, Menu, Search, ChevronDown, ChevronRight, Tag, TrendingUp, ShieldAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { useUser } from '@/components/providers/user-provider'
 
@@ -43,9 +43,17 @@ const adminSubmenuItems: NavItem[] = [
 
 export function DashboardShell({ children }: DashboardShellProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const usuario = useUser()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [configExpanded, setConfigExpanded] = useState(pathname?.startsWith('/configuracoes') || false)
+  const [headerSearch, setHeaderSearch] = useState("")
+
+  const handleHeaderSearch = () => {
+    const termo = headerSearch.trim()
+    if (!termo) return
+    router.push(`/busca?q=${encodeURIComponent(termo)}`)
+  }
 
   // Verificar se é admin
   const isAdmin = usuario?.tipo_perfil === 'admin'
@@ -263,22 +271,31 @@ export function DashboardShell({ children }: DashboardShellProps) {
           {/* Right Side */}
           <div className="flex items-center gap-3">
             {/* Search Bar - Hidden on Mobile */}
+            {/* TODO: busca acessível no mobile */}
             <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <button
+                type="button"
+                aria-label="Buscar"
+                onClick={handleHeaderSearch}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <Search className="h-4 w-4" />
+              </button>
               <Input
                 type="search"
                 placeholder="Buscar pessoas, times..."
+                aria-label="Buscar pessoas e times"
                 className="w-64 rounded-full pl-10 lg:w-80"
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleHeaderSearch() }}
               />
             </div>
 
-            {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
+            {/* TODO: reativar quando houver backend de notificações */}
+            {/* <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-error text-[10px] font-bold text-white">
-                3
-              </span>
-            </Button>
+            </Button> */}
 
             {/* User Avatar */}
             <Link href="/perfil">

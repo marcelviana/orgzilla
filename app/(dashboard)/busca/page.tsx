@@ -42,6 +42,14 @@ export default function BuscaPage() {
     "pessoa", "time", "projeto", "cargo",
   ])
 
+  // Sincroniza estado quando o ?q= muda (ex.: nova busca disparada pelo header)
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      setSearchQuery(queryParam)
+      setSearchTerm(queryParam)
+    })
+  }, [queryParam])
+
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
