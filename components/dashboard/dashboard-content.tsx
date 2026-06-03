@@ -1,6 +1,7 @@
 "use client"
 
 import { Users, Network, Briefcase, FolderKanban, Plus, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
+import { EmptyState } from '@/components/shared'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import Link from "next/link"
 
@@ -179,13 +180,12 @@ export function DashboardContent({
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <p className="text-sm">Nenhum dado disponível</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Adicione pessoas com cargos para ver a distribuição
-                </p>
-              </div>
+            <div className="flex h-[300px] items-center justify-center">
+              <EmptyState
+                icon={<Briefcase className="h-12 w-12" />}
+                title="Nenhum dado disponível"
+                description="Adicione pessoas com cargos para ver a distribuição."
+              />
             </div>
           )}
         </div>
@@ -206,13 +206,12 @@ export function DashboardContent({
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <p className="text-sm">Nenhum dado disponível</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Adicione pessoas aos times para ver a distribuição
-                </p>
-              </div>
+            <div className="flex h-[300px] items-center justify-center">
+              <EmptyState
+                icon={<Network className="h-12 w-12" />}
+                title="Nenhum dado disponível"
+                description="Adicione pessoas aos times para ver a distribuição."
+              />
             </div>
           )}
         </div>
@@ -241,14 +240,11 @@ export function DashboardContent({
             })}
           </div>
         ) : (
-          <div className="flex items-center justify-center py-8 text-muted-foreground">
-            <div className="text-center">
-              <p className="text-sm">Nenhuma atividade recente</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                As alterações no sistema aparecerão aqui
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={<Activity className="h-12 w-12" />}
+            title="Nenhuma atividade recente"
+            description="As alterações no sistema aparecerão aqui."
+          />
         )}
       </div>
 

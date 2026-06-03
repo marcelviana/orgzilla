@@ -17,7 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Plus, X, Search, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, PageHeader } from '@/components/shared'
+import { DetailsSkeleton, PageHeader, EmptyState } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { createProjeto, addPessoaAoProjeto } from '@/app/actions/projetos.actions'
@@ -198,12 +198,10 @@ export default function NovoProjeto() {
               </div>
 
               {pessoasAlocadas.length === 0 ? (
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <p className="text-muted-foreground">Nenhuma pessoa alocada ainda</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Clique em "Adicionar Pessoas" para começar
-                  </p>
-                </div>
+                <EmptyState
+                  title="Nenhuma pessoa alocada ainda"
+                  description='Clique em "Adicionar pessoas" para começar.'
+                />
               ) : (
                 <div className="space-y-2">
                   {pessoasAlocadas.map((pessoa) => (

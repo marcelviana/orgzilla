@@ -5,7 +5,8 @@ import { PageHeader } from '@/components/shared'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Download, Lock } from 'lucide-react'
+import { Download, Lock, BarChart3 } from 'lucide-react'
+import { EmptyState } from '@/components/shared'
 import {
   BarChart,
   Bar,
@@ -45,6 +46,11 @@ function ocupacaoCor(rate: number): string {
   if (rate >= 90) return 'var(--success)'
   if (rate >= 70) return 'var(--warning)'
   return 'var(--danger)'
+}
+
+// Empty state enxuto para cards de gráfico (sem dino, ícone neutro)
+function ChartEmpty({ title }: { title: string }) {
+  return <EmptyState icon={<BarChart3 className="h-10 w-10" />} title={title} />
 }
 
 // Formata moeda BRL
@@ -139,7 +145,7 @@ export function RelatoriosClient({
                 </CardHeader>
                 <CardContent>
                   {distribuicaoPorNivel.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-10">Nenhum dado encontrado.</p>
+                    <ChartEmpty title="Nenhum dado encontrado." />
                   ) : (
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
@@ -176,7 +182,7 @@ export function RelatoriosClient({
                 </CardHeader>
                 <CardContent>
                   {distribuicaoPorStatus.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-10">Nenhum dado encontrado.</p>
+                    <ChartEmpty title="Nenhum dado encontrado." />
                   ) : (
                     <ResponsiveContainer width="100%" height={300}>
                       <PieChart>
@@ -215,7 +221,7 @@ export function RelatoriosClient({
               </CardHeader>
               <CardContent>
                 {topTimes.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-10">Nenhum dado encontrado.</p>
+                  <ChartEmpty title="Nenhum dado encontrado." />
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={topTimes} layout="horizontal">
@@ -245,7 +251,7 @@ export function RelatoriosClient({
               </CardHeader>
               <CardContent>
                 {pessoasPorCargo.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-10">Nenhum cargo encontrado.</p>
+                  <ChartEmpty title="Nenhum cargo encontrado." />
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full">
@@ -287,7 +293,7 @@ export function RelatoriosClient({
               </CardHeader>
               <CardContent>
                 {teamSizeData.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-10">Nenhum time encontrado.</p>
+                  <ChartEmpty title="Nenhum time encontrado." />
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
                     <Treemap
@@ -344,7 +350,7 @@ export function RelatoriosClient({
                 </CardHeader>
                 <CardContent>
                   {ocupacaoData.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-10">Nenhum dado encontrado.</p>
+                    <ChartEmpty title="Nenhum dado encontrado." />
                   ) : (
                     <ResponsiveContainer width="100%" height={250}>
                       <BarChart data={ocupacaoData}>
@@ -376,7 +382,7 @@ export function RelatoriosClient({
                 </CardHeader>
                 <CardContent>
                   {metricasVagas.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-10">Nenhum dado encontrado.</p>
+                    <ChartEmpty title="Nenhum dado encontrado." />
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full">
@@ -531,7 +537,7 @@ export function RelatoriosClient({
                 </CardHeader>
                 <CardContent>
                   {projectPieData.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-10">Nenhum projeto encontrado.</p>
+                    <ChartEmpty title="Nenhum projeto encontrado." />
                   ) : (
                     <ResponsiveContainer width="100%" height={250}>
                       <PieChart>
@@ -569,7 +575,7 @@ export function RelatoriosClient({
                 </CardHeader>
                 <CardContent>
                   {metricasProjetos.topProjetos.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-10">Nenhum projeto com alocação encontrado.</p>
+                    <ChartEmpty title="Nenhum projeto com alocação encontrado." />
                   ) : (
                     <ResponsiveContainer width="100%" height={250}>
                       <BarChart data={metricasProjetos.topProjetos}>

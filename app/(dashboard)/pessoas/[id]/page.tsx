@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
+import { DetailsSkeleton, Breadcrumb, StatusBadge, EmptyState } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getPessoaById } from '@/app/actions/pessoas.actions'
@@ -196,10 +196,12 @@ export default function PersonProfilePage() {
     return (
       <DashboardShell>
         <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <p className="text-lg font-semibold">Pessoa não encontrada</p>
-            <Button onClick={() => router.push('/pessoas')}>Voltar para a lista</Button>
-          </div>
+          <EmptyState
+            illustration="error"
+            title="Pessoa não encontrada"
+            description="Ela pode ter sido removida ou o link está incorreto."
+            action={{ label: "Voltar para a lista", onClick: () => router.push('/pessoas') }}
+          />
         </div>
       </DashboardShell>
     )
@@ -651,9 +653,10 @@ export default function PersonProfilePage() {
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Anotações</h3>
               {notes.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Nenhuma anotação ainda. Adicione a primeira!
-                </p>
+                <EmptyState
+                  title="Nenhuma anotação ainda"
+                  description="Use o campo acima para adicionar a primeira."
+                />
               ) : (
                 <div className="space-y-4">
                   {notes.map(note => (

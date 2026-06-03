@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StatusBadge } from '@/components/shared/status-badge'
-import { PageHeader } from '@/components/shared'
+import { PageHeader, EmptyState } from '@/components/shared'
 import { toast } from 'sonner'
 import type { PessoasResult } from '@/app/actions/pessoas.actions'
 import { exportPessoasCSV } from '@/app/actions/pessoas.actions'
@@ -329,11 +329,12 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
               <TableBody>
                 {pessoas.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={canViewSalary ? 8 : 7} className="text-center py-12">
-                      <div className="flex flex-col items-center gap-2">
-                        <p className="text-muted-foreground font-medium">Nenhuma pessoa encontrada</p>
-                        <p className="text-sm text-muted-foreground">Tente ajustar seus filtros ou busca</p>
-                      </div>
+                    <TableCell colSpan={canViewSalary ? 8 : 7}>
+                      <EmptyState
+                        illustration="search"
+                        title="Nenhuma pessoa encontrada"
+                        description="Tente ajustar seus filtros ou a busca."
+                      />
                     </TableCell>
                   </TableRow>
                 ) : (

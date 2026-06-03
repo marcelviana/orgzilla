@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
-import { PageHeader } from '@/components/shared'
+import { PageHeader, EmptyState } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,
@@ -360,15 +360,11 @@ export default function TimesPage() {
 
         {/* Empty State */}
         {filteredTeams.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-96">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🦖</div>
-              <h3 className="text-lg font-semibold mb-2">Nenhum time encontrado</h3>
-              <p className="text-muted-foreground">
-                Tente ajustar os filtros ou criar um novo time
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            illustration="search"
+            title="Nenhum time encontrado"
+            description="Tente ajustar os filtros ou crie um novo time."
+          />
         )}
 
         {/* Delete Confirmation Dialog */}
