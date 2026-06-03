@@ -103,7 +103,7 @@ export function AvatarStack({
               <div
                 className={`${sizeClasses[size]} rounded-full bg-gray-200 border-2 border-white flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors`}
               >
-                <span className="text-gray-600 font-medium text-xs">
+                <span className="text-muted-foreground font-medium text-xs">
                   +{remainingCount}
                 </span>
               </div>

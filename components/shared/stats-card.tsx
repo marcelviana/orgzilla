@@ -42,7 +42,7 @@ export function StatsCard({
   const trendColors = {
     up: "text-green-600 bg-green-50",
     down: "text-red-600 bg-red-50",
-    neutral: "text-gray-600 bg-gray-50",
+    neutral: "text-muted-foreground bg-gray-50",
   }
 
   return (
@@ -56,8 +56,8 @@ export function StatsCard({
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm text-gray-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mb-2">{value}</p>
+          <p className="text-sm text-muted-foreground mb-1">{title}</p>
+          <p className="text-3xl font-bold text-foreground mb-2">{value}</p>
 
           <div className="flex items-center gap-2">
             {trend && (
@@ -70,11 +70,11 @@ export function StatsCard({
                 <span>{trend.value}</span>
               </div>
             )}
-            {subtext && <span className="text-xs text-gray-500">{subtext}</span>}
+            {subtext && <span className="text-xs text-muted-foreground">{subtext}</span>}
           </div>
         </div>
 
-        <div className="h-12 w-12 rounded-full bg-[#FF7A00]/10 flex items-center justify-center">
+        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
           {icon}
         </div>
       </div>

@@ -364,8 +364,8 @@ export default function NiveisPage() {
                   L1 até L16
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-[#FF7A00]/10 flex items-center justify-center">
-                <Layers className="h-6 w-6 text-[#FF7A00]" />
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Layers className="h-6 w-6 text-primary" />
               </div>
             </div>
           </div>
@@ -379,8 +379,8 @@ export default function NiveisPage() {
                   com pessoas alocadas
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-[#00C8FF]/10 flex items-center justify-center">
-                <Users className="h-6 w-6 text-[#00C8FF]" />
+              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
+                <Users className="h-6 w-6 text-accent" />
               </div>
             </div>
           </div>
@@ -414,7 +414,7 @@ export default function NiveisPage() {
                     onClick={() => scrollToLevel(level.id)}
                     className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg border-2 transition-colors ${
                       level.pessoas > 0
-                        ? 'border-[#FF7A00] bg-[#FF7A00]/5 hover:bg-[#FF7A00]/10'
+                        ? 'border-primary bg-primary/5 hover:bg-primary/10'
                         : 'border-gray-200 bg-gray-50 hover:bg-gray-100'
                     }`}
                   >
@@ -443,7 +443,7 @@ export default function NiveisPage() {
                     onClick={() => scrollToLevel(level.id)}
                     className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg border-2 border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors"
                   >
-                    <span className="font-bold text-gray-500">
+                    <span className="font-bold text-muted-foreground">
                       {level.nome}
                     </span>
                     <Badge variant="secondary" className="text-white">
@@ -479,7 +479,7 @@ export default function NiveisPage() {
                   <TableRow
                     id={`level-row-${level.id}`}
                     className={
-                      level.pessoas > 0 ? 'bg-[#FF7A00]/5' : undefined
+                      level.pessoas > 0 ? 'bg-primary/5' : undefined
                     }
                   >
                     <TableCell>
@@ -525,7 +525,7 @@ export default function NiveisPage() {
                             setSelectedLevel(level)
                             setPeopleModalOpen(true)
                           }}
-                          className="text-[#00C8FF] hover:underline"
+                          className="text-accent hover:underline"
                         >
                           {level.pessoas} pessoas
                         </button>
@@ -542,7 +542,7 @@ export default function NiveisPage() {
                             setSelectedLevel(level)
                             setPositionsModalOpen(true)
                           }}
-                          className="text-[#00C8FF] hover:underline"
+                          className="text-accent hover:underline"
                         >
                           {level.cargos} cargos
                         </button>

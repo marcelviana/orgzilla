@@ -50,15 +50,15 @@ export function EmptyState({
       {illustration ? (
         dinoIllustrations[illustration]
       ) : icon ? (
-        <div className="text-gray-400 mb-4">{icon}</div>
+        <div className="text-muted-foreground mb-4">{icon}</div>
       ) : (
         dinoIllustrations.default
       )}
 
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
+      <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
 
       {description && (
-        <p className="text-sm text-gray-500 mb-6 max-w-md">{description}</p>
+        <p className="text-sm text-muted-foreground mb-6 max-w-md">{description}</p>
       )}
 
       {action && (

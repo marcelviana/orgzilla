@@ -2,8 +2,6 @@ import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-// TODO: migrar cores hardcoded (#FF7A00, text-gray-900) para tokens de design
-
 export interface BreadcrumbItem {
   label: string
   href?: string
@@ -37,7 +35,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
   return (
     <nav
       aria-label="Breadcrumb"
-      className={cn("flex items-center gap-2 text-sm text-gray-600", className)}
+      className={cn("flex items-center gap-2 text-sm text-muted-foreground", className)}
     >
       {items.map((item, index) => {
         const isLast = index === items.length - 1
@@ -46,12 +44,12 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
             {!isLast && item.href ? (
               <Link
                 href={item.href}
-                className="hover:text-[#FF7A00] transition-colors"
+                className="hover:text-primary transition-colors"
               >
                 {item.label}
               </Link>
             ) : (
-              <span className={cn(isLast ? "text-gray-900 font-medium" : "text-gray-600")}>
+              <span className={cn(isLast ? "text-foreground font-medium" : "text-muted-foreground")}>
                 {item.label}
               </span>
             )}

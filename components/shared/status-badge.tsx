@@ -36,7 +36,7 @@ const statusConfig = {
   },
   desligado: {
     label: "Desligado",
-    color: "bg-gray-100 text-gray-800 border-gray-200",
+    color: "bg-gray-100 text-foreground border-gray-200",
     dotColor: "bg-gray-500",
   },
 }

@@ -35,8 +35,8 @@ export default function Error({
       <Card className="p-4 bg-gray-100 border-gray-200">
         <div className="flex items-center justify-between">
           <div className="text-left">
-            <p className="text-xs text-gray-500 mb-1">Referência do erro:</p>
-            <code className="text-sm font-mono text-gray-700">{errorRef}</code>
+            <p className="text-xs text-muted-foreground mb-1">Referência do erro:</p>
+            <code className="text-sm font-mono text-foreground">{errorRef}</code>
           </div>
           <Button
             size="sm"
@@ -51,11 +51,11 @@ export default function Error({
       </Card>
 
       {/* Support Prompt */}
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-muted-foreground">
         Problema persistindo?{' '}
         <a
           href="mailto:suporte@orgzilla.com"
-          className="text-[#FF7A00] hover:underline font-medium"
+          className="text-primary hover:underline font-medium"
         >
           Abrir chamado de suporte
         </a>

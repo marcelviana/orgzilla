@@ -164,7 +164,7 @@ export default function NovoProjeto() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Novo Projeto</h1>
-          <p className="text-gray-500 mt-1">Crie um novo projeto e aloque pessoas</p>
+          <p className="text-muted-foreground mt-1">Crie um novo projeto e aloque pessoas</p>
         </div>
 
         {/* Form Card */}
@@ -201,8 +201,8 @@ export default function NovoProjeto() {
 
               {pessoasAlocadas.length === 0 ? (
                 <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <p className="text-gray-500">Nenhuma pessoa alocada ainda</p>
-                  <p className="text-sm text-gray-400 mt-1">
+                  <p className="text-muted-foreground">Nenhuma pessoa alocada ainda</p>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Clique em "Adicionar Pessoas" para começar
                   </p>
                 </div>
@@ -219,7 +219,7 @@ export default function NovoProjeto() {
                         </Avatar>
                         <div>
                           <p className="font-medium">{pessoa.nome}</p>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             {pessoa.cargo || 'Sem cargo'} {pessoa.time ? `• ${pessoa.time}` : ''}
                           </p>
                         </div>
@@ -279,7 +279,7 @@ export default function NovoProjeto() {
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome..."
                   value={searchTerm}
@@ -291,7 +291,7 @@ export default function NovoProjeto() {
               {/* People List */}
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {filteredAvailable.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">
+                  <p className="text-center text-muted-foreground py-8">
                     {searchTerm ? 'Nenhuma pessoa encontrada' : 'Todas as pessoas já foram alocadas'}
                   </p>
                 ) : (
@@ -317,7 +317,7 @@ export default function NovoProjeto() {
                       </Avatar>
                       <div className="flex-1">
                         <p className="font-medium">{pessoa.nome}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {pessoa.cargo || 'Sem cargo'} {pessoa.time ? `• ${pessoa.time}` : ''}
                         </p>
                       </div>

@@ -58,7 +58,7 @@ export function PageHeader({
 
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+              <h1 className="text-3xl font-bold text-foreground">{title}</h1>
               {badge && (
                 <Badge
                   variant={badge.variant === "admin" ? "secondary" : "default"}
@@ -73,7 +73,7 @@ export function PageHeader({
               )}
             </div>
             {description && (
-              <p className="text-gray-600 mt-1">{description}</p>
+              <p className="text-muted-foreground mt-1">{description}</p>
             )}
           </div>
         </div>

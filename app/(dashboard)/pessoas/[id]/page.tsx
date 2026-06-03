@@ -185,8 +185,8 @@ export default function PersonProfilePage() {
       case 'Férias': return 'bg-blue-100 text-blue-800'
       case 'Licença': return 'bg-orange-100 text-orange-800'
       case 'Afastamento': return 'bg-yellow-100 text-yellow-800'
-      case 'Desligado': return 'bg-gray-100 text-gray-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'Desligado': return 'bg-gray-100 text-foreground'
+      default: return 'bg-gray-100 text-foreground'
     }
   }
 
@@ -239,7 +239,7 @@ export default function PersonProfilePage() {
             </div>
 
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-[#1A2734]">{pessoa.nome}</h1>
+              <h1 className="text-3xl font-bold text-foreground">{pessoa.nome}</h1>
               {pessoa.nome_social && (
                 <p className="text-sm text-muted-foreground mt-1">(Nome social: {pessoa.nome_social})</p>
               )}
@@ -626,7 +626,7 @@ export default function PersonProfilePage() {
                     <div key={projeto.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-lg font-bold">{projeto.projeto_produto?.nome ?? '-'}</p>
-                        <Badge className="bg-gray-100 text-gray-800">Encerrado</Badge>
+                        <Badge className="bg-gray-100 text-foreground">Encerrado</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
                         {formatDateShort(projeto.data_inicio)}

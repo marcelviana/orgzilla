@@ -133,7 +133,7 @@ export default function BuscaPage() {
         <Card className="p-6">
           <div className="flex gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Buscar pessoas, times, projetos, cargos..."
@@ -145,7 +145,7 @@ export default function BuscaPage() {
               {searchQuery && (
                 <button
                   onClick={() => { setSearchQuery(""); setSearchTerm("") }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -163,7 +163,7 @@ export default function BuscaPage() {
 
         {!searchTerm ? (
           <Card className="flex flex-col items-center justify-center p-12 text-center">
-            <Search className="mb-4 h-16 w-16 text-gray-300" />
+            <Search className="mb-4 h-16 w-16 text-muted-foreground" />
             <h2 className="mb-2 text-xl font-semibold text-secondary">Buscar no Orgzilla</h2>
             <p className="mb-6 text-muted-foreground">Encontre pessoas, times, projetos e cargos</p>
             <div className="flex flex-wrap justify-center gap-2">
@@ -180,7 +180,7 @@ export default function BuscaPage() {
           </Card>
         ) : isLoading ? (
           <Card className="flex flex-col items-center justify-center p-12 text-center">
-            <Search className="mb-4 h-16 w-16 animate-pulse text-gray-300" />
+            <Search className="mb-4 h-16 w-16 animate-pulse text-muted-foreground" />
             <p className="text-muted-foreground">Buscando...</p>
           </Card>
         ) : (

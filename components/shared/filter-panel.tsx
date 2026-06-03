@@ -65,7 +65,7 @@ export function FilterPanel({
         className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900">Filtros</span>
+          <span className="font-semibold text-foreground">Filtros</span>
           {activeFiltersCount > 0 && (
             <span className="px-2 py-1 bg-primary-strong text-white text-xs rounded-full font-medium">
               {activeFiltersCount}
@@ -73,9 +73,9 @@ export function FilterPanel({
           )}
         </div>
         {isExpanded ? (
-          <ChevronUp className="h-5 w-5 text-gray-400" />
+          <ChevronUp className="h-5 w-5 text-muted-foreground" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-gray-400" />
+          <ChevronDown className="h-5 w-5 text-muted-foreground" />
         )}
       </button>
 

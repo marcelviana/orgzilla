@@ -21,7 +21,7 @@ import { toast } from '@/lib/ui/toast-config'
 
 const statusColors = {
   Ativo: 'bg-green-100 text-green-800 border-green-200',
-  Inativo: 'bg-gray-100 text-gray-800 border-gray-200',
+  Inativo: 'bg-gray-100 text-foreground border-gray-200',
 }
 
 export default function ProjetosPage() {
@@ -107,11 +107,11 @@ export default function ProjetosPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Projetos" }]} />
-            <h1 className="text-3xl font-bold text-gray-900">Projetos e Produtos</h1>
+            <h1 className="text-3xl font-bold text-foreground">Projetos e Produtos</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar projetos..."
                 value={searchTerm}
@@ -151,9 +151,9 @@ export default function ProjetosPage() {
           <Card className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Total de Projetos</p>
-                <p className="text-3xl font-bold text-gray-900">{projetos.length}</p>
-                <p className="text-sm text-gray-600 mt-2">{projetosAtivos} ativos, {projetosInativos} inativos</p>
+                <p className="text-sm text-muted-foreground mb-1">Total de Projetos</p>
+                <p className="text-3xl font-bold text-foreground">{projetos.length}</p>
+                <p className="text-sm text-muted-foreground mt-2">{projetosAtivos} ativos, {projetosInativos} inativos</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
                 <FolderKanban className="w-6 h-6 text-orange-500" />
@@ -163,9 +163,9 @@ export default function ProjetosPage() {
           <Card className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Total de Alocações</p>
-                <p className="text-3xl font-bold text-gray-900">{totalPessoas}</p>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-muted-foreground mb-1">Total de Alocações</p>
+                <p className="text-3xl font-bold text-foreground">{totalPessoas}</p>
+                <p className="text-sm text-muted-foreground mt-2">
                   {projetos.reduce((acc, p) => acc + p.pessoas_ativas, 0)} alocações ativas
                 </p>
               </div>
@@ -180,11 +180,11 @@ export default function ProjetosPage() {
         {viewMode === 'grid' ? (
           filteredProjects.length === 0 ? (
             <Card className="p-12 text-center">
-              <FolderKanban className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <FolderKanban className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum projeto cadastrado'}
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 {searchTerm
                   ? 'Tente ajustar os filtros de busca'
                   : 'Comece criando seu primeiro projeto'}
@@ -207,7 +207,7 @@ export default function ProjetosPage() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{project.nome}</h3>
+                      <h3 className="text-xl font-bold text-foreground mb-2">{project.nome}</h3>
                       <Badge
                         className={
                           statusColors[project.ativo ? 'Ativo' : 'Inativo']
@@ -241,16 +241,16 @@ export default function ProjetosPage() {
                   <div className="border-t pt-4 mb-4" />
 
                   <div className="flex-grow">
-                    <p className="text-sm font-semibold text-gray-700 mb-3">Alocações</p>
+                    <p className="text-sm font-semibold text-foreground mb-3">Alocações</p>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Total de alocações</span>
-                        <span className="text-lg font-bold text-gray-900">
+                        <span className="text-sm text-muted-foreground">Total de alocações</span>
+                        <span className="text-lg font-bold text-foreground">
                           {project.total_pessoas}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Alocações ativas</span>
+                        <span className="text-sm text-muted-foreground">Alocações ativas</span>
                         <span className="text-sm font-semibold text-green-600">
                           {project.pessoas_ativas}
                         </span>
@@ -275,11 +275,11 @@ export default function ProjetosPage() {
             <div className="overflow-x-auto">
               {filteredProjects.length === 0 ? (
                 <div className="p-12 text-center">
-                  <FolderKanban className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <FolderKanban className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum projeto cadastrado'}
                   </h3>
-                  <p className="text-gray-600 mb-4">
+                  <p className="text-muted-foreground mb-4">
                     {searchTerm
                       ? 'Tente ajustar os filtros de busca'
                       : 'Comece criando seu primeiro projeto'}
@@ -297,17 +297,17 @@ export default function ProjetosPage() {
                 <table className="w-full">
                   <thead className="border-b bg-gray-50">
                     <tr>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Nome</th>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Status</th>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Alocações</th>
-                      <th className="text-left p-4 text-sm font-semibold text-gray-700">Ações</th>
+                      <th className="text-left p-4 text-sm font-semibold text-foreground">Nome</th>
+                      <th className="text-left p-4 text-sm font-semibold text-foreground">Status</th>
+                      <th className="text-left p-4 text-sm font-semibold text-foreground">Alocações</th>
+                      <th className="text-left p-4 text-sm font-semibold text-foreground">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredProjects.map((project) => (
                       <tr key={project.id} className="border-b hover:bg-gray-50">
                         <td className="p-4">
-                          <p className="font-semibold text-gray-900">{project.nome}</p>
+                          <p className="font-semibold text-foreground">{project.nome}</p>
                         </td>
                         <td className="p-4">
                           <Badge
@@ -320,7 +320,7 @@ export default function ProjetosPage() {
                         </td>
                         <td className="p-4">
                           <div className="space-y-1">
-                            <div className="text-sm text-gray-900">
+                            <div className="text-sm text-foreground">
                               <span className="font-semibold">{project.total_pessoas}</span> total
                             </div>
                             <div className="text-xs text-green-600">

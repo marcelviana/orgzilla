@@ -68,7 +68,7 @@ export function DashboardContent({
   const getTrendColor = (trend: number) => {
     if (trend > 0) return "bg-green-100 text-green-700"
     if (trend < 0) return "bg-red-100 text-red-700"
-    return "bg-gray-100 text-gray-700"
+    return "bg-gray-100 text-foreground"
   }
 
   const METRIC_CARDS = [
@@ -117,8 +117,8 @@ export function DashboardContent({
         <h1 className="font-heading text-2xl font-bold text-secondary">
           Olá, {userName}! 🦖
         </h1>
-        <p className="mt-1 text-gray-600">Aqui está o resumo da sua organização hoje</p>
-        <p className="mt-2 text-sm text-gray-500">{currentDate}</p>
+        <p className="mt-1 text-muted-foreground">Aqui está o resumo da sua organização hoje</p>
+        <p className="mt-2 text-sm text-muted-foreground">{currentDate}</p>
       </div>
 
       {/* Cards de métricas */}
@@ -133,7 +133,7 @@ export function DashboardContent({
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600">{card.title}</p>
+                  <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
                   <p className="mt-2 font-heading text-3xl font-bold text-secondary">{card.value}</p>
                   <div className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${getTrendColor(card.trend)}`}>
                     {getTrendIcon(card.trend)}
@@ -179,10 +179,10 @@ export function DashboardContent({
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-[300px] items-center justify-center text-gray-500">
+            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <p className="text-sm">Nenhum dado disponível</p>
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Adicione pessoas com cargos para ver a distribuição
                 </p>
               </div>
@@ -206,10 +206,10 @@ export function DashboardContent({
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-[300px] items-center justify-center text-gray-500">
+            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
               <div className="text-center">
                 <p className="text-sm">Nenhum dado disponível</p>
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Adicione pessoas aos times para ver a distribuição
                 </p>
               </div>
@@ -234,17 +234,17 @@ export function DashboardContent({
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-secondary">{activity.text}</p>
-                    <p className="mt-1 text-xs text-gray-500">{activity.time}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{activity.time}</p>
                   </div>
                 </div>
               )
             })}
           </div>
         ) : (
-          <div className="flex items-center justify-center py-8 text-gray-500">
+          <div className="flex items-center justify-center py-8 text-muted-foreground">
             <div className="text-center">
               <p className="text-sm">Nenhuma atividade recente</p>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 As alterações no sistema aparecerão aqui
               </p>
             </div>

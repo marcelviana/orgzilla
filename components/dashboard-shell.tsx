@@ -132,7 +132,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 isActive
                   ? "bg-primary-strong text-white"
-                  : "text-gray-300 hover:bg-secondary/80 hover:text-white"
+                  : "text-white/70 hover:bg-secondary/80 hover:text-white"
               }`}
             >
               {!isActive && (
@@ -152,7 +152,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 pathname?.startsWith('/configuracoes')
                   ? "bg-primary-strong text-white"
-                  : "text-gray-300 hover:bg-secondary/80 hover:text-white"
+                  : "text-white/70 hover:bg-secondary/80 hover:text-white"
               }`}
             >
               {!pathname?.startsWith('/configuracoes') && (
@@ -182,7 +182,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                       className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
                         isActive
                           ? "bg-accent/20 text-accent"
-                          : "text-gray-400 hover:bg-secondary/60 hover:text-gray-200"
+                          : "text-white/60 hover:bg-secondary/60 hover:text-white/90"
                       }`}
                     >
                       <Icon className="h-4 w-4 flex-shrink-0" />
@@ -220,7 +220,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-gray-400 hover:bg-secondary/80 hover:text-white"
+            className="h-8 w-8 text-white/70 hover:bg-secondary/80 hover:text-white"
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -277,7 +277,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 type="button"
                 aria-label="Buscar"
                 onClick={handleHeaderSearch}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <Search className="h-4 w-4" />
               </button>

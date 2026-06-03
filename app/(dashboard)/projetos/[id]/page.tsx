@@ -227,8 +227,8 @@ export default function ProjetoDetailPage() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[#1A2734]">{projeto.nome}</h1>
-            <Badge className={projeto.ativo ? 'bg-green-100 text-green-800 mt-2' : 'bg-gray-100 text-gray-800 mt-2'}>
+            <h1 className="text-3xl font-bold text-foreground">{projeto.nome}</h1>
+            <Badge className={projeto.ativo ? 'bg-green-100 text-green-800 mt-2' : 'bg-gray-100 text-foreground mt-2'}>
               {projeto.ativo ? 'Ativo' : 'Inativo'}
             </Badge>
           </div>
@@ -291,7 +291,7 @@ export default function ProjetoDetailPage() {
             <h2 className="text-xl font-semibold">Pessoas no Projeto</h2>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar pessoa..."
                   value={searchTerm}
@@ -307,7 +307,7 @@ export default function ProjetoDetailPage() {
           </div>
 
           {filteredPeople.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-muted-foreground">
               <p>{searchTerm ? 'Nenhuma pessoa encontrada' : 'Nenhuma pessoa alocada ainda'}</p>
               {!searchTerm && (
                 <Button className="mt-4" onClick={handleOpenAddPeopleModal}>
@@ -333,11 +333,11 @@ export default function ProjetoDetailPage() {
                       >
                         {alocacao.pessoa.nome}
                       </Link>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {alocacao.pessoa.cargo?.nome || 'Sem cargo'}
                         {alocacao.pessoa.time?.nome && ` • ${alocacao.pessoa.time.nome}`}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Desde {formatDate(alocacao.data_inicio)}
                       </p>
                     </div>
@@ -373,7 +373,7 @@ export default function ProjetoDetailPage() {
 
             <div className="space-y-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome..."
                   className="pl-9"
@@ -382,7 +382,7 @@ export default function ProjetoDetailPage() {
 
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {filteredAvailableToAdd.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">
+                  <p className="text-center text-muted-foreground py-8">
                     Todas as pessoas já foram alocadas
                   </p>
                 ) : (
@@ -408,7 +408,7 @@ export default function ProjetoDetailPage() {
                       </Avatar>
                       <div className="flex-1">
                         <p className="font-medium">{pessoa.nome}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {pessoa.cargo || 'Sem cargo'} {pessoa.time ? `• ${pessoa.time}` : ''}
                         </p>
                       </div>

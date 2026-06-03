@@ -29,7 +29,7 @@ export function ErrorPage({
   showQuickLinks = false,
 }: ErrorPageProps) {
   return (
-    <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       <div className="max-w-[600px] w-full text-center">
         {/* Logo */}
         <div className="mb-8">
@@ -59,19 +59,19 @@ export function ErrorPage({
         {/* Error Code */}
         <div
           className={`text-8xl sm:text-9xl font-bold mb-6 ${
-            code === 500 ? 'text-[#FF5A5F]' : 'text-[#1A2734]'
+            code === 500 ? 'text-danger' : 'text-foreground'
           }`}
         >
           {code}
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#1A2734] mb-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
           {title}
         </h1>
 
         {/* Description */}
-        <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
+        <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
           {description}
         </p>
 
@@ -104,27 +104,27 @@ export function ErrorPage({
         {/* Quick Links */}
         {showQuickLinks && (
           <Card className="p-4 mb-6 bg-white/50 backdrop-blur-sm">
-            <p className="text-sm text-gray-600 mb-3 font-medium">
+            <p className="text-sm text-muted-foreground mb-3 font-medium">
               Páginas mais acessadas:
             </p>
             <div className="flex flex-wrap gap-2 justify-center">
               <Link
                 href="/pessoas"
-                className="text-sm text-[#FF7A00] hover:underline"
+                className="text-sm text-primary hover:underline"
               >
                 Ver Pessoas
               </Link>
-              <span className="text-gray-400">•</span>
+              <span className="text-muted-foreground">•</span>
               <Link
                 href="/times"
-                className="text-sm text-[#FF7A00] hover:underline"
+                className="text-sm text-primary hover:underline"
               >
                 Ver Times
               </Link>
-              <span className="text-gray-400">•</span>
+              <span className="text-muted-foreground">•</span>
               <Link
                 href="/projetos"
-                className="text-sm text-[#FF7A00] hover:underline"
+                className="text-sm text-primary hover:underline"
               >
                 Ver Projetos
               </Link>
@@ -133,11 +133,11 @@ export function ErrorPage({
         )}
 
         {/* Support */}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           Precisa de ajuda?{' '}
           <a
             href={`mailto:${supportEmail}`}
-            className="text-[#FF7A00] hover:underline"
+            className="text-primary hover:underline"
           >
             Contate o suporte
           </a>
