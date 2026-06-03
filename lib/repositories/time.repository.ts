@@ -289,6 +289,89 @@ export class TimeRepository extends BaseRepository<'time', Time, TimeInsert, Tim
   }
 
   /**
+   * Busca estatísticas agregadas para uma lista de times em 4 queries fixas.
+   * Substitui as 4N queries de countMembros/countVagas/countFilhos/findByIdWithBasicRelationships.
+   */
+  async findEstatisticasAgregadas(timeIds: string[]): Promise<Map<string, {
+    membros: number
+    vagas: number
+    filhos: number
+    gestor: { id: string; nome: string; email_corporativo: string | null } | null
+    time_pai: { id: string; nome: string } | null
+  }>> {
+    if (timeIds.length === 0) return new Map()
+
+    const { data: membrosData, error: membrosError } = await this.supabase
+      .from('pessoa')
+      .select('time_id')
+      .in('time_id', timeIds)
+      .eq('ativo', true)
+
+    if (membrosError) throw new RepositoryError('Erro ao agregar membros', membrosError)
+
+    const { data: vagasData, error: vagasError } = await this.supabase
+      .from('vaga_time')
+      .select('time_id, quantidade')
+      .in('time_id', timeIds)
+      .eq('ativo', true)
+
+    if (vagasError) throw new RepositoryError('Erro ao agregar vagas', vagasError)
+
+    const { data: filhosData, error: filhosError } = await this.supabase
+      .from('time')
+      .select('time_pai_id')
+      .in('time_pai_id', timeIds)
+      .eq('ativo', true)
+
+    if (filhosError) throw new RepositoryError('Erro ao agregar filhos', filhosError)
+
+    const { data: relacionamentos, error: relError } = await this.supabase
+      .from('time')
+      .select(`
+        id,
+        gestor:pessoa!gestor_id(id, nome, email_corporativo),
+        time_pai:time!time_pai_id(id, nome)
+      `)
+      .in('id', timeIds)
+      .eq('ativo', true)
+
+    if (relError) throw new RepositoryError('Erro ao buscar relacionamentos', relError)
+
+    const membrosMap = new Map<string, number>()
+    for (const m of membrosData ?? []) {
+      if (m.time_id) membrosMap.set(m.time_id, (membrosMap.get(m.time_id) ?? 0) + 1)
+    }
+
+    const vagasMap = new Map<string, number>()
+    for (const v of vagasData ?? []) {
+      if (v.time_id) vagasMap.set(v.time_id, (vagasMap.get(v.time_id) ?? 0) + (v.quantidade ?? 0))
+    }
+
+    const filhosMap = new Map<string, number>()
+    for (const f of filhosData ?? []) {
+      if (f.time_pai_id) filhosMap.set(f.time_pai_id, (filhosMap.get(f.time_pai_id) ?? 0) + 1)
+    }
+
+    const result = new Map<string, {
+      membros: number; vagas: number; filhos: number
+      gestor: { id: string; nome: string; email_corporativo: string | null } | null
+      time_pai: { id: string; nome: string } | null
+    }>()
+
+    for (const rel of relacionamentos ?? []) {
+      result.set(rel.id, {
+        membros: membrosMap.get(rel.id) ?? 0,
+        vagas: vagasMap.get(rel.id) ?? 0,
+        filhos: filhosMap.get(rel.id) ?? 0,
+        gestor: (rel.gestor as { id: string; nome: string; email_corporativo: string | null } | null) ?? null,
+        time_pai: (rel.time_pai as { id: string; nome: string } | null) ?? null,
+      })
+    }
+
+    return result
+  }
+
+  /**
    * Conta times ativos, opcionalmente restrito a um subconjunto de IDs.
    */
   async countAtivos(timeIds?: string[]): Promise<number> {

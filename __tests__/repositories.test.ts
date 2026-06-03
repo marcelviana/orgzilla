@@ -497,6 +497,211 @@ describe('TimeRepository', () => {
       expect((builder.eq as ReturnType<typeof vi.fn>)).toHaveBeenCalledWith('ativo', true)
     })
   })
+
+  // -------------------------------------------------------------------------
+  // findEstatisticasAgregadas
+  // -------------------------------------------------------------------------
+  describe('findEstatisticasAgregadas', () => {
+    /**
+     * Cria um mock de Supabase que retorna resultados diferentes por tabela.
+     * findEstatisticasAgregadas faz 4 queries: pessoa, vaga_time, time (filhos), time (relacionamentos).
+     * A terceira e quarta chamada são ambas para 'time', então distinguimos pela ordem.
+     */
+    function makeSupabaseMultiQuery(results: {
+      pessoa?: { data?: unknown; error?: unknown }
+      vaga_time?: { data?: unknown; error?: unknown }
+      timeFilhos?: { data?: unknown; error?: unknown }
+      timeRelacionamentos?: { data?: unknown; error?: unknown }
+    }) {
+      function makeBuilder(result: { data?: unknown; error?: unknown } = {}) {
+        const defaults = { data: null, error: null, ...result }
+        const b: Record<string, unknown> = {}
+        const chainable = ['select', 'eq', 'neq', 'in', 'ilike', 'or', 'is', 'gte', 'lt', 'order', 'range', 'single', 'maybeSingle']
+        for (const m of chainable) {
+          b[m] = vi.fn().mockReturnValue(b)
+        }
+        b.then = (resolve: (v: unknown) => unknown) => resolve(defaults)
+        return b
+      }
+
+      const pessoaBuilder = makeBuilder(results.pessoa)
+      const vagaBuilder = makeBuilder(results.vaga_time)
+      const filhosBuilder = makeBuilder(results.timeFilhos)
+      const relBuilder = makeBuilder(results.timeRelacionamentos)
+
+      // 'time' é chamado duas vezes: 1ª para filhos, 2ª para relacionamentos
+      let timeCallCount = 0
+      const fromFn = vi.fn().mockImplementation((table: string) => {
+        if (table === 'pessoa') return pessoaBuilder
+        if (table === 'vaga_time') return vagaBuilder
+        if (table === 'time') {
+          timeCallCount++
+          return timeCallCount === 1 ? filhosBuilder : relBuilder
+        }
+        return makeBuilder()
+      })
+
+      return {
+        from: fromFn,
+        _builders: { pessoaBuilder, vagaBuilder, filhosBuilder, relBuilder },
+      } as unknown as { from: ReturnType<typeof vi.fn>; _builders: Record<string, ReturnType<typeof makeBuilder>> }
+    }
+
+    it('retorna Map vazio sem fazer queries quando lista de IDs é vazia', async () => {
+      const supabase = makeSupabase()
+      const repo = new TimeRepository(supabase as never)
+
+      const result = await repo.findEstatisticasAgregadas([])
+
+      expect(result).toBeInstanceOf(Map)
+      expect(result.size).toBe(0)
+      expect((supabase.from as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled()
+    })
+
+    it('agrega membros corretamente para múltiplos times', async () => {
+      const supabase = makeSupabaseMultiQuery({
+        // time-A tem 2 membros, time-B tem 1
+        pessoa: { data: [{ time_id: 'time-A' }, { time_id: 'time-A' }, { time_id: 'time-B' }] },
+        vaga_time: { data: [] },
+        timeFilhos: { data: [] },
+        timeRelacionamentos: {
+          data: [
+            { id: 'time-A', gestor: null, time_pai: null },
+            { id: 'time-B', gestor: null, time_pai: null },
+          ],
+        },
+      })
+      const repo = new TimeRepository(supabase as never)
+
+      const result = await repo.findEstatisticasAgregadas(['time-A', 'time-B'])
+
+      expect(result.get('time-A')?.membros).toBe(2)
+      expect(result.get('time-B')?.membros).toBe(1)
+    })
+
+    it('agrega vagas (soma de quantidade) corretamente por time', async () => {
+      const supabase = makeSupabaseMultiQuery({
+        pessoa: { data: [] },
+        // time-A tem 2 vagas (quantidade 3 + 1), time-B tem 1 vaga (quantidade 2)
+        vaga_time: {
+          data: [
+            { time_id: 'time-A', quantidade: 3 },
+            { time_id: 'time-A', quantidade: 1 },
+            { time_id: 'time-B', quantidade: 2 },
+          ],
+        },
+        timeFilhos: { data: [] },
+        timeRelacionamentos: {
+          data: [
+            { id: 'time-A', gestor: null, time_pai: null },
+            { id: 'time-B', gestor: null, time_pai: null },
+          ],
+        },
+      })
+      const repo = new TimeRepository(supabase as never)
+
+      const result = await repo.findEstatisticasAgregadas(['time-A', 'time-B'])
+
+      expect(result.get('time-A')?.vagas).toBe(4)
+      expect(result.get('time-B')?.vagas).toBe(2)
+    })
+
+    it('agrega filhos corretamente (conta times cujo time_pai_id está na lista)', async () => {
+      const supabase = makeSupabaseMultiQuery({
+        pessoa: { data: [] },
+        vaga_time: { data: [] },
+        // time-A tem 2 filhos, time-B tem 0
+        timeFilhos: {
+          data: [
+            { time_pai_id: 'time-A' },
+            { time_pai_id: 'time-A' },
+          ],
+        },
+        timeRelacionamentos: {
+          data: [
+            { id: 'time-A', gestor: null, time_pai: null },
+            { id: 'time-B', gestor: null, time_pai: null },
+          ],
+        },
+      })
+      const repo = new TimeRepository(supabase as never)
+
+      const result = await repo.findEstatisticasAgregadas(['time-A', 'time-B'])
+
+      expect(result.get('time-A')?.filhos).toBe(2)
+      expect(result.get('time-B')?.filhos).toBe(0)
+    })
+
+    it('retorna gestor e time_pai nulos quando não existem', async () => {
+      const supabase = makeSupabaseMultiQuery({
+        pessoa: { data: [] },
+        vaga_time: { data: [] },
+        timeFilhos: { data: [] },
+        timeRelacionamentos: {
+          data: [{ id: 'time-A', gestor: null, time_pai: null }],
+        },
+      })
+      const repo = new TimeRepository(supabase as never)
+
+      const result = await repo.findEstatisticasAgregadas(['time-A'])
+
+      expect(result.get('time-A')?.gestor).toBeNull()
+      expect(result.get('time-A')?.time_pai).toBeNull()
+    })
+
+    it('retorna gestor e time_pai quando existem', async () => {
+      const gestor = { id: 'u-1', nome: 'Carla', email_corporativo: 'carla@org.com' }
+      const timePai = { id: 'time-pai', nome: 'Raiz' }
+      const supabase = makeSupabaseMultiQuery({
+        pessoa: { data: [] },
+        vaga_time: { data: [] },
+        timeFilhos: { data: [] },
+        timeRelacionamentos: {
+          data: [{ id: 'time-A', gestor, time_pai: timePai }],
+        },
+      })
+      const repo = new TimeRepository(supabase as never)
+
+      const result = await repo.findEstatisticasAgregadas(['time-A'])
+
+      expect(result.get('time-A')?.gestor).toEqual(gestor)
+      expect(result.get('time-A')?.time_pai).toEqual(timePai)
+    })
+
+    it('lança erro quando a query de membros falha', async () => {
+      const supabase = makeSupabaseMultiQuery({
+        pessoa: { error: { message: 'falha membros', code: '500' } },
+        vaga_time: { data: [] },
+        timeFilhos: { data: [] },
+        timeRelacionamentos: { data: [] },
+      })
+      const repo = new TimeRepository(supabase as never)
+
+      await expect(repo.findEstatisticasAgregadas(['time-A'])).rejects.toThrow()
+    })
+
+    it('times sem membros, vagas e filhos retornam zeros', async () => {
+      const supabase = makeSupabaseMultiQuery({
+        pessoa: { data: [] },
+        vaga_time: { data: [] },
+        timeFilhos: { data: [] },
+        timeRelacionamentos: {
+          data: [{ id: 'time-vazio', gestor: null, time_pai: null }],
+        },
+      })
+      const repo = new TimeRepository(supabase as never)
+
+      const result = await repo.findEstatisticasAgregadas(['time-vazio'])
+
+      expect(result.get('time-vazio')).toEqual({
+        membros: 0,
+        vagas: 0,
+        filhos: 0,
+        gestor: null,
+        time_pai: null,
+      })
+    })
+  })
 })
 
 // ---------------------------------------------------------------------------

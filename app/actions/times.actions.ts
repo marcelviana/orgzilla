@@ -83,33 +83,28 @@ export async function getTimesComEstatisticas(): Promise<ActionResult<TimeComEst
     const timeService = new TimeService(supabase)
     const times = await timeService.buscarComPermissao(usuario)
 
-    // Para cada time, busca estatísticas
-    const timesComStats = await Promise.all(
-      times.map(async (time) => {
-        const [membrosCount, vagasCount, filhosCount, timeComRelacionamentos] = await Promise.all([
-          timeRepo.countMembros(time.id),
-          timeRepo.countVagas(time.id),
-          timeRepo.countFilhos(time.id),
-          timeRepo.findByIdWithBasicRelationships(time.id),
-        ])
+    // Busca estatísticas em 4 queries fixas (independente do número de times)
+    const timeIds = times.map(t => t.id)
+    const statsMap = await timeRepo.findEstatisticasAgregadas(timeIds)
 
-        return {
-          id: time.id,
-          nome: time.nome,
-          descricao: time.descricao,
-          time_pai_id: time.time_pai_id,
-          gestor_id: time.gestor_id,
-          ativo: time.ativo,
-          created_at: time.created_at,
-          updated_at: time.updated_at,
-          time_pai: timeComRelacionamentos?.time_pai || null,
-          gestor: timeComRelacionamentos?.gestor || null,
-          membros: membrosCount,
-          vagas: vagasCount,
-          times_filhos: filhosCount,
-        }
-      })
-    )
+    const timesComStats = times.map((time) => {
+      const stats = statsMap.get(time.id)
+      return {
+        id: time.id,
+        nome: time.nome,
+        descricao: time.descricao,
+        time_pai_id: time.time_pai_id,
+        gestor_id: time.gestor_id,
+        ativo: time.ativo,
+        created_at: time.created_at,
+        updated_at: time.updated_at,
+        time_pai: stats?.time_pai ?? null,
+        gestor: stats?.gestor ?? null,
+        membros: stats?.membros ?? 0,
+        vagas: stats?.vagas ?? 0,
+        times_filhos: stats?.filhos ?? 0,
+      }
+    })
 
     return {
       success: true,

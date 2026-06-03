@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (todos os toasts migrados para `handleError` + `toast-config`; migração mock → real completa; organograma migrado na rodada anterior; build e 98 testes passando)
+**Última atualização:** 2 de junho de 2026 (N+1 de `getTimesComEstatisticas` otimizado: de 4N+1 para 5 queries fixas via `findEstatisticasAgregadas`; 7 novos testes em `repositories.test.ts`; build e 106 testes passando)
 
 ---
 
@@ -85,14 +85,14 @@ Checklist de retomada do ambiente:
 > ⚠️ **Atenção LGPD ao migrar:** qualquer seção que exiba dados de pessoa deve garantir que salário passe pelo `PessoaService`/`PermissaoService` — nunca `supabase.from('pessoa_remuneracao')` direto na Action ou UI.
 
 ### 3.2 Testes
-**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 98 testes em 5 arquivos (`__tests__/`), todos passando.
+**Cobertura inicial implantada.** Vitest 4.1.8 instalado (pnpm, devDependency fixada). Script `test`/`test:watch` no `package.json`. 106 testes em 5 arquivos (`__tests__/`), todos passando.
 
 | Arquivo | Testes | Estado |
 |---|---|---|
 | `__tests__/permissao.service.test.ts` | 22 | ✅ passando |
 | `__tests__/time.service.test.ts` | 11 | ✅ passando |
 | `__tests__/remuneracao.separacao.test.ts` | 12 | ✅ passando |
-| `__tests__/repositories.test.ts` | 42 | ✅ passando |
+| `__tests__/repositories.test.ts` | 49 | ✅ passando |
 | `__tests__/pessoa.service.enriquecer.test.ts` | 11 | ✅ passando |
 
 **Bug resolvido:** `app/actions/relatorios.actions.ts` que acessava `supabase.from('pessoa_remuneracao')` diretamente foi migrado para `PessoaService.buscarAgregadosSalariais(usuario, timeIds)`. O teste `não há referência a supabase.from("pessoa_remuneracao") fora de lib/repositories` agora passa. Novos métodos introduzidos: `PessoaService.buscarAgregadosSalariais` (aplica guarda de perfil gestor + filtro de hierarquia) e `PessoaRemuneracaoRepository.findComCargoETimes` (query com join cargo/nível; tipo `RemuneracaoComCargo` definido no mesmo arquivo).
@@ -202,6 +202,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 8. ✅ Concluído em 2 jun 2026 — toast misto em `projetos/page.tsx` corrigido: `sonner`+`useToast` substituídos por `handleError`+`toast-config`; build e 98 testes passando.
 9. ✅ Concluído em 2 jun 2026 — organograma migrado de mock hardcoded (`hierarchyData` estático) para dados reais via `getOrganograma()` chamando `TimeService`; elimina a última página mock do projeto.
 10. ✅ Concluído em 2 jun 2026 — migração de toasts concluída (item D): 11 arquivos em `times/*`, `projetos/*`, `configuracoes/usuarios`, `pessoas/*` migrados de `useToast`/`sonner` para `handleError`+`toast-config`; nenhum uso direto de `useToast`/`sonner` permanece em `app/`.
+11. ✅ Concluído em 2 jun 2026 — N+1 de times otimizado (item F, parcial): `TimeRepository.findEstatisticasAgregadas` reduz `getTimesComEstatisticas` de 4N+1 para 5 queries fixas; 7 novos testes; build e 106 testes passando.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
 
@@ -209,8 +210,8 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 E. **Restringir domínio no Google OAuth** (§4.4) — puramente técnico; qualquer conta
    Google hoje vira `visualizador` com leitura de todas as pessoas. Requer configuração
    no Supabase Auth + variável de ambiente.
-F. **Otimizar queries N+1** — `findAllWithPessoaCount`, `getTimesComEstatisticas`.
-   Perfilar antes de otimizar; adiar até sentir lentidão real.
+F. **Otimizar queries N+1** — `findAllWithPessoaCount` (projetos e tags).
+   `getTimesComEstatisticas` **concluído em 2 jun 2026**: novo método `TimeRepository.findEstatisticasAgregadas(timeIds)` reduziu de 4N+1 para 5 queries fixas (ex.: 20 times = 81 → 5 queries); 7 novos testes em `repositories.test.ts`. Restam: `ProjetoProdutoRepository.findAllWithPessoaCount` e `TagRepository.findAllWithPessoaCount` (sem otimização — adiar até sentir lentidão real).
 
 ### 🟩 Mais adiante — Phase 3 (requer decisões de produto — ver abaixo)
 G. **Exportação** — formato, entidades e regras de acesso a definir.
