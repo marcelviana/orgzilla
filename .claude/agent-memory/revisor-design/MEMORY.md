@@ -1,0 +1,1 @@
+- [Padrões recorrentes de design debt](project_design_patterns.md) — achados sistêmicos da revisão geral de jun/2026: componentes não usados, hex hardcoded, sonner direto, window.confirm, console.log em menus, tokens ausentes, mock exposto
