@@ -23,12 +23,12 @@ import { Home, ChevronRight, Plus, X, Search } from 'lucide-react'
 import { toast } from '@/lib/ui/toast-config'
 
 const availablePeople = [
-  { id: 'p1', nome: 'Maria Santos', avatar: '/diverse-woman-portrait.png', cargo: 'Tech Lead', time: 'Engenharia' },
-  { id: 'p2', nome: 'João Silva', avatar: '/man.jpg', cargo: 'Backend Developer', time: 'Engenharia' },
-  { id: 'p3', nome: 'Ana Costa', avatar: '/tech-woman.png', cargo: 'Frontend Developer', time: 'Frontend' },
-  { id: 'p4', nome: 'Pedro Lima', avatar: '/engineer-man.png', cargo: 'Designer', time: 'Design' },
-  { id: 'p5', nome: 'Carla Mendes', avatar: '/developer-woman.png', cargo: 'QA Engineer', time: 'Qualidade' },
-  { id: 'p6', nome: 'Roberto Alves', avatar: '/executive-man.png', cargo: 'Product Manager', time: 'Produto' },
+  { id: 'p1', nome: 'Maria Santos', avatar: '', cargo: 'Tech Lead', time: 'Engenharia' },
+  { id: 'p2', nome: 'João Silva', avatar: '', cargo: 'Backend Developer', time: 'Engenharia' },
+  { id: 'p3', nome: 'Ana Costa', avatar: '', cargo: 'Frontend Developer', time: 'Frontend' },
+  { id: 'p4', nome: 'Pedro Lima', avatar: '', cargo: 'Designer', time: 'Design' },
+  { id: 'p5', nome: 'Carla Mendes', avatar: '', cargo: 'QA Engineer', time: 'Qualidade' },
+  { id: 'p6', nome: 'Roberto Alves', avatar: '', cargo: 'Product Manager', time: 'Produto' },
 ]
 
 export default function EditarProjeto() {
