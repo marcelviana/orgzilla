@@ -129,9 +129,46 @@ Histórico (gerenciado pela aplicação):
 
 ---
 
+## Padrões de tipagem — Supabase query builder
+
+### A armadilha
+
+Métodos de filtro (`.eq`, `.in`, `.or`, `.gte`, `.lt`) e de transformação (`.order`, `.range`, `.limit`) retornam tipos genéricos distintos que dependem da inferência do esquema da tabela. Reatribuir o resultado numa variável com anotação explícita (`let query: PostgrestFilterBuilder`) quebra quando o tipo inferido não bate exatamente. A saída fácil — `let query: any` — desabilita toda a type-safety da chamada.
+
+### O padrão adotado no projeto
+
+Use a interface `SelectQueryBuilder` definida em [`lib/repositories/base.repository.ts`](lib/repositories/base.repository.ts) e force a conversão na criação da query com `as unknown as SelectQueryBuilder`. Filtros condicionais reatribuem sem perder tipos porque todos os métodos retornam `SelectQueryBuilder`.
+
+```typescript
+// lib/repositories/pessoa.repository.ts
+let query = this.supabase
+  .from('pessoa')
+  .select(selectFields, { count: 'exact' })
+  .eq('ativo', true) as unknown as SelectQueryBuilder
+
+if (filters.search) {
+  query = query.or(`nome.ilike.%${filters.search}%`)
+}
+if (filters.timeId) {
+  query = query.eq('time_id', filters.timeId)
+}
+const { data, error, count } = await query
+```
+
+### Regra dura
+
+**Proibido** usar `any` ou `// eslint-disable` como saída para problema de tipagem em query builder. Se a tipagem honesta não for possível num caso específico, PARE e leve ao mantenedor — não silencie.
+
+---
+
 ## Testes
 
-Não há testes hoje. Ao adicionar lógica de negócio crítica (permissões, hierarquia, separação de salário), acompanhe com testes (Vitest). "Sem teste" não é o padrão aceitável para regra de negócio nova.
+O projeto usa **Vitest** (106 testes em 5 arquivos, rodando em `__tests__/`). Ao adicionar lógica de negócio crítica (permissões, hierarquia, separação de salário), acompanhe com testes. "Sem teste" não é o padrão aceitável para regra de negócio nova.
+
+```bash
+pnpm test          # roda todos os testes
+pnpm test --watch  # modo watch
+```
 
 ---
 

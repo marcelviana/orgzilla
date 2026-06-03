@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 3 de junho de 2026 (lint zerado — 0 errors, 0 warnings; todos os débitos independentes corrigidos)
+**Última atualização:** 3 de junho de 2026 (gate de CI adicionado; padrão tipado Supabase documentado no CLAUDE.md)
 
 ---
 
@@ -205,6 +205,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 11. ✅ Concluído em 2 jun 2026 — N+1 de times otimizado (item F, parcial): `TimeRepository.findEstatisticasAgregadas` reduz `getTimesComEstatisticas` de 4N+1 para 5 queries fixas; 7 novos testes; build e 106 testes passando.
 12. ✅ Concluído em 3 jun 2026 — tipagem do query builder Supabase nos repositories: padrão `let query: any` eliminado em `pessoa.repository.ts`, `time.repository.ts` e `vaga-time.repository.ts`. `SelectQueryBuilder` exportado de `base.repository.ts`; cast `as unknown as SelectQueryBuilder` aplicado nos métodos com filtros condicionais. ~74 erros `@typescript-eslint/no-unsafe-*` zerados.
 13. ✅ Concluído em 3 jun 2026 — lint zerado (0 errors, 0 warnings). Corrigidos: `no-useless-assignment` em testes de separação LGPD, `no-unused-vars`/`require-await` em testes, `no-unnecessary-type-assertion` em repositories/actions/organograma, `no-misused-promises` em `pessoas/[id]`, `restrict-template-expressions` em relatórios, `react-hooks/immutability` em projetos, `react-hooks/set-state-in-effect` em `busca/page.tsx` (bug real: estado derivado substituiu setStates síncronos no efeito) e em `projetos/page.tsx`. `tsc --noEmit`, 106 testes e build passando.
+14. ✅ Concluído em 3 jun 2026 — gate de CI adicionado (`.github/workflows/ci.yml`): dispara em PR e push para `main`; roda tsc, lint, testes e build com Node 24 + pnpm frozen-lockfile. Padrão `SelectQueryBuilder` documentado na nova seção "Padrões de tipagem — Supabase" do `CLAUDE.md`. Agente `sincronizador-docs` atualizado para confrontar afirmações factuais do `CLAUDE.md` contra o repo.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
 

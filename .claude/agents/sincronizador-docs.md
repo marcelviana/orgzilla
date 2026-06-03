@@ -50,6 +50,17 @@ Verifique também:
 - `ls app/actions/` — quais Server Actions existem hoje?
 - `grep -rn "handleChangePassword\|atualizarSenha" app/` — a troca de senha em `perfil` já chama `AuthService.atualizarSenha` ou ainda é fake (`setTimeout`/`console.log`)?
 
+### Afirmações factuais do CLAUDE.md a confrontar
+
+Toda afirmação categórica de existência/ausência ou contagem no `CLAUDE.md` deve ser checada contra o repo, não só o `STATUS.md`. Exemplos típicos de frases que poderem ficar desatualizadas:
+
+- **"Não há testes hoje"** → cheque `ls __tests__/` e o resultado de `pnpm test`.
+- **"Schema (17 tabelas)"** → confirme a contagem listada reflete as tabelas reais (grep em `lib/types` ou `db/`).
+- **"apenas `pnpm-lock.yaml` existe"** → `ls *.lock package-lock.json 2>/dev/null`.
+- Qualquer trecho que diga "não existe X" ou dê uma contagem — confirme no repo antes de deixar passar.
+
+Se encontrar divergência, corrija o `CLAUDE.md` imediatamente (não deixe como `☐ a verificar` — é verificável em segundos).
+
 ## Passo 3 — Atualize o STATUS.md
 
 Corrija **apenas os itens que você verificou** no passo anterior. Use **☐ a verificar** para qualquer coisa que não deu para confirmar — nunca afirme como fato o que não foi checado.
