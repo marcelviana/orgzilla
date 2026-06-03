@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
+import { DetailsSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getPessoaById } from '@/app/actions/pessoas.actions'
@@ -179,17 +179,6 @@ export default function PersonProfilePage() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Ativo': return 'bg-green-100 text-green-800'
-      case 'Férias': return 'bg-blue-100 text-blue-800'
-      case 'Licença': return 'bg-orange-100 text-orange-800'
-      case 'Afastamento': return 'bg-yellow-100 text-yellow-800'
-      case 'Desligado': return 'bg-gray-100 text-foreground'
-      default: return 'bg-gray-100 text-foreground'
-    }
-  }
-
   const projetosAtivos = pessoa?.projetos?.filter(p => p.ativo && !p.data_fim) ?? []
   const projetosAnteriores = pessoa?.projetos?.filter(p => !p.ativo || p.data_fim) ?? []
 
@@ -243,9 +232,9 @@ export default function PersonProfilePage() {
               {pessoa.nome_social && (
                 <p className="text-sm text-muted-foreground mt-1">(Nome social: {pessoa.nome_social})</p>
               )}
-              <Badge className={`mt-2 ${getStatusColor(pessoa.status)}`}>
-                {pessoa.status}
-              </Badge>
+              <div className="mt-2">
+                <StatusBadge status={pessoa.status} size="md" />
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 text-sm">
@@ -451,7 +440,7 @@ export default function PersonProfilePage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge className={getStatusColor(pessoa.status)}>{pessoa.status}</Badge>
+                  <StatusBadge status={pessoa.status} />
                 </div>
               </div>
             </Card>
@@ -478,7 +467,7 @@ export default function PersonProfilePage() {
                           Desde: {formatDateShort(projeto.data_inicio)}
                         </p>
                       </div>
-                      <Badge className="bg-green-100 text-green-800">Ativo</Badge>
+                      <StatusBadge status="Ativo" />
                     </div>
                   ))}
                 </div>
@@ -603,7 +592,7 @@ export default function PersonProfilePage() {
                     <div key={projeto.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-lg font-bold">{projeto.projeto_produto?.nome ?? '-'}</p>
-                        <Badge className="bg-green-100 text-green-800">Ativo</Badge>
+                        <StatusBadge status="Ativo" />
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
                         Desde {formatDate(projeto.data_inicio)}
@@ -626,7 +615,7 @@ export default function PersonProfilePage() {
                     <div key={projeto.id} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-lg font-bold">{projeto.projeto_produto?.nome ?? '-'}</p>
-                        <Badge className="bg-gray-100 text-foreground">Encerrado</Badge>
+                        <StatusBadge status="Encerrado" />
                       </div>
                       <p className="text-sm text-muted-foreground mb-2">
                         {formatDateShort(projeto.data_inicio)}

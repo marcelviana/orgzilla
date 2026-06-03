@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,15 +13,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Search } from 'lucide-react'
-import { TableSkeleton, Breadcrumb } from '@/components/shared'
+import { TableSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
-
-const statusColors = {
-  Ativo: 'bg-green-100 text-green-800 border-green-200',
-  Inativo: 'bg-gray-100 text-foreground border-gray-200',
-}
 
 export default function ProjetosPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -208,13 +202,7 @@ export default function ProjetosPage() {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <h3 className="text-xl font-bold text-foreground mb-2">{project.nome}</h3>
-                      <Badge
-                        className={
-                          statusColors[project.ativo ? 'Ativo' : 'Inativo']
-                        }
-                      >
-                        {project.ativo ? 'Ativo' : 'Inativo'}
-                      </Badge>
+                      <StatusBadge status={project.ativo ? 'Ativo' : 'Inativo'} />
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -310,13 +298,7 @@ export default function ProjetosPage() {
                           <p className="font-semibold text-foreground">{project.nome}</p>
                         </td>
                         <td className="p-4">
-                          <Badge
-                            className={
-                              statusColors[project.ativo ? 'Ativo' : 'Inativo']
-                            }
-                          >
-                            {project.ativo ? 'Ativo' : 'Inativo'}
-                          </Badge>
+                          <StatusBadge status={project.ativo ? 'Ativo' : 'Inativo'} />
                         </td>
                         <td className="p-4">
                           <div className="space-y-1">

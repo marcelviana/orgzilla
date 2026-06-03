@@ -40,9 +40,9 @@ export function StatsCard({
   }
 
   const trendColors = {
-    up: "text-green-600 bg-green-50",
-    down: "text-red-600 bg-red-50",
-    neutral: "text-muted-foreground bg-gray-50",
+    up: "text-success bg-success/10",
+    down: "text-danger bg-danger/10",
+    neutral: "text-muted-foreground bg-muted",
   }
 
   return (

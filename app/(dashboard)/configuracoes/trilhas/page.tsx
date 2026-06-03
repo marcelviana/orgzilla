@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, ShieldAlert, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
-import { TableSkeleton, Breadcrumb } from '@/components/shared'
+import { TableSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -1113,7 +1113,7 @@ export default function CareerTracksPage() {
                             </td>
                             <td className="p-4">{cargo.pessoas_count}</td>
                             <td className="p-4">
-                              <Badge className="bg-green-500">Ativo</Badge>
+                              <StatusBadge status="Ativo" />
                             </td>
                           </tr>
                         ))

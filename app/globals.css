@@ -115,6 +115,14 @@
   --chart-8: #64748b;
   --chart-grid: #e5e7eb;
   --chart-axis: #8a93a0;
+
+  /* Cores semânticas para data-viz (estado) — espelham os tokens semânticos do
+     @theme, mas precisam viver em :root para serem consumidas via prop
+     (fill/stroke) em gráficos, onde var() é a única opção. DESIGN_SYSTEM.md §6.9. */
+  --success: #1fa971;
+  --warning: #e8a317;
+  --danger: #ff5a5f;
+  --info: #00c8ff;
 }
 
 /* Base Styles */

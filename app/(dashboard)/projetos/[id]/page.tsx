@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import {
@@ -24,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { MoreVertical, Plus, Search, Users, Calendar } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
+import { DetailsSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getProjetoById, removePessoaDoProjeto, addPessoaAoProjeto, softDeleteProjeto } from '@/app/actions/projetos.actions'
@@ -228,9 +227,9 @@ export default function ProjetoDetailPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">{projeto.nome}</h1>
-            <Badge className={projeto.ativo ? 'bg-green-100 text-green-800 mt-2' : 'bg-gray-100 text-foreground mt-2'}>
-              {projeto.ativo ? 'Ativo' : 'Inativo'}
-            </Badge>
+            <div className="mt-2">
+              <StatusBadge status={projeto.ativo ? 'Ativo' : 'Inativo'} />
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

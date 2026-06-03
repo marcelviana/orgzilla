@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
+import { StatusBadge } from '@/components/shared/status-badge'
 import { toast } from 'sonner'
 import type { PessoasResult } from '@/app/actions/pessoas.actions'
 import { exportPessoasCSV } from '@/app/actions/pessoas.actions'
@@ -169,30 +170,6 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
       console.error('[Export] Erro:', error)
       toast.error('Erro ao exportar dados')
     }
-  }
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      'ativo': 'bg-green-100 text-green-700 border-green-200',
-      'ferias': 'bg-blue-100 text-blue-700 border-blue-200',
-      'licenca': 'bg-orange-100 text-orange-700 border-orange-200',
-      'afastamento': 'bg-gray-100 text-foreground border-gray-200',
-      'desligado': 'bg-red-100 text-red-700 border-red-200',
-    }
-
-    const labels: Record<string, string> = {
-      'ativo': 'Ativo',
-      'ferias': 'Férias',
-      'licenca': 'Licença',
-      'afastamento': 'Afastamento',
-      'desligado': 'Desligado',
-    }
-
-    return (
-      <Badge variant="outline" className={variants[status]}>
-        {labels[status]}
-      </Badge>
-    )
   }
 
   const getTeamColor = (teamName: string | undefined) => {
@@ -423,7 +400,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                           <span className="text-sm">{pessoa.time?.nome || '-'}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{getStatusBadge(pessoa.status)}</TableCell>
+                      <TableCell><StatusBadge status={pessoa.status} /></TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {pessoa.data_entrada
                           ? new Date(pessoa.data_entrada).toLocaleDateString('pt-BR')

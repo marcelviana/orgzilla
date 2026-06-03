@@ -66,9 +66,9 @@ export function DashboardContent({
   }
 
   const getTrendColor = (trend: number) => {
-    if (trend > 0) return "bg-green-100 text-green-700"
-    if (trend < 0) return "bg-red-100 text-red-700"
-    return "bg-gray-100 text-foreground"
+    if (trend > 0) return "bg-success/10 text-success"
+    if (trend < 0) return "bg-danger/10 text-danger"
+    return "bg-muted text-muted-foreground"
   }
 
   const METRIC_CARDS = [
