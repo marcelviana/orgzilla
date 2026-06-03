@@ -14,7 +14,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { ChevronRight, Home, Users, MoreVertical, Loader2, Briefcase } from 'lucide-react'
+import { ChevronRight, Home, Users, MoreVertical, Briefcase } from 'lucide-react'
+import { DetailsSkeleton } from '@/components/shared/LoadingState'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
@@ -61,11 +62,8 @@ export default function TimeDetailPage() {
   if (isLoading) {
     return (
       <DashboardShell>
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando dados do time...</p>
-          </div>
+        <div className="p-6">
+          <DetailsSkeleton />
         </div>
       </DashboardShell>
     )

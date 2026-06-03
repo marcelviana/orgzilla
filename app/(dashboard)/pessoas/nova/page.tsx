@@ -18,6 +18,7 @@ import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
+import { TableSkeleton } from '@/components/shared/LoadingState'
 import { cn } from '@/lib/utils'
 import { createPessoa } from '@/app/actions/pessoas.actions'
 import { getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
@@ -278,10 +279,7 @@ export default function NovasPessoasPage() {
         </div>
 
         {dataLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-3 text-muted-foreground">Carregando formulário...</span>
-          </div>
+          <TableSkeleton rows={4} />
         ) : (
           /* Tabbed Form */
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

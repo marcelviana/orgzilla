@@ -38,6 +38,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
+import { TableSkeleton } from '@/components/shared/LoadingState'
+import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -275,35 +277,24 @@ export default function NiveisPage() {
   if (loading) {
     return (
       <DashboardShell>
-        <div className="space-y-6">
-          {/* Header skeleton */}
+        <div className="p-6 space-y-6">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
-              <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+              <Skeleton className="h-4 w-64" />
+              <Skeleton className="h-8 w-48" />
             </div>
-            <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+            <Skeleton className="h-10 w-32" />
           </div>
-
-          {/* Stats cards skeleton */}
           <div className="grid gap-4 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-lg border p-6">
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2" />
-                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-1" />
-                <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+              <div key={i} className="rounded-lg border p-6 space-y-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-16" />
+                <Skeleton className="h-3 w-32" />
               </div>
             ))}
           </div>
-
-          {/* Table skeleton */}
-          <div className="bg-white rounded-lg border p-6">
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
-              ))}
-            </div>
-          </div>
+          <TableSkeleton rows={5} />
         </div>
       </DashboardShell>
     )

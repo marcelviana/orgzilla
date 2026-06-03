@@ -19,7 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter, Loader2 } from 'lucide-react'
+import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter } from 'lucide-react'
+import { TableSkeleton } from '@/components/shared/LoadingState'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,
@@ -201,8 +202,8 @@ export default function TimesPage() {
   if (loading) {
     return (
       <DashboardShell>
-        <div className="flex items-center justify-center h-96">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="p-6">
+          <TableSkeleton rows={8} />
         </div>
       </DashboardShell>
     )

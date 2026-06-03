@@ -23,7 +23,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Home, ChevronRight, MoreVertical, Plus, Search, Users, Loader2, Calendar } from 'lucide-react'
+import { Home, ChevronRight, MoreVertical, Plus, Search, Users, Calendar } from 'lucide-react'
+import { DetailsSkeleton } from '@/components/shared/LoadingState'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getProjetoById, removePessoaDoProjeto, addPessoaAoProjeto, softDeleteProjeto } from '@/app/actions/projetos.actions'
@@ -184,11 +185,8 @@ export default function ProjetoDetailPage() {
   if (isLoading) {
     return (
       <DashboardShell>
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando projeto...</p>
-          </div>
+        <div className="p-6">
+          <DetailsSkeleton />
         </div>
       </DashboardShell>
     )

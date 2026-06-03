@@ -40,6 +40,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
+import { TableSkeleton } from '@/components/shared/LoadingState'
 import Link from "next/link"
 import {
   getUsuarios,
@@ -342,11 +343,8 @@ export default function UsuariosPage() {
   if (isLoading) {
     return (
       <DashboardShell>
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando usuários...</p>
-          </div>
+        <div className="p-6">
+          <TableSkeleton rows={8} />
         </div>
       </DashboardShell>
     )

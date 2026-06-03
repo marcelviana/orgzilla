@@ -18,6 +18,7 @@ import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
+import { DetailsSkeleton } from '@/components/shared/LoadingState'
 import { cn } from '@/lib/utils'
 import { getPessoaById, updatePessoa, getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
 import { getProjetosParaFiltro } from '@/app/actions/projetos.actions'
@@ -303,11 +304,8 @@ export default function EditPessoaPage() {
   if (dataLoading) {
     return (
       <DashboardShell>
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando dados...</p>
-          </div>
+        <div className="p-6">
+          <DetailsSkeleton />
         </div>
       </DashboardShell>
     )

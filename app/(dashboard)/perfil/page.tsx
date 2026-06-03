@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { AlertCircle, Calendar, Check, ExternalLink, Eye, EyeOff, Info, Lock, Loader2 } from 'lucide-react'
+import { AlertCircle, Calendar, Check, ExternalLink, Eye, EyeOff, Info, Lock } from 'lucide-react'
+import { DetailsSkeleton } from '@/components/shared/LoadingState'
 import Link from "next/link"
 import { getUsuarioLogado, type UsuarioLogado } from "@/lib/middleware/auth.middleware"
 import { updateUsuario } from "@/app/actions/usuarios.actions"
@@ -186,11 +187,8 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <DashboardShell>
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando perfil...</p>
-          </div>
+        <div className="p-6">
+          <DetailsSkeleton />
         </div>
       </DashboardShell>
     )

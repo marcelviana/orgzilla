@@ -29,7 +29,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2, Loader2 } from 'lucide-react'
+import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2 } from 'lucide-react'
+import { TableSkeleton } from '@/components/shared/LoadingState'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -336,11 +337,8 @@ export default function TagsPage() {
   if (loading) {
     return (
       <DashboardShell>
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando tags...</p>
-          </div>
+        <div className="p-6">
+          <TableSkeleton rows={8} />
         </div>
       </DashboardShell>
     )

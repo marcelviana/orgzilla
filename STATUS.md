@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 3 de junho de 2026 (busca do header conectada à `/busca`; badge falso do sino removido)
+**Última atualização:** 3 de junho de 2026 (loading de página padronizado em skeletons compartilhados)
 
 ---
 
@@ -207,6 +207,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 13. ✅ Concluído em 3 jun 2026 — lint zerado (0 errors, 0 warnings). Corrigidos: `no-useless-assignment` em testes de separação LGPD, `no-unused-vars`/`require-await` em testes, `no-unnecessary-type-assertion` em repositories/actions/organograma, `no-misused-promises` em `pessoas/[id]`, `restrict-template-expressions` em relatórios, `react-hooks/immutability` em projetos, `react-hooks/set-state-in-effect` em `busca/page.tsx` (bug real: estado derivado substituiu setStates síncronos no efeito) e em `projetos/page.tsx`. `tsc --noEmit`, 106 testes e build passando.
 14. ✅ Concluído em 3 jun 2026 — gate de CI adicionado (`.github/workflows/ci.yml`): dispara em PR e push para `main`; roda tsc, lint, testes e build com Node 24 + pnpm frozen-lockfile. Padrão `SelectQueryBuilder` documentado na nova seção "Padrões de tipagem — Supabase" do `CLAUDE.md`. Agente `sincronizador-docs` atualizado para confrontar afirmações factuais do `CLAUDE.md` contra o repo.
 15. ✅ Concluído em 3 jun 2026 — busca do header conectada à `/busca?q=`: `DashboardShell` agora usa `useRouter` e estado controlado (`headerSearch`); Enter e clique na lupa navegam para `/busca?q=<termo>`; `/busca` sincroniza estado quando o `?q=` muda via header (novo `useEffect` em `busca/page.tsx`). Badge numérico falso do sino removido; bloco comentado com TODO para reativar quando houver backend de notificações.
+16. ✅ Concluído em 3 jun 2026 — loading de página padronizado em skeletons compartilhados (`components/shared/LoadingState.tsx`): 15 spinners `Loader2` de tela cheia migrados para `TableSkeleton` (listas) ou `DetailsSkeleton` (detalhes/formulários); skeleton manual em `configuracoes/niveis` com `bg-gray-200` hardcoded migrado para `Skeleton` base + `TableSkeleton`. Spinners de ação (submit de modal/botão) mantidos por design. Caveat: `CardSkeleton` usa `lg:grid-cols-${columns}` dinâmico — não usar com `columns` arbitrário; valor padrão (3) pode não estar no CSS Tailwind em produção.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
 

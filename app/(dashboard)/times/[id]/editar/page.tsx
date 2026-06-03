@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Home, Loader2 } from 'lucide-react'
+import { DetailsSkeleton } from '@/components/shared/LoadingState'
 import { getTimeById, updateTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -161,11 +162,8 @@ export default function EditarTimePage() {
   if (dataLoading) {
     return (
       <DashboardShell>
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando formulário...</p>
-          </div>
+        <div className="p-6">
+          <DetailsSkeleton />
         </div>
       </DashboardShell>
     )

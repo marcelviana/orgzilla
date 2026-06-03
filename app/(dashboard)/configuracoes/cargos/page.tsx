@@ -40,6 +40,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, ShieldAlert, Loader2 } from 'lucide-react'
+import { TableSkeleton } from '@/components/shared/LoadingState'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -364,11 +365,8 @@ export default function CargosPage() {
   if (loading) {
     return (
       <DashboardShell>
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Carregando cargos...</p>
-          </div>
+        <div className="p-6">
+          <TableSkeleton rows={8} />
         </div>
       </DashboardShell>
     )
