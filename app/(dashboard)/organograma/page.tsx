@@ -213,7 +213,7 @@ export default function OrganogramaPage() {
             source: nodeId,
             target: child.id,
             type: ConnectionLineType.Step,
-            style: { stroke: "#1A2734", strokeWidth: 2 },
+            style: { stroke: "var(--chart-axis)", strokeWidth: 2 },
             animated: false,
           })
         })
@@ -388,13 +388,13 @@ export default function OrganogramaPage() {
             maxZoom={2}
             defaultEdgeOptions={{ type: ConnectionLineType.Step }}
           >
-            <Background color="#1A2734" gap={20} size={1} />
+            <Background color="var(--chart-grid)" gap={20} size={1} />
             <Controls showInteractive={false} />
             <MiniMap
               nodeColor={(node) => {
-                if (node.data.isSelected) return "#FF7A00"
-                if (node.data.isHighlighted) return "#00C8FF"
-                return "#1A2734"
+                if (node.data.isSelected) return "var(--chart-1)"
+                if (node.data.isHighlighted) return "var(--chart-5)"
+                return "var(--chart-8)"
               }}
               maskColor="rgba(244, 245, 247, 0.6)"
             />

@@ -96,6 +96,27 @@
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
+/*
+ * Chart tokens (data-viz) — definidos em :root FORA do @theme inline.
+ * Sob @theme inline o Tailwind só emite em :root as vars referenciadas por
+ * utilitários; estas precisam estar sempre disponíveis para serem consumidas
+ * via prop (fill/stroke) do Recharts/xyflow, onde var() é a única opção.
+ * --chart-1..8: paleta categórica por série. --chart-grid/axis: grade e eixo.
+ * NÃO usar para ESTADO (ativo/desligado) — ali vale o token semântico.
+ */
+:root {
+  --chart-1: #ff7a00;
+  --chart-2: #2f6fed;
+  --chart-3: #1fa971;
+  --chart-4: #8b5cf6;
+  --chart-5: #00b8d4;
+  --chart-6: #e84393;
+  --chart-7: #ca8a04;
+  --chart-8: #64748b;
+  --chart-grid: #e5e7eb;
+  --chart-axis: #8a93a0;
+}
+
 /* Base Styles */
 * {
   @apply border-border;
