@@ -39,7 +39,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useToast } from '@/hooks/use-toast'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import {
   getTimesHierarquia,
   getGestoresParaFiltro,
@@ -73,7 +74,6 @@ function mapTimeHierarquicoToTeam(h: TimeHierarquico): Team {
 type ViewMode = 'cards' | 'tree' | 'table'
 
 export default function TimesPage() {
-  const { toast } = useToast()
   const [loading, setLoading] = useState(true)
   const [teams, setTeams] = useState<Team[]>([])
   const [gestores, setGestores] = useState<Array<{ id: string; nome: string }>>([])
@@ -102,11 +102,7 @@ export default function TimesPage() {
         if (timesResult.success && timesResult.data) {
           setTeams(timesResult.data.map(mapTimeHierarquicoToTeam))
         } else {
-          toast({
-            title: 'Erro ao carregar times',
-            description: timesResult.error ?? 'Erro desconhecido',
-            variant: 'destructive',
-          })
+          toast.error(String(timesResult.error ?? 'Erro ao carregar times'))
         }
 
         if (gestoresResult.success && gestoresResult.data) {
@@ -114,12 +110,7 @@ export default function TimesPage() {
         }
       } catch (error) {
         if (controller.signal.aborted) return
-        console.error('Erro ao carregar dados:', error)
-        toast({
-          title: 'Erro ao carregar dados',
-          description: 'Não foi possível carregar os times. Tente novamente.',
-          variant: 'destructive',
-        })
+        toast.error(handleError(error, 'database'))
       } finally {
         if (!controller.signal.aborted) setLoading(false)
       }
@@ -127,34 +118,22 @@ export default function TimesPage() {
 
     void fetchAll()
     return () => controller.abort()
-  }, [toast])
+  }, [])
 
   async function handleDelete(timeId: string) {
     try {
       const result = await softDeleteTime(timeId)
       if (result.success) {
-        toast({
-          title: '🦖 Time desativado com sucesso!',
-          description: 'O time foi desativado.',
-        })
+        toast.successDino('Time desativado com sucesso!')
         const timesResult = await getTimesHierarquia()
         if (timesResult.success && timesResult.data) {
           setTeams(timesResult.data.map(mapTimeHierarquicoToTeam))
         }
       } else {
-        toast({
-          title: 'Erro ao desativar time',
-          description: result.error || 'Erro desconhecido',
-          variant: 'destructive',
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao desativar time'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao desativar time:', error)
-      toast({
-        title: 'Ops! Erro ao desativar time',
-        description: 'Não foi possível desativar o time. Tente novamente.',
-        variant: 'destructive',
-      })
+      toast.error(handleError(error, 'database'))
     } finally {
       setDeleteDialogOpen(false)
       setTimeToDelete(null)

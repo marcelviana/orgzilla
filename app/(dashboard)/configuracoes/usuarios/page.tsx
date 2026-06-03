@@ -50,9 +50,8 @@ import {
   getPessoasSemUsuario,
   type UsuarioListItem
 } from '@/app/actions/usuarios.actions'
-import { toast as sonnerToast } from 'sonner'
-import { useToast } from '@/hooks/use-toast'
-
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 
 function formatRelativeTime(dateString: string) {
   const date = new Date(dateString)
@@ -70,8 +69,6 @@ function formatRelativeTime(dateString: string) {
 }
 
 export default function UsuariosPage() {
-  const { toast } = useToast()
-
   // Data state
   const [isLoading, setIsLoading] = useState(true)
   const [users, setUsers] = useState<UsuarioListItem[]>([])
@@ -125,15 +122,14 @@ export default function UsuariosPage() {
       if (usuariosResult.success && usuariosResult.data) {
         setUsers(usuariosResult.data)
       } else if (!usuariosResult.success) {
-        sonnerToast.error(usuariosResult.error)
+        toast.error(String(usuariosResult.error))
       }
 
       if (pessoasResult.success && pessoasResult.data) {
         setAvailablePessoas(pessoasResult.data)
       }
     } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      sonnerToast.error('Erro inesperado ao carregar usuários')
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsLoading(false)
     }
@@ -181,32 +177,19 @@ export default function UsuariosPage() {
         : await reactivateUsuario(userId)
 
       if (result.success) {
-        sonnerToast.success(currentStatus ? 'Usuário desativado' : 'Usuário reativado')
+        toast.success(currentStatus ? 'Usuário desativado' : 'Usuário reativado')
         await loadData()
       } else {
-        toast({
-          title: 'Erro',
-          description: result.error,
-          variant: 'destructive'
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao alterar status'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao alterar status:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao alterar o status do usuário',
-        variant: 'destructive'
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 
   const handleCreateUser = async () => {
     if (!formData.nome || !formData.email) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Preencha nome e email',
-        variant: 'destructive'
-      })
+      toast.error({ type: 'validation', message: 'Preencha nome e email' })
       return
     }
 
@@ -221,7 +204,7 @@ export default function UsuariosPage() {
       })
 
       if (result.success) {
-        sonnerToast.success('🦖 Usuário criado com sucesso!')
+        toast.successDino('Usuário criado com sucesso!')
         setCreateModalOpen(false)
         setFormData({
           nome: "",
@@ -233,19 +216,10 @@ export default function UsuariosPage() {
         setSelectedPessoaId(null)
         await loadData()
       } else {
-        toast({
-          title: 'Erro ao criar usuário',
-          description: result.error,
-          variant: 'destructive'
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao criar usuário'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao criar usuário:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao criar o usuário',
-        variant: 'destructive'
-      })
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsSaving(false)
     }
@@ -263,23 +237,14 @@ export default function UsuariosPage() {
       })
 
       if (result.success) {
-        sonnerToast.success('🦖 Usuário atualizado com sucesso!')
+        toast.successDino('Usuário atualizado com sucesso!')
         setEditModalOpen(false)
         await loadData()
       } else {
-        toast({
-          title: 'Erro ao atualizar usuário',
-          description: result.error,
-          variant: 'destructive'
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao atualizar usuário'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao atualizar usuário:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao atualizar o usuário',
-        variant: 'destructive'
-      })
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsSaving(false)
     }
@@ -292,24 +257,15 @@ export default function UsuariosPage() {
       const result = await softDeleteUsuario(currentUser.id)
 
       if (result.success) {
-        sonnerToast.success('Usuário desativado com sucesso')
+        toast.success('Usuário desativado com sucesso')
         setDeleteModalOpen(false)
         setDeleteConfirmed(false)
         await loadData()
       } else {
-        toast({
-          title: 'Erro ao desativar usuário',
-          description: result.error,
-          variant: 'destructive'
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao desativar usuário'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao desativar usuário:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao desativar o usuário',
-        variant: 'destructive'
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 
@@ -322,24 +278,15 @@ export default function UsuariosPage() {
       })
 
       if (result.success) {
-        sonnerToast.success('Pessoa vinculada com sucesso')
+        toast.success('Pessoa vinculada com sucesso')
         setLinkModalOpen(false)
         setSelectedPessoaId(null)
         await loadData()
       } else {
-        toast({
-          title: 'Erro ao vincular pessoa',
-          description: result.error,
-          variant: 'destructive'
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao vincular pessoa'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao vincular pessoa:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao vincular a pessoa',
-        variant: 'destructive'
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 
@@ -352,29 +299,19 @@ export default function UsuariosPage() {
       })
 
       if (result.success) {
-        sonnerToast.success('Pessoa desvinculada com sucesso')
+        toast.success('Pessoa desvinculada com sucesso')
         setUnlinkModalOpen(false)
         await loadData()
       } else {
-        toast({
-          title: 'Erro ao desvincular pessoa',
-          description: result.error,
-          variant: 'destructive'
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao desvincular pessoa'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao desvincular pessoa:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao desvincular a pessoa',
-        variant: 'destructive'
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 
   const handleBulkAction = (action: string) => {
-    console.log("Bulk action:", action, "for users:", selectedUsers)
-    sonnerToast.info('Ação em massa: ' + action)
+    toast.info('Ação em massa: ' + action)
     setSelectedUsers([])
   }
 

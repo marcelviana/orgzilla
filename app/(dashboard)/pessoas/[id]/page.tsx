@@ -17,7 +17,8 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, ChevronRight, Home, Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import { getPessoaById } from '@/app/actions/pessoas.actions'
 import { getAnotacoesDaPessoa, criarAnotacaoDaPessoa } from '@/app/actions/anotacoes.actions'
 import type { AnotacaoComUsuario } from '@/lib/repositories/anotacao.repository'
@@ -105,8 +106,7 @@ export default function PersonProfilePage() {
           setNotes(anotacoesResult.data)
         }
       } catch (error) {
-        console.error('Erro ao carregar pessoa:', error)
-        toast.error('Erro inesperado ao carregar pessoa')
+        toast.error(handleError(error, 'database'))
         router.push('/pessoas')
       } finally {
         setIsLoading(false)
@@ -157,7 +157,7 @@ export default function PersonProfilePage() {
       if (result.success && result.data) {
         setNotes([result.data, ...notes])
         setNewNote('')
-        toast.success('🦖 Anotação salva com sucesso!')
+        toast.successDino('Anotação salva com sucesso!')
       } else if (!result.success) {
         toast.error(result.error || 'Erro ao salvar anotação')
       }

@@ -15,7 +15,8 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { ChevronRight, Home, Users, MoreVertical, Loader2, Briefcase } from 'lucide-react'
-import { toast } from 'sonner'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
 
 export default function TimeDetailPage() {
@@ -37,8 +38,7 @@ export default function TimeDetailPage() {
           router.push('/times')
         }
       } catch (error) {
-        console.error('Erro ao carregar time:', error)
-        toast.error('Erro inesperado ao carregar time')
+        toast.error(handleError(error, 'database'))
         router.push('/times')
       } finally {
         setIsLoading(false)

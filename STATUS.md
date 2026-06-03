@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (organograma migrado de mock hardcoded para dados reais via `getOrganograma()`; build e 98 testes passando)
+**Última atualização:** 2 de junho de 2026 (todos os toasts migrados para `handleError` + `toast-config`; migração mock → real completa; organograma migrado na rodada anterior; build e 98 testes passando)
 
 ---
 
@@ -156,8 +156,10 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
   - `lib/repositories/base.repository.ts:191`: método `select` adicionado ao `SelectQueryBuilder`; método `update` passou a usar cast `as unknown as SelectQueryBuilder` — eliminava o último erro TS restante.
 - **Total: 0 erros.** Todos os grupos G1–G10 resolvidos; `ignoreBuildErrors` removido.
 
-### 3.6 Padronização de toast/erros incompleta
-- A convenção (CLAUDE.md) é usar `handleError` + `lib/ui/toast-config`, **não** `useToast`/`sonner` direto. Várias páginas existentes ainda importam `useToast`/`sonner` (ex.: `configuracoes/*`, `times/*`, `pessoas/*`). `perfil` ✅ e `projetos/page.tsx` ✅ já migrados. Migração pendente nas demais (não-bloqueante); seguir a convenção em código novo.
+### 3.6 Padronização de toast/erros — concluída
+✅ Todos os arquivos migrados para `handleError` + `lib/ui/toast-config`. Nenhum arquivo em `app/` importa `useToast` ou `sonner` diretamente.
+
+Convenção para código novo: usar sempre `handleError(error, tipo)` de `lib/errors/error-handler.ts` e os helpers de `lib/ui/toast-config` (`toast.error`, `toast.successDino`, etc.). Não usar `useToast`/`sonner` diretamente.
 
 ---
 
@@ -199,13 +201,11 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 7. ✅ Concluído em 2 jun 2026 — pins `"latest"` substituídos por versões fixas (`^`) em 19 deps do `package.json`; lockfile consistente (`pnpm install --frozen-lockfile` passa); build e 98 testes passando.
 8. ✅ Concluído em 2 jun 2026 — toast misto em `projetos/page.tsx` corrigido: `sonner`+`useToast` substituídos por `handleError`+`toast-config`; build e 98 testes passando.
 9. ✅ Concluído em 2 jun 2026 — organograma migrado de mock hardcoded (`hierarchyData` estático) para dados reais via `getOrganograma()` chamando `TimeService`; elimina a última página mock do projeto.
+10. ✅ Concluído em 2 jun 2026 — migração de toasts concluída (item D): 11 arquivos em `times/*`, `projetos/*`, `configuracoes/usuarios`, `pessoas/*` migrados de `useToast`/`sonner` para `handleError`+`toast-config`; nenhum uso direto de `useToast`/`sonner` permanece em `app/`.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
 
 ### 🟨 Em seguida — padronização e segurança (sem decisão de produto)
-D. **Concluir migração de toasts restante** (§3.6) — `configuracoes/*`, `times/*`,
-   `pessoas/*` ainda usam `useToast`/`sonner` direto. Não-bloqueante; seguir a
-   convenção ao tocar cada arquivo.
 E. **Restringir domínio no Google OAuth** (§4.4) — puramente técnico; qualquer conta
    Google hoje vira `visualizador` com leitura de todas as pessoas. Requer configuração
    no Supabase Auth + variável de ambiente.

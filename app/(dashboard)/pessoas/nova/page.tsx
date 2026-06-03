@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { toast } from 'sonner'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
@@ -98,8 +99,7 @@ export default function NovasPessoasPage() {
         // Apenas gestores podem informar remuneração (SENSÍVEL - LGPD)
         setCanViewSalary(usuario?.tipo_perfil === 'gestor')
       } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-        toast.error('Erro ao carregar formulário')
+        toast.error(handleError(error, 'database'))
       } finally {
         setDataLoading(false)
       }
@@ -198,7 +198,7 @@ export default function NovasPessoasPage() {
       const result = await createPessoa(pessoaData)
 
       if (result.success) {
-        toast.success('🦖 Pessoa criada com sucesso!')
+        toast.successDino('Pessoa criada com sucesso!')
         setIsDirty(false)
         // Redirecionar para a lista ou detalhe
         router.push('/pessoas')
@@ -206,8 +206,7 @@ export default function NovasPessoasPage() {
         toast.error(result.error || 'Erro ao criar pessoa')
       }
     } catch (error) {
-      console.error('Erro ao salvar pessoa:', error)
-      toast.error('Erro inesperado ao salvar pessoa')
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsLoading(false)
     }

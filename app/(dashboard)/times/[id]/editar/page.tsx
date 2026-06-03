@@ -10,14 +10,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useToast } from '@/hooks/use-toast'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Home, Loader2 } from 'lucide-react'
 import { getTimeById, updateTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
-import { toast as sonnerToast } from 'sonner'
 
 export default function EditarTimePage() {
-  const { toast } = useToast()
   const router = useRouter()
   const params = useParams()
   const timeId = params.id as string
@@ -84,7 +83,7 @@ export default function EditarTimePage() {
             })
           }
         } else {
-          sonnerToast.error(String(timeResult.error ?? 'Erro ao carregar time'))
+          toast.error(String(timeResult.error ?? 'Erro ao carregar time'))
           router.push('/times')
           return
         }
@@ -99,8 +98,7 @@ export default function EditarTimePage() {
         }
       } catch (error) {
         if (controller.signal.aborted) return
-        console.error('Erro ao carregar dados:', error)
-        sonnerToast.error('Erro inesperado ao carregar dados')
+        toast.error(handleError(error, 'database'))
         router.push('/times')
       } finally {
         if (!controller.signal.aborted) setDataLoading(false)
@@ -118,11 +116,7 @@ export default function EditarTimePage() {
 
   const handleSave = async () => {
     if (!formData.nome || !formData.gestorId) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Preencha todos os campos obrigatórios (*)',
-        variant: 'destructive'
-      })
+      toast.error({ type: 'validation', message: 'Preencha todos os campos obrigatórios (*)' })
       return
     }
 
@@ -140,23 +134,14 @@ export default function EditarTimePage() {
       const result = await updateTime(timeId, timeData)
 
       if (result.success) {
-        sonnerToast.success('🦖 Time atualizado com sucesso!')
+        toast.successDino('Time atualizado com sucesso!')
         setIsDirty(false)
         router.push(`/times/${timeId}`)
       } else {
-        toast({
-          title: 'Erro ao atualizar time',
-          description: result.error || 'Ocorreu um erro ao atualizar o time',
-          variant: 'destructive'
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao atualizar time'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao atualizar time:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro inesperado ao atualizar o time',
-        variant: 'destructive'
-      })
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsLoading(false)
     }

@@ -18,14 +18,13 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Home, ChevronRight, Plus, X, Search, Loader2 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { toast as sonnerToast } from 'sonner'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import { createProjeto, addPessoaAoProjeto } from '@/app/actions/projetos.actions'
 import { getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
 export default function NovoProjeto() {
   const router = useRouter()
-  const { toast } = useToast()
 
   const [isLoading, setIsLoading] = useState(false)
   const [dataLoading, setDataLoading] = useState(true)
@@ -63,8 +62,7 @@ export default function NovoProjeto() {
           setAvailablePeople(pessoasResult.data)
         }
       } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-        sonnerToast.error('Erro ao carregar formulário')
+        toast.error(handleError(error, 'database'))
       } finally {
         setDataLoading(false)
       }
@@ -93,27 +91,17 @@ export default function NovoProjeto() {
     setSelectedPeopleIds([])
     setSearchTerm('')
     setAddPeopleModalOpen(false)
-    toast({
-      title: 'Pessoas adicionadas',
-      description: `${peopleToAdd.length} pessoa(s) adicionada(s) ao projeto`,
-    })
+    toast.success(`${peopleToAdd.length} pessoa(s) adicionada(s) ao projeto`)
   }
 
   const handleRemovePerson = (id: string) => {
     setPessoasAlocadas(pessoasAlocadas.filter((p) => p.id !== id))
-    toast({
-      title: 'Pessoa removida',
-      description: 'Pessoa removida do projeto',
-    })
+    toast.success('Pessoa removida do projeto')
   }
 
   const handleSave = async () => {
     if (!nome.trim()) {
-      toast({
-        title: 'Erro',
-        description: 'Nome do projeto é obrigatório',
-        variant: 'destructive',
-      })
+      toast.error({ type: 'validation', message: 'Nome do projeto é obrigatório' })
       return
     }
 
@@ -127,11 +115,7 @@ export default function NovoProjeto() {
       })
 
       if (!projetoResult.success) {
-        toast({
-          title: 'Erro ao criar projeto',
-          description: projetoResult.error,
-          variant: 'destructive',
-        })
+        toast.error(handleError(new Error(projetoResult.error ?? 'Erro ao criar projeto'), 'database'))
         return
       }
 
@@ -152,15 +136,10 @@ export default function NovoProjeto() {
         await Promise.all(alocacoes)
       }
 
-      sonnerToast.success('🦖 Projeto criado com sucesso!')
+      toast.successDino('Projeto criado com sucesso!')
       router.push('/projetos')
     } catch (error) {
-      console.error('Erro ao salvar projeto:', error)
-      toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro ao salvar o projeto',
-        variant: 'destructive',
-      })
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsLoading(false)
     }

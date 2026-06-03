@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
-import { toast } from 'sonner'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
@@ -140,8 +141,7 @@ export default function EditPessoaPage() {
         setTags(tagsResult.data)
       }
     } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      toast.error('Erro inesperado ao carregar dados')
+      toast.error(handleError(error, 'database'))
       router.push('/pessoas')
     } finally {
       setDataLoading(false)
@@ -239,15 +239,14 @@ export default function EditPessoaPage() {
       const result = await updatePessoa(pessoaId, pessoaData)
 
       if (result.success) {
-        toast.success('🦖 Pessoa atualizada com sucesso!')
+        toast.successDino('Pessoa atualizada com sucesso!')
         setIsDirty(false)
         router.push(`/pessoas/${pessoaId}`)
       } else {
         toast.error(result.error || 'Erro ao atualizar pessoa')
       }
     } catch (error) {
-      console.error('Erro ao atualizar pessoa:', error)
-      toast.error('Erro inesperado ao atualizar pessoa')
+      toast.error(handleError(error, 'database'))
     } finally {
       setIsLoading(false)
     }

@@ -20,7 +20,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Home, ChevronRight, Plus, X, Search } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from '@/lib/ui/toast-config'
 
 const availablePeople = [
   { id: 'p1', nome: 'Maria Santos', avatar: '/diverse-woman-portrait.png', cargo: 'Tech Lead', time: 'Engenharia' },
@@ -35,8 +35,6 @@ export default function EditarProjeto() {
   const params = useParams()
   const projetoId = params.id as string
   const router = useRouter()
-  const { toast } = useToast()
-  
   const [nome, setNome] = useState('Projeto Alpha')
   const [observacoes, setObservacoes] = useState('Projeto estratégico da área de engenharia com foco em escalabilidade')
   const [status, setStatus] = useState<'Ativo' | 'Inativo'>('Ativo')
@@ -60,44 +58,26 @@ export default function EditarProjeto() {
     setSelectedPeople([])
     setSearchTerm('')
     setAddPeopleModalOpen(false)
-    toast({
-      title: 'Pessoas adicionadas',
-      description: `${peopleToAdd.length} pessoa(s) adicionada(s) ao projeto`,
-    })
+    toast.success(`${peopleToAdd.length} pessoa(s) adicionada(s) ao projeto`)
   }
 
   const handleRemovePerson = (id: string) => {
     setPessoasAlocadas(pessoasAlocadas.filter((p) => p.id !== id))
-    toast({
-      title: 'Pessoa removida',
-      description: 'Pessoa removida do projeto',
-    })
+    toast.success('Pessoa removida do projeto')
   }
 
   const handleSave = () => {
     if (!nome.trim()) {
-      toast({
-        title: 'Erro',
-        description: 'Nome do projeto é obrigatório',
-        variant: 'destructive',
-      })
+      toast.error({ type: 'validation', message: 'Nome do projeto é obrigatório' })
       return
     }
 
-    console.log('Salvando projeto:', { nome, status, observacoes, pessoasAlocadas })
-    toast({
-      title: 'Projeto atualizado!',
-      description: `${nome} foi atualizado com sucesso`,
-    })
+    toast.successDino(`${nome} atualizado com sucesso`)
     router.push(`/projetos/${projetoId}`)
   }
 
   const handleDelete = () => {
-    console.log('Excluindo projeto')
-    toast({
-      title: 'Projeto excluído',
-      description: 'O projeto foi excluído com sucesso',
-    })
+    toast.successDino('Projeto excluído com sucesso!')
     router.push('/projetos')
   }
 

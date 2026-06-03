@@ -24,8 +24,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Home, ChevronRight, MoreVertical, Plus, Search, Users, Loader2, Calendar } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { toast as sonnerToast } from 'sonner'
+import { handleError } from '@/lib/errors/error-handler'
+import { toast } from '@/lib/ui/toast-config'
 import { getProjetoById, removePessoaDoProjeto, addPessoaAoProjeto, softDeleteProjeto } from '@/app/actions/projetos.actions'
 import { getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 import type { ProjetoDetail } from '@/app/actions/projetos.actions'
@@ -33,7 +33,6 @@ import type { ProjetoDetail } from '@/app/actions/projetos.actions'
 export default function ProjetoDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { toast } = useToast()
   const projetoId = params.id as string
 
   const [isLoading, setIsLoading] = useState(true)
@@ -68,12 +67,11 @@ export default function ProjetoDetailPage() {
       if (result.success && result.data) {
         setProjeto(result.data)
       } else {
-        sonnerToast.error((!result.success && result.error) || 'Erro ao carregar projeto')
+        toast.error(String((!result.success && result.error) || 'Erro ao carregar projeto'))
         router.push('/projetos')
       }
     } catch (error) {
-      console.error('Erro ao carregar projeto:', error)
-      sonnerToast.error('Erro inesperado ao carregar projeto')
+      toast.error(handleError(error, 'database'))
       router.push('/projetos')
     }
   }
@@ -87,12 +85,11 @@ export default function ProjetoDetailPage() {
         if (result.success && result.data) {
           setProjeto(result.data)
         } else {
-          sonnerToast.error((!result.success && result.error) || 'Erro ao carregar projeto')
+          toast.error(String((!result.success && result.error) || 'Erro ao carregar projeto'))
           router.push('/projetos')
         }
       } catch (error) {
-        console.error('Erro ao carregar projeto:', error)
-        sonnerToast.error('Erro inesperado ao carregar projeto')
+        toast.error(handleError(error, 'database'))
         router.push('/projetos')
       } finally {
         if (active) setIsLoading(false)
@@ -136,17 +133,12 @@ export default function ProjetoDetailPage() {
 
       await Promise.all(alocacoes)
 
-      sonnerToast.success(`${selectedPeopleIds.length} pessoa(s) adicionada(s) ao projeto`)
+      toast.success(`${selectedPeopleIds.length} pessoa(s) adicionada(s) ao projeto`)
       setSelectedPeopleIds([])
       setAddPeopleModalOpen(false)
       await loadProjeto()
     } catch (error) {
-      console.error('Erro ao adicionar pessoas:', error)
-      toast({
-        title: 'Erro ao adicionar pessoas',
-        description: 'Ocorreu um erro ao adicionar pessoas ao projeto',
-        variant: 'destructive',
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 
@@ -158,23 +150,14 @@ export default function ProjetoDetailPage() {
       const result = await removePessoaDoProjeto(removePersonModal.alocacaoId, hoje)
 
       if (result.success) {
-        sonnerToast.success('Pessoa removida do projeto')
+        toast.success('Pessoa removida do projeto')
         setRemovePersonModal({ open: false, alocacaoId: null, pessoaNome: null })
         await loadProjeto()
       } else {
-        toast({
-          title: 'Erro ao remover pessoa',
-          description: result.error,
-          variant: 'destructive',
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao remover pessoa'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao remover pessoa:', error)
-      toast({
-        title: 'Erro ao remover pessoa',
-        description: 'Ocorreu um erro ao remover pessoa do projeto',
-        variant: 'destructive',
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 
@@ -182,22 +165,13 @@ export default function ProjetoDetailPage() {
     try {
       const result = await softDeleteProjeto(projetoId)
       if (result.success) {
-        sonnerToast.success('🦖 Projeto desativado com sucesso!')
+        toast.successDino('Projeto desativado com sucesso!')
         router.push('/projetos')
       } else {
-        toast({
-          title: 'Erro ao desativar projeto',
-          description: result.error,
-          variant: 'destructive',
-        })
+        toast.error(handleError(new Error(result.error ?? 'Erro ao desativar projeto'), 'database'))
       }
     } catch (error) {
-      console.error('Erro ao desativar projeto:', error)
-      toast({
-        title: 'Erro ao desativar projeto',
-        description: 'Ocorreu um erro ao desativar o projeto',
-        variant: 'destructive',
-      })
+      toast.error(handleError(error, 'database'))
     }
   }
 
