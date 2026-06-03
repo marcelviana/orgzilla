@@ -81,6 +81,7 @@ Não enfraqueça nem remova policies sem registrar o motivo no `STATUS.md`. Em q
 
 - **Migração mock → real:** o objetivo é eliminar dados mock. **Não** adicione novos `mock*`. Ao trabalhar numa página que ainda usa mock, conecte-a às Actions reais.
 - **Tratamento de erro:** use `handleError(error, tipo)` de `lib/errors/error-handler.ts` e os toasts de `lib/ui/toast-config.ts` (`toast.error`, `toast.successDino`, etc.). Não use `useToast`/`sonner` direto em código novo.
+- **Loading de página:** use os skeletons de `components/shared/LoadingState.tsx` (`TableSkeleton`, `CardSkeleton`, `DetailsSkeleton`, `ChartSkeleton`). Não crie skeletons inline em páginas novas.
 - **Validação** antes de enviar ao servidor, com os helpers (`validateRequired`, `validateEmail`, `validatePassword`).
 - **Actions** retornam sempre `ActionResult<T>` = `{ success, data?, error? }`.
 - **Soft delete** por padrão (`ativo = false`); evite hard delete.
