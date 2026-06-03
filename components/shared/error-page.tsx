@@ -82,7 +82,7 @@ export function ErrorPage({
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
           <Button
             size="lg"
-            className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
+            className="bg-primary-strong hover:bg-primary-strong/90 text-white"
             onClick={primaryAction.onClick}
           >
             {primaryAction.icon}

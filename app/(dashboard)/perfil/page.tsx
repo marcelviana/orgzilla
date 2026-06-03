@@ -23,7 +23,7 @@ const getProfileBadgeColor = (tipo: string) => {
     case "admin":
       return "bg-error text-white hover:bg-error/90"
     case "gestor":
-      return "bg-primary text-white hover:bg-primary/90"
+      return "bg-primary-strong text-white hover:bg-primary-strong/90"
     case "visualizador":
       return "bg-blue-500 text-white hover:bg-blue-600"
     default:
@@ -346,7 +346,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-4 rounded-lg border p-4">
                 <Avatar className="h-12 w-12">
                   <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-primary text-white">
+                  <AvatarFallback className="bg-primary-strong text-white">
                     {user.pessoa.nome.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                       <>
                         <Badge variant="secondary" className="text-white">{user.pessoa.cargo.nome}</Badge>
                         {user.pessoa.cargo.nivel && (
-                          <Badge className="bg-primary text-white">{user.pessoa.cargo.nivel.nome}</Badge>
+                          <Badge className="bg-primary-strong text-white">{user.pessoa.cargo.nivel.nome}</Badge>
                         )}
                       </>
                     )}

@@ -340,7 +340,7 @@ export default function NiveisPage() {
               <Info className="h-4 w-4" />
             </Button>
             <Button
-              className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
+              className="bg-primary-strong hover:bg-primary-strong/90 text-white"
               onClick={() => setCreateModalOpen(true)}
               disabled={!isAdmin}
               title={!isAdmin ? 'Apenas administradores podem criar níveis' : ''}
@@ -423,7 +423,7 @@ export default function NiveisPage() {
                       variant={level.pessoas > 0 ? 'default' : 'secondary'}
                       className={
                         level.pessoas > 0
-                          ? 'bg-[#FF7A00] hover:bg-[#FF7A00]'
+                          ? 'bg-primary-strong hover:bg-primary-strong'
                           : 'text-white'
                       }
                     >
@@ -502,7 +502,7 @@ export default function NiveisPage() {
                         variant={level.pessoas > 0 ? 'default' : 'secondary'}
                         className={
                           level.pessoas > 0
-                            ? 'bg-[#FF7A00] hover:bg-[#FF7A00]'
+                            ? 'bg-primary-strong hover:bg-primary-strong'
                             : 'text-white'
                         }
                       >
@@ -715,7 +715,7 @@ export default function NiveisPage() {
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   ))}
-                  <Badge className="bg-[#FF7A00] hover:bg-[#FF7A00]">
+                  <Badge className="bg-primary-strong hover:bg-primary-strong">
                     {formNome || 'Novo Nível'}
                   </Badge>
                 </div>
@@ -746,7 +746,7 @@ export default function NiveisPage() {
               Cancelar
             </Button>
             <Button
-              className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
+              className="bg-primary-strong hover:bg-primary-strong/90 text-white"
               onClick={() => { void handleCreateLevel() }}
               disabled={isSubmitting}
             >
@@ -830,7 +830,7 @@ export default function NiveisPage() {
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   ))}
-                  <Badge className="bg-[#FF7A00] hover:bg-[#FF7A00]">
+                  <Badge className="bg-primary-strong hover:bg-primary-strong">
                     {formNome}
                   </Badge>
                 </div>
@@ -861,7 +861,7 @@ export default function NiveisPage() {
               Cancelar
             </Button>
             <Button
-              className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white"
+              className="bg-primary-strong hover:bg-primary-strong/90 text-white"
               onClick={() => { void handleEditLevel() }}
               disabled={isSubmitting}
             >
@@ -951,7 +951,7 @@ export default function NiveisPage() {
                         variant={l === selectedLevel.nome ? 'default' : 'outline'}
                         className={
                           l === selectedLevel.nome
-                            ? 'bg-[#FF7A00] hover:bg-[#FF7A00]'
+                            ? 'bg-primary-strong hover:bg-primary-strong'
                             : ''
                         }
                       >
@@ -1039,7 +1039,7 @@ export default function NiveisPage() {
                 Para ver a lista completa, acesse a página de Pessoas e filtre por este nível.
               </p>
               <Link href="/pessoas">
-                <Button className="mt-4 bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white">
+                <Button className="mt-4 bg-primary-strong hover:bg-primary-strong/90 text-white">
                   Ir para Pessoas
                 </Button>
               </Link>
@@ -1081,7 +1081,7 @@ export default function NiveisPage() {
                   </div>
                 ))}
                 <Button
-                  className="w-full bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white mt-4"
+                  className="w-full bg-primary-strong hover:bg-primary-strong/90 text-white mt-4"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Criar Novo Cargo neste Nível
@@ -1093,7 +1093,7 @@ export default function NiveisPage() {
                 <p className="text-muted-foreground mb-4">
                   Nenhum cargo criado para este nível
                 </p>
-                <Button className="bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white">
+                <Button className="bg-primary-strong hover:bg-primary-strong/90 text-white">
                   <Plus className="h-4 w-4 mr-2" />
                   Criar Primeiro Cargo
                 </Button>

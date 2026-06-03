@@ -241,7 +241,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                 Exportar
               </Button>
               <Link href="/pessoas/novo">
-                <Button className="gap-2 bg-[#FF7A00] hover:bg-[#FF7A00]/90">
+                <Button className="gap-2 bg-primary-strong hover:bg-primary-strong/90">
                   <Plus className="h-4 w-4" />
                   Adicionar Pessoa
                 </Button>
@@ -314,7 +314,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
 
               <div className="flex gap-2">
                 <Button
-                  className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
+                  className="bg-primary-strong hover:bg-primary-strong/90"
                   onClick={applyFilters}
                   disabled={isPending}
                 >
@@ -506,7 +506,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                       size="sm"
                       onClick={() => changePage(page)}
                       disabled={isPending}
-                      className={currentPage === page ? "bg-[#FF7A00] hover:bg-[#FF7A00]/90" : ""}
+                      className={currentPage === page ? "bg-primary-strong hover:bg-primary-strong/90" : ""}
                     >
                       {page}
                     </Button>

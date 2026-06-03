@@ -380,7 +380,7 @@ export default function TagsPage() {
                 </SelectContent>
               </Select>
 
-              <Button onClick={openCreateModal} className="bg-[#FF7A00] hover:bg-[#FF7A00]/90">
+              <Button onClick={openCreateModal} className="bg-primary-strong hover:bg-primary-strong/90">
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Tag
               </Button>
@@ -472,7 +472,7 @@ export default function TagsPage() {
                 : 'Comece criando sua primeira tag'}
             </p>
             {!searchQuery && (
-              <Button onClick={openCreateModal} className="bg-[#FF7A00] hover:bg-[#FF7A00]/90">
+              <Button onClick={openCreateModal} className="bg-primary-strong hover:bg-primary-strong/90">
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Primeira Tag
               </Button>
@@ -547,7 +547,7 @@ export default function TagsPage() {
             <DropdownMenuTrigger asChild>
               <Button
                 size="icon"
-                className="h-14 w-14 rounded-full bg-[#FF7A00] hover:bg-[#FF7A00]/90 shadow-lg"
+                className="h-14 w-14 rounded-full bg-primary-strong hover:bg-primary-strong/90 shadow-lg"
               >
                 <Plus className="h-6 w-6" />
               </Button>
@@ -696,7 +696,7 @@ export default function TagsPage() {
             <Button
               onClick={() => { void handleCreateEdit() }}
               disabled={!formData.nome}
-              className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
+              className="bg-primary-strong hover:bg-primary-strong/90"
             >
               Salvar Tag
             </Button>
@@ -969,7 +969,7 @@ export default function TagsPage() {
             <Button variant="outline" onClick={() => setMergeModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleMerge} className="bg-[#FF7A00] hover:bg-[#FF7A00]/90">
+            <Button onClick={handleMerge} className="bg-primary-strong hover:bg-primary-strong/90">
               Mesclar Tags
             </Button>
           </DialogFooter>

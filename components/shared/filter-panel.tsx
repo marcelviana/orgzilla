@@ -67,7 +67,7 @@ export function FilterPanel({
         <div className="flex items-center gap-2">
           <span className="font-semibold text-gray-900">Filtros</span>
           {activeFiltersCount > 0 && (
-            <span className="px-2 py-1 bg-[#FF7A00] text-white text-xs rounded-full font-medium">
+            <span className="px-2 py-1 bg-primary-strong text-white text-xs rounded-full font-medium">
               {activeFiltersCount}
             </span>
           )}
@@ -120,7 +120,7 @@ export function FilterPanel({
             {onApply && (
               <Button
                 onClick={onApply}
-                className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
+                className="bg-primary-strong hover:bg-primary-strong/90"
               >
                 Aplicar {activeFiltersCount > 0 && `(${activeFiltersCount})`}
               </Button>

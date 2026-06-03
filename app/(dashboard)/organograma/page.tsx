@@ -52,7 +52,7 @@ function TimeNodeComponent({ data }: { data: TimeNodeData }) {
             <Users className="w-6 h-6 text-secondary" />
           </div>
           {hasReports && !isExpanded && (
-            <div className="absolute -bottom-1 -right-1 bg-primary text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+            <div className="absolute -bottom-1 -right-1 bg-primary-strong text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
               +{data.reportsCount}
             </div>
           )}
