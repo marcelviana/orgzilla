@@ -308,7 +308,7 @@ export default function BuscaPage() {
                               <Card key={pessoa.id} className="flex items-center gap-4 p-4 transition-all hover:shadow-md">
                                 <Avatar className="h-12 w-12">
                                   {pessoa.foto_url && <AvatarImage src={pessoa.foto_url} />}
-                                  <AvatarFallback className="bg-primary text-white">
+                                  <AvatarFallback className="bg-primary-strong text-white">
                                     {getPessoaInitials(pessoa.nome)}
                                   </AvatarFallback>
                                 </Avatar>

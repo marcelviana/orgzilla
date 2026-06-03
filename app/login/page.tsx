@@ -299,7 +299,7 @@ function LoginForm() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg"
+              className="w-full h-12 bg-primary-strong hover:bg-primary-strong-hover text-white font-semibold rounded-lg transition-all hover:scale-[1.02] hover:shadow-lg"
               disabled={isLoading}
             >
               {isLoading ? 'Entrando...' : 'Entrar'}

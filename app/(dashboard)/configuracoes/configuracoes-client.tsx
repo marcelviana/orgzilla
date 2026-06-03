@@ -157,7 +157,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 <div className="text-center">
                   <h3 className="text-xl font-bold text-secondary">{currentUser.nome}</h3>
                   <p className="text-sm text-gray-600">{currentUser.email}</p>
-                  <Badge className="mt-2 bg-primary text-white">
+                  <Badge className="mt-2 bg-primary-strong text-white">
                     {currentUser.tipoPerfil === "admin" ? "Administrador" : currentUser.tipoPerfil === "gestor" ? "Gestor" : "Visualizador"}
                   </Badge>
                 </div>
@@ -761,7 +761,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 <Image src="/images/logo-fundo-claro.png" alt="Orgzilla" width={200} height={100} className="mb-4" />
                 <h3 className="text-2xl font-bold text-secondary">Orgzilla</h3>
                 <p className="mt-2 text-gray-600">Sistema de Gestão de Pessoas e Times</p>
-                <Badge className="mt-4 bg-primary text-white">Versão 1.0.0</Badge>
+                <Badge className="mt-4 bg-primary-strong text-white">Versão 1.0.0</Badge>
               </div>
             </Card>
 
@@ -881,7 +881,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                           key={item.id}
                           onClick={() => setActiveSection(item.id)}
                           className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                            isActive ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100"
+                            isActive ? "bg-primary-strong text-white" : "text-gray-700 hover:bg-gray-100"
                           }`}
                         >
                           <Icon className="h-4 w-4 flex-shrink-0" />

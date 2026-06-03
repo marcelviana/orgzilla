@@ -326,7 +326,7 @@ export default function UsuariosPage() {
         )
       case "gestor":
         return (
-          <Badge className="bg-primary text-white">
+          <Badge className="bg-primary-strong text-white">
             Gestor
           </Badge>
         )
@@ -387,7 +387,7 @@ export default function UsuariosPage() {
             </div>
             <Button
               onClick={() => setCreateModalOpen(true)}
-              className="bg-primary hover:bg-primary/90 text-white"
+              className="bg-primary-strong hover:bg-primary-strong/90 text-white"
             >
               <Plus className="mr-2 h-4 w-4" />
               Criar Usuário
@@ -992,7 +992,7 @@ export default function UsuariosPage() {
                 </Button>
                 <Button
                   onClick={() => { void (createModalOpen ? handleCreateUser() : handleEditUser()) }}
-                  className="bg-primary hover:bg-primary/90 text-white"
+                  className="bg-primary-strong hover:bg-primary-strong/90 text-white"
                   disabled={isSaving}
                 >
                   {isSaving ? (

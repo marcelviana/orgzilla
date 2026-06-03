@@ -131,7 +131,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               onClick={() => setSidebarOpen(false)}
               className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-primary text-white"
+                  ? "bg-primary-strong text-white"
                   : "text-gray-300 hover:bg-secondary/80 hover:text-white"
               }`}
             >
@@ -151,7 +151,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
               onClick={() => setConfigExpanded(!configExpanded)}
               className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                 pathname?.startsWith('/configuracoes')
-                  ? "bg-primary text-white"
+                  ? "bg-primary-strong text-white"
                   : "text-gray-300 hover:bg-secondary/80 hover:text-white"
               }`}
             >
@@ -213,7 +213,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </Avatar>
           <div className="flex-1 overflow-hidden">
             <p className="text-sm font-medium text-white truncate">{nomeExibicao}</p>
-            <Badge className="mt-1 bg-primary text-xs hover:bg-primary">
+            <Badge className="mt-1 bg-primary-strong text-xs hover:bg-primary-strong">
               {tipoPerfilLabel}
             </Badge>
           </div>

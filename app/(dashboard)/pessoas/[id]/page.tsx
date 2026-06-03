@@ -303,7 +303,7 @@ export default function PersonProfilePage() {
                   <div className="flex items-center gap-2">
                     <p className="text-lg font-semibold">{pessoa.cargo.nome}</p>
                     {pessoa.cargo.nivel && (
-                      <Badge variant="secondary" className="bg-primary text-white">
+                      <Badge variant="secondary" className="bg-primary-strong text-white">
                         {pessoa.cargo.nivel.nome}
                       </Badge>
                     )}
@@ -407,7 +407,7 @@ export default function PersonProfilePage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Nível</p>
                   {pessoa.cargo?.nivel ? (
-                    <Badge variant="secondary" className="bg-primary text-white">{pessoa.cargo.nivel.nome}</Badge>
+                    <Badge variant="secondary" className="bg-primary-strong text-white">{pessoa.cargo.nivel.nome}</Badge>
                   ) : (
                     <p className="text-sm text-muted-foreground">-</p>
                   )}

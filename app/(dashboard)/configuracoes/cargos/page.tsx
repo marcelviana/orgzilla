@@ -425,7 +425,7 @@ export default function CargosPage() {
 
               <Button
                 onClick={() => setCreateModalOpen(true)}
-                className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
+                className="bg-primary-strong hover:bg-primary-strong/90"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Criar Cargo
@@ -891,7 +891,7 @@ export default function CargosPage() {
               </Button>
               <Button
                 onClick={() => { void (editModalOpen ? handleEditPosition() : handleCreatePosition()) }}
-                className="bg-[#FF7A00] hover:bg-[#FF7A00]/90"
+                className="bg-primary-strong hover:bg-primary-strong/90"
                 disabled={!formData.nome || !formData.trilha_id || !formData.nivel_id}
               >
                 {editModalOpen ? 'Salvar Alterações' : 'Salvar Cargo'}

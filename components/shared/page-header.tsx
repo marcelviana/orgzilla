@@ -64,7 +64,7 @@ export function PageHeader({
                   variant={badge.variant === "admin" ? "secondary" : "default"}
                   className={
                     badge.variant === "admin"
-                      ? "bg-[#FF7A00] text-white"
+                      ? "bg-primary-strong text-white"
                       : ""
                   }
                 >
