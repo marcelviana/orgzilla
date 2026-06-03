@@ -167,7 +167,7 @@ export function DashboardContent({
                   labelLine={false}
                   label={({ name, percent }) => `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`}
                   outerRadius={80}
-                  fill="#8884d8"
+                  fill="var(--chart-1)"
                   dataKey="value"
                 >
                   {nivelDistribution.map((entry, index) => (
@@ -202,7 +202,7 @@ export function DashboardContent({
                 <XAxis type="number" />
                 <YAxis dataKey="team" type="category" width={100} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#FF7A00" radius={[0, 8, 8, 0]} />
+                <Bar dataKey="count" fill="var(--chart-1)" radius={[0, 8, 8, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

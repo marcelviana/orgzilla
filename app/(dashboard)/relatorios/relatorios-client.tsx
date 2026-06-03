@@ -71,7 +71,7 @@ export function RelatoriosClient({
     .map((t, i) => ({
       name: t.team,
       size: t.current,
-      fill: ['#FF7A00', '#FF9A33', '#00C8FF', '#33D4FF', '#66E0FF', '#1A2734', '#FF5A5F', '#10b981'][i % 8],
+      fill: ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)', 'var(--chart-7)', 'var(--chart-8)'][i % 8],
     }))
 
   // Taxa de ocupação (top 5 times com mais vagas abertas)
@@ -224,11 +224,11 @@ export function RelatoriosClient({
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={topTimes} layout="horizontal">
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                      <XAxis type="number" stroke="#6b7280" />
-                      <YAxis dataKey="name" type="category" stroke="#6b7280" width={120} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                      <XAxis type="number" stroke="var(--chart-axis)" />
+                      <YAxis dataKey="name" type="category" stroke="var(--chart-axis)" width={120} />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#FF7A00" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="value" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -299,7 +299,7 @@ export function RelatoriosClient({
                       data={teamSizeData}
                       dataKey="size"
                       stroke="#fff"
-                      fill="#FF7A00"
+                      fill="var(--chart-1)"
                       content={(props: {
                         x?: number
                         y?: number
@@ -315,7 +315,7 @@ export function RelatoriosClient({
                         const { name, size } = props
                         return (
                           <g>
-                            <rect x={x} y={y} width={width} height={height} fill={teamSizeData.find(t => t.name === name)?.fill ?? '#FF7A00'} />
+                            <rect x={x} y={y} width={width} height={height} fill={teamSizeData.find(t => t.name === name)?.fill ?? 'var(--chart-1)'} />
                             {width > 40 && height > 30 && (
                               <>
                                 <text x={x + width / 2} y={y + height / 2} textAnchor="middle" fill="#fff" fontSize={12} fontWeight="bold">
@@ -353,9 +353,9 @@ export function RelatoriosClient({
                   ) : (
                     <ResponsiveContainer width="100%" height={250}>
                       <BarChart data={ocupacaoData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="team" stroke="#6b7280" />
-                        <YAxis stroke="#6b7280" domain={[0, 100]} unit="%" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                        <XAxis dataKey="team" stroke="var(--chart-axis)" />
+                        <YAxis stroke="var(--chart-axis)" domain={[0, 100]} unit="%" />
                         <Tooltip formatter={(v) => `${String(v ?? 0)}%`} />
                         <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
                           {ocupacaoData.map((entry, index) => (
@@ -506,11 +506,11 @@ export function RelatoriosClient({
                     <CardContent>
                       <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={dadosFinanceiros.mediaSalarioPorTime} layout="horizontal">
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                          <XAxis type="number" stroke="#6b7280" tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
-                          <YAxis dataKey="team" type="category" stroke="#6b7280" width={110} />
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                          <XAxis type="number" stroke="var(--chart-axis)" tickFormatter={(v) => `R$${(v / 1000).toFixed(0)}k`} />
+                          <YAxis dataKey="team" type="category" stroke="var(--chart-axis)" width={110} />
                           <Tooltip formatter={(v) => formatBRL(Number(v))} />
-                          <Bar dataKey="avg" fill="#FF7A00" radius={[0, 4, 4, 0]} />
+                          <Bar dataKey="avg" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </CardContent>
@@ -578,11 +578,11 @@ export function RelatoriosClient({
                   ) : (
                     <ResponsiveContainer width="100%" height={250}>
                       <BarChart data={metricasProjetos.topProjetos}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis dataKey="name" stroke="#6b7280" tick={{ fontSize: 11 }} />
-                        <YAxis stroke="#6b7280" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                        <XAxis dataKey="name" stroke="var(--chart-axis)" tick={{ fontSize: 11 }} />
+                        <YAxis stroke="var(--chart-axis)" />
                         <Tooltip />
-                        <Bar dataKey="people" fill="#00C8FF" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="people" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   )}
