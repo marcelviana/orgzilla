@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 2 de junho de 2026 (N+1 de `getTimesComEstatisticas` otimizado: de 4N+1 para 5 queries fixas via `findEstatisticasAgregadas`; 7 novos testes em `repositories.test.ts`; build e 106 testes passando)
+**Última atualização:** 2 de junho de 2026 (`styles/globals.css` órfão removido — era resíduo do scaffold v0/shadcn com tokens conflitantes; `app/globals.css` é a única fonte de verdade de tokens de marca)
 
 ---
 
@@ -205,6 +205,8 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 11. ✅ Concluído em 2 jun 2026 — N+1 de times otimizado (item F, parcial): `TimeRepository.findEstatisticasAgregadas` reduz `getTimesComEstatisticas` de 4N+1 para 5 queries fixas; 7 novos testes; build e 106 testes passando.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
+
+**✅ 2 jun 2026 — `styles/globals.css` removido.** Era resíduo órfão do scaffold v0/shadcn (tokens shadcn neutros + fonte Geist) sem nenhum import no projeto. Mantê-lo criava risco de reativação acidental pelo shadcn CLI sobrescrevendo os tokens de marca. `app/globals.css` permanece como única fonte de verdade.
 
 ### 🟨 Em seguida — padronização e segurança (sem decisão de produto)
 E. **Restringir domínio no Google OAuth** (§4.4) — puramente técnico; qualquer conta
