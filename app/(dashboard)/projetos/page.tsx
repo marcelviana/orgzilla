@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Home, ChevronRight, Search } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/loading-state'
+import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Search } from 'lucide-react'
+import { TableSkeleton, Breadcrumb } from '@/components/shared'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
@@ -106,12 +106,7 @@ export default function ProjetosPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-              <Home className="w-4 h-4" />
-              <span>Dashboard</span>
-              <ChevronRight className="w-4 h-4" />
-              <span className="text-gray-900 font-medium">Projetos</span>
-            </div>
+            <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Projetos" }]} />
             <h1 className="text-3xl font-bold text-gray-900">Projetos e Produtos</h1>
           </div>
           <div className="flex items-center gap-3">

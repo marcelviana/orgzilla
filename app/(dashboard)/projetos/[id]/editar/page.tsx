@@ -19,8 +19,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Home, ChevronRight, Plus, X, Search } from 'lucide-react'
+import { Plus, X, Search } from 'lucide-react'
 import { toast } from '@/lib/ui/toast-config'
+import { Breadcrumb } from '@/components/shared'
 
 const availablePeople = [
   { id: 'p1', nome: 'Maria Santos', avatar: '', cargo: 'Tech Lead', time: 'Engenharia' },
@@ -84,15 +85,7 @@ export default function EditarProjeto() {
   return (
     <DashboardShell>
       <div className="p-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Home className="w-4 h-4" />
-          <Link href="/" className="hover:text-gray-900">Dashboard</Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/projetos" className="hover:text-gray-900">Projetos</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Editar Time</span>
-        </div>
+        <Breadcrumb className="mb-6" items={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Editar Projeto" }]} />
 
         {/* Page Title */}
         <div className="mb-6">

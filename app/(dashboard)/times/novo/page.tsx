@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Info, Plus, X, Users, Loader2 } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/loading-state'
+import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
 import { createTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -168,14 +167,7 @@ export default function NovoTimePage() {
   return (
     <DashboardShell>
       <div className="p-6 space-y-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">Dashboard</Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/times" className="hover:text-foreground">Times</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-foreground">Novo Time</span>
-        </div>
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: "Novo Time" }]} />
 
         {/* Page Title */}
         <div>

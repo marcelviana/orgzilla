@@ -23,8 +23,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Home, ChevronRight, MoreVertical, Plus, Search, Users, Calendar } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/loading-state'
+import { MoreVertical, Plus, Search, Users, Calendar } from 'lucide-react'
+import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getProjetoById, removePessoaDoProjeto, addPessoaAoProjeto, softDeleteProjeto } from '@/app/actions/projetos.actions'
@@ -222,15 +222,7 @@ export default function ProjetoDetailPage() {
   return (
     <DashboardShell>
       <div className="p-6 space-y-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Home className="w-4 h-4" />
-          <Link href="/" className="hover:text-gray-900">Dashboard</Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/projetos" className="hover:text-gray-900">Projetos</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">{projeto.nome}</span>
-        </div>
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: projeto.nome }]} />
 
         {/* Header */}
         <div className="flex items-start justify-between">

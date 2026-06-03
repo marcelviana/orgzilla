@@ -40,7 +40,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, ShieldAlert, Loader2 } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/loading-state'
+import { TableSkeleton, Breadcrumb } from '@/components/shared'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -377,17 +377,7 @@ export default function CargosPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground">
-              Dashboard
-            </Link>
-            <span>{'>'}</span>
-            <Link href="/configuracoes" className="hover:text-foreground">
-              Configurações
-            </Link>
-            <span>{'>'}</span>
-            <span className="text-foreground">Cargos</span>
-          </div>
+          <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Cargos" }]} />
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

@@ -17,8 +17,8 @@ import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ChevronRight, Home, Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/loading-state'
+import { Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
+import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { getPessoaById, updatePessoa, getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
 import { getProjetosParaFiltro } from '@/app/actions/projetos.actions'
@@ -314,14 +314,7 @@ export default function EditPessoaPage() {
   return (
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8 pb-32">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Home className="h-4 w-4" />
-          <ChevronRight className="h-4 w-4" />
-          <span className="hover:text-foreground cursor-pointer">Pessoas</span>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-foreground font-medium">Editar Pessoa</span>
-        </div>
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Editar Pessoa" }]} />
 
         {/* Title */}
         <div>

@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, ShieldAlert, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/loading-state'
+import { TableSkeleton, Breadcrumb } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -375,13 +375,7 @@ export default function CareerTracksPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <span>Dashboard</span>
-            <span>{'>'}</span>
-            <span>Configurações</span>
-            <span>{'>'}</span>
-            <span className="text-foreground">Trilhas</span>
-          </div>
+          <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Trilhas" }]} />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold">

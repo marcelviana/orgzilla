@@ -16,8 +16,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, ChevronRight, Home, Loader2 } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/loading-state'
+import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, Loader2 } from 'lucide-react'
+import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getPessoaById } from '@/app/actions/pessoas.actions'
@@ -219,14 +219,7 @@ export default function PersonProfilePage() {
   return (
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Home className="h-4 w-4" />
-          <ChevronRight className="h-4 w-4" />
-          <Link href="/pessoas" className="hover:text-foreground">Pessoas</Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-foreground font-medium">{pessoa.nome}</span>
-        </div>
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: pessoa.nome }]} />
 
         {/* Header Section */}
         <div className="space-y-4">

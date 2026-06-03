@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Link from 'next/link'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,8 +11,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
-import { ChevronRight, Home, Loader2 } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/loading-state'
+import { ChevronRight, Loader2 } from 'lucide-react'
+import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
 import { getTimeById, updateTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -172,16 +171,7 @@ export default function EditarTimePage() {
   return (
     <DashboardShell>
       <div className="p-6 space-y-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Home className="h-4 w-4" />
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/times" className="hover:text-foreground">Times</Link>
-          <ChevronRight className="w-4 h-4" />
-          <a href={`/times/${timeId}`} className="hover:text-foreground">{formData.nome}</a>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-foreground">Editar</span>
-        </div>
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: formData.nome, href: `/times/${timeId}` }, { label: "Editar" }]} />
 
         {/* Page Title */}
         <div>

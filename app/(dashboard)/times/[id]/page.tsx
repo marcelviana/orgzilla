@@ -14,8 +14,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { ChevronRight, Home, Users, MoreVertical, Briefcase } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/loading-state'
+import { Users, MoreVertical, Briefcase } from 'lucide-react'
+import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
@@ -86,14 +86,7 @@ export default function TimeDetailPage() {
   return (
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Home className="h-4 w-4" />
-          <ChevronRight className="h-4 w-4" />
-          <Link href="/times" className="hover:text-foreground">Times</Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-foreground font-medium">{time.nome}</span>
-        </div>
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: time.nome }]} />
 
         {/* Header */}
         <div className="flex items-start justify-between">

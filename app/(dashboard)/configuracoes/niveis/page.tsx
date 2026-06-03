@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/loading-state'
+import { TableSkeleton, Breadcrumb } from '@/components/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
@@ -324,17 +324,7 @@ export default function NiveisPage() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <Link href="/" className="hover:text-foreground">
-                Dashboard
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <Link href="/configuracoes" className="hover:text-foreground">
-                Configurações
-              </Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-foreground">Níveis</span>
-            </div>
+            <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Níveis" }]} />
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold">Níveis</h1>
               {/* Icon already correct - ShieldAlert in red-500 */}

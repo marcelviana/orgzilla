@@ -30,8 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, ShieldAlert, Trash2 } from 'lucide-react'
-import { TableSkeleton } from '@/components/shared/loading-state'
-import Link from 'next/link'
+import { TableSkeleton, Breadcrumb } from '@/components/shared'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
@@ -349,17 +348,7 @@ export default function TagsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <Link href="/" className="hover:text-foreground">
-              Dashboard
-            </Link>
-            <span>{'>'}</span>
-            <Link href="/configuracoes" className="hover:text-foreground">
-              Configurações
-            </Link>
-            <span>{'>'}</span>
-            <span className="text-foreground">Tags</span>
-          </div>
+          <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Tags" }]} />
 
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">

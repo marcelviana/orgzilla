@@ -1,7 +1,7 @@
-import Link from "next/link"
-import { ChevronRight, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Breadcrumb } from "./breadcrumb"
 
 /**
  * PageHeader - Consistent page headers throughout app
@@ -42,27 +42,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className="border-b border-gray-200 pb-6 mb-6">
-      {breadcrumb && (
-        <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-          {breadcrumb.map((item, index) => (
-            <div key={index} className="flex items-center gap-2">
-              {item.href ? (
-                <Link
-                  href={item.href}
-                  className="hover:text-[#FF7A00] transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <span className="text-gray-900 font-medium">{item.label}</span>
-              )}
-              {index < breadcrumb.length - 1 && (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </div>
-          ))}
-        </nav>
-      )}
+      {breadcrumb && <Breadcrumb items={breadcrumb} className="mb-4" />}
 
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">

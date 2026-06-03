@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertCircle, Calendar, Check, ExternalLink, Eye, EyeOff, Info, Lock } from 'lucide-react'
 import { DetailsSkeleton } from '@/components/shared/loading-state'
 import Link from "next/link"
+import { Breadcrumb } from '@/components/shared'
 import { getUsuarioLogado, type UsuarioLogado } from "@/lib/middleware/auth.middleware"
 import { updateUsuario } from "@/app/actions/usuarios.actions"
 import { atualizarSenhaAction } from "@/app/actions/auth.actions"
@@ -211,12 +212,7 @@ export default function ProfilePage() {
   return (
     <DashboardShell>
       <div className="mx-auto w-full max-w-[600px] space-y-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">Dashboard</Link>
-          <span>{'>'}</span>
-          <span className="text-foreground">Meu Perfil</span>
-        </div>
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Meu Perfil" }]} />
 
         {/* Header Section */}
         <div className="flex flex-col items-center gap-4 pb-6 text-center">

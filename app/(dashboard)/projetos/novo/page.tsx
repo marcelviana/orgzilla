@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Card } from '@/components/ui/card'
@@ -17,8 +16,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Home, ChevronRight, Plus, X, Search, Loader2 } from 'lucide-react'
-import { DetailsSkeleton } from '@/components/shared/loading-state'
+import { Plus, X, Search, Loader2 } from 'lucide-react'
+import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { createProjeto, addPessoaAoProjeto } from '@/app/actions/projetos.actions'
@@ -160,15 +159,7 @@ export default function NovoProjeto() {
   return (
     <DashboardShell>
       <div className="p-6">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Home className="w-4 h-4" />
-          <Link href="/" className="hover:text-gray-900">Dashboard</Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/projetos" className="hover:text-gray-900">Projetos</Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Novo Projeto</span>
-        </div>
+        <Breadcrumb className="mb-6" items={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Novo Projeto" }]} />
 
         {/* Header */}
         <div className="mb-6">
