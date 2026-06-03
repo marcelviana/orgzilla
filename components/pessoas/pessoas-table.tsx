@@ -176,7 +176,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
       'ativo': 'bg-green-100 text-green-700 border-green-200',
       'ferias': 'bg-blue-100 text-blue-700 border-blue-200',
       'licenca': 'bg-orange-100 text-orange-700 border-orange-200',
-      'afastamento': 'bg-gray-100 text-gray-700 border-gray-200',
+      'afastamento': 'bg-gray-100 text-foreground border-gray-200',
       'desligado': 'bg-red-100 text-red-700 border-red-200',
     }
 
@@ -213,19 +213,19 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <Link href="/" className="hover:text-primary">
               Dashboard
             </Link>
             <span>&gt;</span>
-            <span className="text-gray-900">Pessoas</span>
+            <span className="text-foreground">Pessoas</span>
           </div>
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <h1 className="text-3xl font-bold text-[#1A2734]">Pessoas</h1>
+            <h1 className="text-3xl font-bold text-foreground">Pessoas</h1>
 
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1 sm:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome, email..."
                   value={searchQuery}
@@ -256,11 +256,11 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
             onClick={() => setFiltersExpanded(!filtersExpanded)}
             className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
           >
-            <span className="font-semibold text-[#1A2734]">Filtros</span>
+            <span className="font-semibold text-foreground">Filtros</span>
             {filtersExpanded ? (
-              <ChevronUp className="h-5 w-5 text-gray-500" />
+              <ChevronUp className="h-5 w-5 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-gray-500" />
+              <ChevronDown className="h-5 w-5 text-muted-foreground" />
             )}
           </button>
 
@@ -268,7 +268,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
             <div className="p-4 border-t">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Time</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Time</label>
                   <Select value={selectedTeam} onValueChange={setSelectedTeam}>
                     <SelectTrigger>
                       <SelectValue />
@@ -283,7 +283,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Cargo</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Cargo</label>
                   <Select value={selectedCargo} onValueChange={setSelectedCargo}>
                     <SelectTrigger>
                       <SelectValue />
@@ -298,7 +298,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Status</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Status</label>
                   <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                     <SelectTrigger>
                       <SelectValue />
@@ -332,7 +332,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {isPending && (
             <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
-              <div className="text-sm text-gray-600">Carregando...</div>
+              <div className="text-sm text-muted-foreground">Carregando...</div>
             </div>
           )}
 
@@ -360,8 +360,8 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                   <TableRow>
                     <TableCell colSpan={canViewSalary ? 8 : 7} className="text-center py-12">
                       <div className="flex flex-col items-center gap-2">
-                        <p className="text-gray-500 font-medium">Nenhuma pessoa encontrada</p>
-                        <p className="text-sm text-gray-400">Tente ajustar seus filtros ou busca</p>
+                        <p className="text-muted-foreground font-medium">Nenhuma pessoa encontrada</p>
+                        <p className="text-sm text-muted-foreground">Tente ajustar seus filtros ou busca</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -398,10 +398,10 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                             </div>
                           )}
                           <div>
-                            <div className="font-medium text-[#1A2734]">
+                            <div className="font-medium text-foreground">
                               {pessoa.nome_social || pessoa.nome}
                             </div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted-foreground">
                               {pessoa.email_corporativo || pessoa.email_pessoal || '-'}
                             </div>
                           </div>
@@ -424,13 +424,13 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(pessoa.status)}</TableCell>
-                      <TableCell className="text-sm text-gray-600">
+                      <TableCell className="text-sm text-muted-foreground">
                         {pessoa.data_entrada
                           ? new Date(pessoa.data_entrada).toLocaleDateString('pt-BR')
                           : '-'}
                       </TableCell>
                       {canViewSalary && (
-                        <TableCell className="text-sm text-gray-600">
+                        <TableCell className="text-sm text-muted-foreground">
                           {pessoa.remuneracao?.salario_atual
                             ? new Intl.NumberFormat('pt-BR', {
                                 style: 'currency',
@@ -466,7 +466,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
           {/* Pagination */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Mostrar</span>
+              <span className="text-sm text-muted-foreground">Mostrar</span>
               <Select
                 value={itemsPerPage.toString()}
                 onValueChange={(val) => changeItemsPerPage(Number(val))}
@@ -481,7 +481,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                   <SelectItem value="100">100</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 de {total} pessoas
               </span>
             </div>
@@ -528,7 +528,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
 
         {/* Bulk Actions Bar */}
         {selectedRows.length > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-[#1A2734] text-white p-4 shadow-lg">
+          <div className="fixed bottom-0 left-0 right-0 bg-secondary text-white p-4 shadow-lg">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <span className="font-semibold">

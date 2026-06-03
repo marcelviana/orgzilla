@@ -386,13 +386,13 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-4">
-                <AlertCircle className="h-5 w-5 flex-shrink-0 text-gray-500" />
+                <AlertCircle className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="font-medium text-gray-900">Conta não vinculada</p>
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="font-medium text-foreground">Conta não vinculada</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
                     Sua conta de usuário não está vinculada a uma pessoa no sistema organizacional
                   </p>
-                  <p className="mt-2 text-xs text-gray-500">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Entre em contato com um administrador para vincular sua conta
                   </p>
                 </div>

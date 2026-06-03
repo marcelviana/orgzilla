@@ -446,7 +446,7 @@ export default function CargosPage() {
                 </p>
               </div>
               <div className="rounded-full bg-orange-100 p-3">
-                <Briefcase className="h-6 w-6 text-[#FF7A00]" />
+                <Briefcase className="h-6 w-6 text-primary" />
               </div>
             </div>
           </Card>
@@ -459,7 +459,7 @@ export default function CargosPage() {
                 <p className="text-sm text-muted-foreground mt-1">carreiras ativas</p>
               </div>
               <div className="rounded-full bg-cyan-100 p-3">
-                <TrendingUp className="h-6 w-6 text-[#00C8FF]" />
+                <TrendingUp className="h-6 w-6 text-accent" />
               </div>
             </div>
           </Card>
@@ -625,7 +625,7 @@ export default function CargosPage() {
                       {position.pessoas > 0 ? (
                         <button
                           onClick={() => { void handleViewPeople(position) }}
-                          className="text-[#00C8FF] hover:underline"
+                          className="text-accent hover:underline"
                         >
                           {position.pessoas} {position.pessoas === 1 ? 'pessoa' : 'pessoas'}
                         </button>

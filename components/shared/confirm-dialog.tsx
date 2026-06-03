@@ -96,7 +96,7 @@ export function ConfirmDialog({
 
         {requiresTypedConfirmation && (
           <div className="space-y-2 py-4">
-            <Label htmlFor="confirmation" className="text-sm text-gray-600">
+            <Label htmlFor="confirmation" className="text-sm text-muted-foreground">
               Digite <span className="font-bold">{confirmationWord}</span> para confirmar
             </Label>
             <Input

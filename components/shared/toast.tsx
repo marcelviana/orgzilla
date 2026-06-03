@@ -37,9 +37,9 @@ const createToast = (
 
   const colors = {
     success: "text-green-600",
-    error: "text-[#FF5A5F]",
-    warning: "text-[#FF7A00]",
-    info: "text-[#00C8FF]",
+    error: "text-danger",
+    warning: "text-primary",
+    info: "text-accent",
   }
 
   return sonnerToast[type](`🦖 ${title}`, {

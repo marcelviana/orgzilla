@@ -61,7 +61,7 @@ function TimeNodeComponent({ data }: { data: TimeNodeData }) {
           <div className="font-semibold text-sm truncate text-secondary">
             {data.nomeTime}
           </div>
-          <div className="text-xs text-gray-600 truncate">
+          <div className="text-xs text-muted-foreground truncate">
             {data.nomeGestor ?? "Sem gestor"}
           </div>
           <div className="flex items-center gap-2 mt-1">
@@ -71,7 +71,7 @@ function TimeNodeComponent({ data }: { data: TimeNodeData }) {
           </div>
           {isExpanded && data.emailGestor && (
             <div className="mt-2">
-              <div className="flex items-center gap-1 text-xs text-gray-600">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Mail className="w-3 h-3" />
                 <span className="truncate">{data.emailGestor}</span>
               </div>
@@ -87,9 +87,9 @@ function TimeNodeComponent({ data }: { data: TimeNodeData }) {
             }}
           >
             {data.childrenVisible ? (
-              <ChevronDown className="w-4 h-4 text-gray-600" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-gray-600" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             )}
           </button>
         )}
@@ -329,7 +329,7 @@ export default function OrganogramaPage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Buscar time..."
@@ -345,9 +345,9 @@ export default function OrganogramaPage() {
               title="Alternar direção"
             >
               {layoutDirection === "TB" ? (
-                <ArrowUpDown className="w-5 h-5 text-gray-600" />
+                <ArrowUpDown className="w-5 h-5 text-muted-foreground" />
               ) : (
-                <ArrowRightLeft className="w-5 h-5 text-gray-600" />
+                <ArrowRightLeft className="w-5 h-5 text-muted-foreground" />
               )}
             </button>
 
@@ -360,16 +360,16 @@ export default function OrganogramaPage() {
 
             <div className="flex items-center gap-1 border-l pl-2">
               <button onClick={() => void zoomIn({ duration: 400 })} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Aumentar zoom">
-                <ZoomIn className="w-5 h-5 text-gray-600" />
+                <ZoomIn className="w-5 h-5 text-muted-foreground" />
               </button>
               <button onClick={() => void zoomOut({ duration: 400 })} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Diminuir zoom">
-                <ZoomOut className="w-5 h-5 text-gray-600" />
+                <ZoomOut className="w-5 h-5 text-muted-foreground" />
               </button>
               <button onClick={() => void fitView({ padding: 0.2, duration: 400 })} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Ajustar à tela">
-                <Minimize2 className="w-5 h-5 text-gray-600" />
+                <Minimize2 className="w-5 h-5 text-muted-foreground" />
               </button>
               <button onClick={() => setIsFullscreen(!isFullscreen)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Tela cheia">
-                <Maximize className="w-5 h-5 text-gray-600" />
+                <Maximize className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
           </div>
@@ -417,7 +417,7 @@ export default function OrganogramaPage() {
                   <Users className="w-12 h-12 text-secondary" />
                 </div>
                 <h3 className="text-lg font-semibold text-secondary text-center">{selectedTime.nome}</h3>
-                <p className="text-sm text-gray-600 text-center">{selectedTime.gestor?.nome ?? "Sem gestor"}</p>
+                <p className="text-sm text-muted-foreground text-center">{selectedTime.gestor?.nome ?? "Sem gestor"}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
                     {selectedTime.membros} {selectedTime.membros === 1 ? "membro" : "membros"}
@@ -427,7 +427,7 @@ export default function OrganogramaPage() {
 
               {/* Breadcrumb */}
               <div className="mb-6 p-3 bg-gray-50 rounded-lg">
-                <div className="text-xs text-gray-500 mb-1">Caminho hierárquico</div>
+                <div className="text-xs text-muted-foreground mb-1">Caminho hierárquico</div>
                 <div className="text-sm text-secondary">{getBreadcrumb(selectedTime).join(" → ")}</div>
               </div>
 
@@ -437,12 +437,12 @@ export default function OrganogramaPage() {
                   {selectedTime.gestor.email_corporativo && (
                     <div className="flex items-center gap-3 text-sm">
                       <Mail className="w-5 h-5 text-accent" />
-                      <span className="text-gray-700">{selectedTime.gestor.email_corporativo}</span>
+                      <span className="text-foreground">{selectedTime.gestor.email_corporativo}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-3 text-sm">
                     <Briefcase className="w-5 h-5 text-accent" />
-                    <span className="text-gray-700">Gestor: {selectedTime.gestor.nome}</span>
+                    <span className="text-foreground">Gestor: {selectedTime.gestor.nome}</span>
                   </div>
                 </div>
               )}
@@ -468,7 +468,7 @@ export default function OrganogramaPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-secondary truncate">{filho.nome}</div>
-                          <div className="text-xs text-gray-600 truncate">
+                          <div className="text-xs text-muted-foreground truncate">
                             {filho.gestor?.nome ?? "Sem gestor"}
                           </div>
                         </div>

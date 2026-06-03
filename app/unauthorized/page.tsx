@@ -21,17 +21,17 @@ export default function Unauthorized() {
         <div className="flex items-start gap-3">
           <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
-            <h3 className="font-semibold text-[#1A2734] mb-2">
+            <h3 className="font-semibold text-foreground mb-2">
               Por que estou vendo isso?
             </h3>
-            <ul className="text-sm text-gray-600 space-y-1">
+            <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Esta página requer permissões de Administrador ou Gestor</li>
               <li>• Seu perfil atual: {currentUser.role}</li>
               <li>
                 • Entre em contato com:{' '}
                 <a
                   href="mailto:admin@orgzilla.com"
-                  className="text-[#FF7A00] hover:underline"
+                  className="text-primary hover:underline"
                 >
                   admin@orgzilla.com
                 </a>
@@ -43,7 +43,7 @@ export default function Unauthorized() {
 
       {/* Current User Info */}
       <Card className="p-3 bg-gray-50 border-gray-200">
-        <div className="text-sm text-gray-600 text-left">
+        <div className="text-sm text-muted-foreground text-left">
           <p>
             <span className="font-medium">Logado como:</span> {currentUser.name}
           </p>

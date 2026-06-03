@@ -55,7 +55,7 @@ export default function TimeDetailPage() {
   }
 
   const getStatusColor = (ativo: boolean) => {
-    return ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+    return ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-foreground'
   }
 
   // Loading state
@@ -91,7 +91,7 @@ export default function TimeDetailPage() {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-[#1A2734]">{time.nome}</h1>
+            <h1 className="text-3xl font-bold text-foreground">{time.nome}</h1>
             {time.descricao && (
               <p className="text-muted-foreground max-w-2xl">{time.descricao}</p>
             )}

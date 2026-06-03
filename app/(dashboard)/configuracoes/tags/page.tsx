@@ -399,8 +399,8 @@ export default function TagsPage() {
                   {usedTags} em uso, {unusedTags} não usadas
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-[#FF7A00]/10 flex items-center justify-center">
-                <Tag className="h-6 w-6 text-[#FF7A00]" />
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Tag className="h-6 w-6 text-primary" />
               </div>
             </div>
           </div>
@@ -414,8 +414,8 @@ export default function TagsPage() {
                   em {mostUsedTag?.pessoas || 0} pessoas
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-[#00C8FF]/10 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-[#00C8FF]" />
+              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-accent" />
               </div>
             </div>
           </div>
@@ -427,8 +427,8 @@ export default function TagsPage() {
                 <p className="text-3xl font-bold mt-1">{totalPeopleWithTags}</p>
                 <p className="text-xs text-muted-foreground mt-1">70% do time</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-[#10B981]/10 flex items-center justify-center">
-                <Users className="h-6 w-6 text-[#10B981]" />
+              <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center">
+                <Users className="h-6 w-6 text-success" />
               </div>
             </div>
           </div>

@@ -89,8 +89,8 @@ export default function EditarProjeto() {
 
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Editar Projeto</h1>
-          <p className="text-gray-600 mt-1">Atualize as informações do projeto</p>
+          <h1 className="text-3xl font-bold text-foreground">Editar Projeto</h1>
+          <p className="text-muted-foreground mt-1">Atualize as informações do projeto</p>
         </div>
 
         {/* Form Card */}
@@ -107,7 +107,7 @@ export default function EditarProjeto() {
                 maxLength={100}
                 className="h-11"
               />
-              <p className="text-sm text-gray-500 text-right">{nome.length}/100 caracteres</p>
+              <p className="text-sm text-muted-foreground text-right">{nome.length}/100 caracteres</p>
             </div>
 
             {/* Status */}
@@ -130,16 +130,16 @@ export default function EditarProjeto() {
                     name="status"
                     checked={status === 'Inativo'}
                     onChange={() => setStatus('Inativo')}
-                    className="w-4 h-4 text-gray-600"
+                    className="w-4 h-4 text-muted-foreground"
                   />
-                  <Badge className="bg-gray-100 text-gray-800 border-gray-200">Inativo</Badge>
+                  <Badge className="bg-gray-100 text-foreground border-gray-200">Inativo</Badge>
                 </label>
               </div>
-              <p className="text-sm text-gray-500">Projetos inativos não aparecem em filtros por padrão</p>
+              <p className="text-sm text-muted-foreground">Projetos inativos não aparecem em filtros por padrão</p>
             </div>
 
             <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Alocação de Equipe</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Alocação de Equipe</h3>
             </div>
 
             {/* Team Allocation */}
@@ -161,8 +161,8 @@ export default function EditarProjeto() {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-gray-900">{pessoa.nome}</p>
-                          <p className="text-sm text-gray-600">{pessoa.cargo}</p>
+                          <p className="font-medium text-foreground">{pessoa.nome}</p>
+                          <p className="text-sm text-muted-foreground">{pessoa.cargo}</p>
                         </div>
                         <Badge variant="outline" className="ml-2">{pessoa.time}</Badge>
                       </div>
@@ -178,7 +178,7 @@ export default function EditarProjeto() {
                 </div>
               ) : (
                 <div className="border rounded-lg p-8 text-center">
-                  <p className="text-gray-500 mb-4">Nenhuma pessoa alocada</p>
+                  <p className="text-muted-foreground mb-4">Nenhuma pessoa alocada</p>
                 </div>
               )}
 
@@ -203,7 +203,7 @@ export default function EditarProjeto() {
                 rows={3}
                 maxLength={500}
               />
-              <p className="text-sm text-gray-500 text-right">{observacoes.length}/500 caracteres</p>
+              <p className="text-sm text-muted-foreground text-right">{observacoes.length}/500 caracteres</p>
             </div>
           </div>
 
@@ -236,7 +236,7 @@ export default function EditarProjeto() {
 
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar pessoas..."
                 value={searchTerm}
@@ -271,14 +271,14 @@ export default function EditarProjeto() {
                   </Avatar>
                   <div>
                     <p className="font-medium">{pessoa.nome}</p>
-                    <p className="text-sm text-gray-600">{pessoa.cargo} • {pessoa.time}</p>
+                    <p className="text-sm text-muted-foreground">{pessoa.cargo} • {pessoa.time}</p>
                   </div>
                 </label>
               ))}
             </div>
 
             {selectedPeople.length > 0 && (
-              <p className="text-sm text-gray-600">{selectedPeople.length} pessoa(s) selecionada(s)</p>
+              <p className="text-sm text-muted-foreground">{selectedPeople.length} pessoa(s) selecionada(s)</p>
             )}
           </div>
 
