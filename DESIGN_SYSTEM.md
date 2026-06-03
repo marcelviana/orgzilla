@@ -170,8 +170,16 @@ Dois níveis: **`components/ui/`** (primitivos shadcn/Radix — button, input, d
 
 ## 6. Padrões de UX
 
-### 6.1 Estrutura de página
-Toda página usa `page-header` no topo (título + breadcrumb + ações). Evite **título duplicado**: se o shell já exibe o nome da rota, o `page-header` é o título de página — não repita um `<h1>` igual logo abaixo.
+### 6.1 Estrutura de página e título
+
+O **`PageHeader` é o dono único do título da página** — o `<h1>`. Ele reúne título, breadcrumb, badge de contexto e ações da página, e fica no conteúdo (não no chrome).
+
+O `dashboard-shell` é **chrome global**: logo, busca, notificações, avatar. **Não renderiza título de página** — só navegação e utilidades persistentes. O "onde estou" é dado pelo item ativo da sidebar + o breadcrumb do `PageHeader`.
+
+Regras:
+- Uma página = um `<h1>`, e ele mora no `PageHeader`. Nunca dois títulos visíveis (shell + página).
+- Páginas de detalhe usam o nome da entidade como título ("João Silva", "Projeto Atlas") — não o nome genérico da rota. Por isso o título é responsabilidade da página, que conhece a entidade; o shell, que só conhece a rota, não tem como acertar isso.
+- Toda página adota `PageHeader`. Página sem `PageHeader` fica sem título — é achado.
 
 ### 6.2 Carregamento
 - **Carregamento de página/dados iniciais → skeleton** que espelha a estrutura final (tabela → `TableSkeleton`; detalhe → `DetailsSkeleton`; dashboard → `ChartSkeleton`/`CardSkeleton`). Mantenha o shell visível; só a área de conteúdo vira skeleton.
