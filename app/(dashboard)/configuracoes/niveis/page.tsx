@@ -37,8 +37,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ShieldAlert, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
-import { TableSkeleton, Breadcrumb } from '@/components/shared'
+import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
+import { TableSkeleton, PageHeader } from '@/components/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
@@ -322,34 +322,31 @@ export default function NiveisPage() {
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Níveis" }]} />
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">Níveis</h1>
-              {/* Icon already correct - ShieldAlert in red-500 */}
-              <ShieldAlert className="h-5 w-5 text-red-500" />
+        <PageHeader
+          title="Níveis"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Níveis" }]}
+          badge={{ label: "Admin", variant: "admin" }}
+          actions={
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Sobre os níveis"
+                onClick={() => setInfoModalOpen(true)}
+              >
+                <Info className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={() => setCreateModalOpen(true)}
+                disabled={!isAdmin}
+                title={!isAdmin ? 'Apenas administradores podem criar níveis' : ''}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Criar Nível
+              </Button>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setInfoModalOpen(true)}
-            >
-              <Info className="h-4 w-4" />
-            </Button>
-            <Button
-              className="bg-primary-strong hover:bg-primary-strong/90 text-white"
-              onClick={() => setCreateModalOpen(true)}
-              disabled={!isAdmin}
-              title={!isAdmin ? 'Apenas administradores podem criar níveis' : ''}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Nível
-            </Button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">

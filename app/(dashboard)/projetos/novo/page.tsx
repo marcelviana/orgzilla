@@ -17,7 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Plus, X, Search, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
+import { DetailsSkeleton, PageHeader } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { createProjeto, addPessoaAoProjeto } from '@/app/actions/projetos.actions'
@@ -159,13 +159,11 @@ export default function NovoProjeto() {
   return (
     <DashboardShell>
       <div className="p-6">
-        <Breadcrumb className="mb-6" items={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Novo Projeto" }]} />
-
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Novo Projeto</h1>
-          <p className="text-muted-foreground mt-1">Crie um novo projeto e aloque pessoas</p>
-        </div>
+        <PageHeader
+          title="Novo Projeto"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Novo Projeto" }]}
+          description="Crie um novo projeto e aloque pessoas"
+        />
 
         {/* Form Card */}
         <Card className="p-6 max-w-3xl">

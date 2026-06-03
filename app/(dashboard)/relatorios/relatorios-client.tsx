@@ -1,6 +1,7 @@
 'use client'
 
 import { DashboardShell } from '@/components/dashboard-shell'
+import { PageHeader } from '@/components/shared'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -92,22 +93,16 @@ export function RelatoriosClient({
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <span>Dashboard</span>
-              <span>›</span>
-              <span>Relatórios</span>
-            </div>
-            <h1 className="text-3xl font-bold">Relatórios</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={() => handleExport('Todos')} className="bg-primary hover:bg-primary/90">
+        <PageHeader
+          title="Relatórios"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Relatórios" }]}
+          actions={
+            <Button onClick={() => handleExport('Todos')}>
               <Download className="h-4 w-4 mr-2" />
               Exportar Todos
             </Button>
-          </div>
-        </div>
+          }
+        />
 
         <Tabs defaultValue="overview" className="w-full">
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">

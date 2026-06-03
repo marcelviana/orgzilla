@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Search } from 'lucide-react'
-import { TableSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
+import { TableSkeleton, PageHeader, StatusBadge } from '@/components/shared'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
@@ -98,47 +98,47 @@ export default function ProjetosPage() {
     <DashboardShell>
       <div className="p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Projetos" }]} />
-            <h1 className="text-3xl font-bold text-foreground">Projetos e Produtos</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar projetos..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
-              />
+        <PageHeader
+          title="Projetos e Produtos"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos" }]}
+          actions={
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar projetos..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-64"
+                />
+              </div>
+              <div className="flex items-center gap-1 border rounded-lg p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="w-4 h-4" />
+                </Button>
+              </div>
+              <Link href="/projetos/novo">
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Projeto
+                </Button>
+              </Link>
             </div>
-            <div className="flex items-center gap-1 border rounded-lg p-1">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid3x3 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-            <Link href="/projetos/novo">
-              <Button className="bg-orange-500 hover:bg-orange-600">
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Projeto
-              </Button>
-            </Link>
-          </div>
-        </div>
+          }
+        />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

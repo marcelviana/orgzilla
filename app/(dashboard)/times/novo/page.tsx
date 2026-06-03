@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Info, Plus, X, Users, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
+import { DetailsSkeleton, PageHeader } from '@/components/shared'
 import { createTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -167,13 +167,11 @@ export default function NovoTimePage() {
   return (
     <DashboardShell>
       <div className="p-6 space-y-6">
-        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: "Novo Time" }]} />
-
-        {/* Page Title */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Novo Time</h1>
-          <p className="text-muted-foreground mt-1">Crie um novo time para sua organização</p>
-        </div>
+        <PageHeader
+          title="Novo Time"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: "Novo Time" }]}
+          description="Crie um novo time para sua organização"
+        />
 
         {/* Form Card */}
         <div className="max-w-[800px] mx-auto bg-white rounded-lg shadow-sm border p-8 space-y-8">

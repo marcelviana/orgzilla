@@ -218,7 +218,7 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center gap-4 pb-6 text-center">
           <Avatar className="h-[120px] w-[120px] border-4 border-accent">
             <AvatarImage src="/placeholder.svg" alt={user.nome} />
-            <AvatarFallback className="bg-primary text-4xl font-bold text-white">
+            <AvatarFallback className="bg-primary-strong text-4xl font-bold text-white">
               {user.nome.split(' ').map(n => n[0]).join('')}
             </AvatarFallback>
           </Avatar>

@@ -18,7 +18,7 @@ import { toast } from '@/lib/ui/toast-config'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Upload, Info, Plus, X, Loader2, Lock } from 'lucide-react'
-import { TableSkeleton, Breadcrumb } from '@/components/shared'
+import { TableSkeleton, PageHeader } from '@/components/shared'
 import { cn } from '@/lib/utils'
 import { createPessoa } from '@/app/actions/pessoas.actions'
 import { getTimesParaFiltro, getCargosParaFiltro } from '@/app/actions/pessoas.actions'
@@ -263,13 +263,11 @@ export default function NovasPessoasPage() {
   return (
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8 pb-32">
-        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Nova Pessoa" }]} />
-
-        {/* Title */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Nova Pessoa</h1>
-          <p className="text-muted-foreground mt-1">Preencha os dados para adicionar uma nova pessoa ao time</p>
-        </div>
+        <PageHeader
+          title="Nova Pessoa"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Nova Pessoa" }]}
+          description="Preencha os dados para adicionar uma nova pessoa ao time"
+        />
 
         {dataLoading ? (
           <TableSkeleton rows={4} />

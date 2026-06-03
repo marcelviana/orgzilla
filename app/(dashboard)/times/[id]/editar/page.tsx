@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb } from '@/components/shared'
+import { DetailsSkeleton, PageHeader } from '@/components/shared'
 import { getTimeById, updateTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -171,13 +171,11 @@ export default function EditarTimePage() {
   return (
     <DashboardShell>
       <div className="p-6 space-y-6">
-        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: formData.nome, href: `/times/${timeId}` }, { label: "Editar" }]} />
-
-        {/* Page Title */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Editar Time</h1>
-          <p className="text-muted-foreground mt-1">Atualize as informações do time</p>
-        </div>
+        <PageHeader
+          title="Editar Time"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: formData.nome, href: `/times/${timeId}` }, { label: "Editar" }]}
+          description="Atualize as informações do time"
+        />
 
         {/* Form Card */}
         <div className="max-w-[800px] mx-auto bg-white rounded-lg shadow-sm border p-8 space-y-8">

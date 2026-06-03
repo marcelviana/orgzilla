@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, X, Search } from 'lucide-react'
 import { toast } from '@/lib/ui/toast-config'
-import { Breadcrumb, StatusBadge } from '@/components/shared'
+import { PageHeader, StatusBadge } from '@/components/shared'
 
 const availablePeople = [
   { id: 'p1', nome: 'Maria Santos', avatar: '', cargo: 'Tech Lead', time: 'Engenharia' },
@@ -85,13 +85,11 @@ export default function EditarProjeto() {
   return (
     <DashboardShell>
       <div className="p-6">
-        <Breadcrumb className="mb-6" items={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Editar Projeto" }]} />
-
-        {/* Page Title */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Editar Projeto</h1>
-          <p className="text-muted-foreground mt-1">Atualize as informações do projeto</p>
-        </div>
+        <PageHeader
+          title="Editar Projeto"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Editar Projeto" }]}
+          description="Atualize as informações do projeto"
+        />
 
         {/* Form Card */}
         <Card className="max-w-4xl mx-auto">

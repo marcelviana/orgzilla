@@ -39,8 +39,8 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, ShieldAlert, Loader2 } from 'lucide-react'
-import { TableSkeleton, Breadcrumb } from '@/components/shared'
+import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, Loader2 } from 'lucide-react'
+import { TableSkeleton, PageHeader } from '@/components/shared'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -376,15 +376,11 @@ export default function CargosPage() {
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4">
-          <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Cargos" }]} />
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">Cargos</h1>
-              <ShieldAlert className="h-5 w-5 text-error" />
-            </div>
-
+        <PageHeader
+          title="Cargos"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Cargos" }]}
+          badge={{ label: "Admin", variant: "admin" }}
+          actions={
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -423,16 +419,13 @@ export default function CargosPage() {
                 </Button>
               </div>
 
-              <Button
-                onClick={() => setCreateModalOpen(true)}
-                className="bg-primary-strong hover:bg-primary-strong/90"
-              >
+              <Button onClick={() => setCreateModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Criar Cargo
               </Button>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">

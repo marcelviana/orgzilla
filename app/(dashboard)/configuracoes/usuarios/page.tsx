@@ -41,6 +41,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
+import { PageHeader } from '@/components/shared'
 import Link from "next/link"
 import {
   getUsuarios,
@@ -354,46 +355,33 @@ export default function UsuariosPage() {
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Link href="/" className="hover:text-primary">
-                Dashboard
-              </Link>
-              <span>&gt;</span>
-              <Link href="/configuracoes" className="hover:text-primary">
-                Configurações
-              </Link>
-              <span>&gt;</span>
-              <span className="text-foreground">Usuários</span>
-            </div>
+        <PageHeader
+          title="Usuários"
+          breadcrumb={[
+            { label: "Dashboard", href: "/" },
+            { label: "Configurações", href: "/configuracoes" },
+            { label: "Usuários" },
+          ]}
+          badge={{ label: "Admin", variant: "admin" }}
+          actions={
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-secondary">
-                Usuários
-              </h1>
-              <ShieldAlert className="h-5 w-5 text-error" />
+              <div className="relative hidden sm:block">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Buscar usuários..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-64 pl-10"
+                />
+              </div>
+              <Button onClick={() => setCreateModalOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Criar Usuário
+              </Button>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Buscar usuários..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 pl-10"
-              />
-            </div>
-            <Button
-              onClick={() => setCreateModalOpen(true)}
-              className="bg-primary-strong hover:bg-primary-strong/90 text-white"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Criar Usuário
-            </Button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Stats Cards */}
         <div className="grid gap-4 sm:grid-cols-3">

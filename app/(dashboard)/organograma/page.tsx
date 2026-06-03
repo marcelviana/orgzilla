@@ -20,6 +20,7 @@ import { getOrganograma } from "@/app/actions/times.actions"
 import type { TimeHierarquico } from "@/lib/services/time.service"
 import { handleError } from "@/lib/errors/error-handler"
 import { toast } from "@/lib/ui/toast-config"
+import { Breadcrumb } from "@/components/shared"
 
 interface TimeNodeData extends Record<string, unknown> {
   nomeTime: string
@@ -324,8 +325,11 @@ export default function OrganogramaPage() {
     <DashboardShell>
       <div className={`flex flex-col h-screen ${isFullscreen ? "fixed inset-0 z-50 bg-background" : ""}`}>
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-          <h1 className="text-2xl font-bold text-secondary">Organograma</h1>
+        <div className="bg-white border-b border-border px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+          <div className="space-y-1">
+            <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Organograma" }]} />
+            <h1 className="text-2xl font-bold text-secondary">Organograma</h1>
+          </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">

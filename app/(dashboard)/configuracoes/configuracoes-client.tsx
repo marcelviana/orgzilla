@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { DashboardShell } from "@/components/dashboard-shell"
+import { PageHeader } from "@/components/shared"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -862,11 +863,14 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
 
   return (
     <DashboardShell>
+      <PageHeader
+        title="Configurações"
+        breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Configurações" }]}
+      />
       <div className="flex gap-6">
         {/* Desktop Sidebar Navigation */}
         <div className="hidden w-72 flex-shrink-0 lg:block">
           <Card className="sticky top-6 p-6">
-            <h2 className="mb-6 text-2xl font-bold text-secondary">Configurações</h2>
             <nav className="space-y-6">
               {navSections.map((section) => (
                 <div key={section.title}>

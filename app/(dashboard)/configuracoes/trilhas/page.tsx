@@ -25,8 +25,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, ShieldAlert, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
-import { TableSkeleton, Breadcrumb, StatusBadge } from '@/components/shared'
+import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
+import { TableSkeleton, PageHeader, StatusBadge } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -374,15 +374,11 @@ export default function CareerTracksPage() {
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <Breadcrumb className="mb-2" items={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Trilhas" }]} />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">
-                Trilhas
-              </h1>
-              <ShieldAlert className="h-5 w-5 text-error" />
-            </div>
+        <PageHeader
+          title="Trilhas"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Configurações", href: "/configuracoes" }, { label: "Trilhas" }]}
+          badge={{ label: "Admin", variant: "admin" }}
+          actions={
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -397,6 +393,7 @@ export default function CareerTracksPage() {
                 <Button
                   variant={view === 'grid' ? 'secondary' : 'ghost'}
                   size="icon"
+                  aria-label="Visualização em grade"
                   onClick={() => setView('grid')}
                   className={view === 'grid' ? 'text-white' : ''}
                 >
@@ -405,6 +402,7 @@ export default function CareerTracksPage() {
                 <Button
                   variant={view === 'table' ? 'secondary' : 'ghost'}
                   size="icon"
+                  aria-label="Visualização em tabela"
                   onClick={() => setView('table')}
                   className={view === 'table' ? 'text-white' : ''}
                 >
@@ -416,8 +414,8 @@ export default function CareerTracksPage() {
                 Criar Trilha
               </Button>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

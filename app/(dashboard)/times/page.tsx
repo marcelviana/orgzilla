@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
+import { PageHeader } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,
@@ -213,13 +214,11 @@ export default function TimesPage() {
     <DashboardShell>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="text-sm text-muted-foreground mb-1">Dashboard &gt; Times</div>
-            <h1 className="text-3xl font-bold text-foreground">Times</h1>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+        <PageHeader
+          title="Times"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Times" }]}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
             {/* Search */}
             <div className="relative flex-1 sm:flex-initial">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -272,17 +271,15 @@ export default function TimesPage() {
             </Button>
 
             {/* Add Team */}
-            <Button
-              asChild
-              className="bg-primary hover:bg-primary/90 h-9"
-            >
+            <Button asChild className="h-9">
               <Link href="/times/novo">
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Time
               </Link>
             </Button>
-          </div>
-        </div>
+            </div>
+          }
+        />
 
         {/* Filters Bar */}
         {showFilters && (
