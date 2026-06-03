@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 3 de junho de 2026 (loading de página padronizado em skeletons compartilhados)
+**Última atualização:** 3 de junho de 2026 (breadcrumb centralizado em componente único; skeletons compartilhados)
 
 ---
 
@@ -208,6 +208,7 @@ Se o login Google não estiver restrito a um domínio, qualquer conta Google se 
 14. ✅ Concluído em 3 jun 2026 — gate de CI adicionado (`.github/workflows/ci.yml`): dispara em PR e push para `main`; roda tsc, lint, testes e build com Node 24 + pnpm frozen-lockfile. Padrão `SelectQueryBuilder` documentado na nova seção "Padrões de tipagem — Supabase" do `CLAUDE.md`. Agente `sincronizador-docs` atualizado para confrontar afirmações factuais do `CLAUDE.md` contra o repo.
 15. ✅ Concluído em 3 jun 2026 — busca do header conectada à `/busca?q=`: `DashboardShell` agora usa `useRouter` e estado controlado (`headerSearch`); Enter e clique na lupa navegam para `/busca?q=<termo>`; `/busca` sincroniza estado quando o `?q=` muda via header (novo `useEffect` em `busca/page.tsx`). Badge numérico falso do sino removido; bloco comentado com TODO para reativar quando houver backend de notificações.
 16. ✅ Concluído em 3 jun 2026 — loading de página padronizado em skeletons compartilhados (`components/shared/loading-state.tsx`): 15 spinners `Loader2` de tela cheia migrados para `TableSkeleton` (listas) ou `DetailsSkeleton` (detalhes/formulários); skeleton manual em `configuracoes/niveis` com `bg-gray-200` hardcoded migrado para `Skeleton` base + `TableSkeleton`. Spinners de ação (submit de modal/botão) mantidos por design. Caveat: `CardSkeleton` usa `lg:grid-cols-${columns}` dinâmico — não usar com `columns` arbitrário; valor padrão (3) pode não estar no CSS Tailwind em produção.
+17. ✅ Concluído em 3 jun 2026 — breadcrumb centralizado em componente único (`components/shared/breadcrumb.tsx`): 15 breadcrumbs inline eliminados de 14 páginas; `PageHeader` usa o componente internamente. Convenção unificada: primeiro item sempre `{ label: "Dashboard", href: "/" }`, separador ChevronRight. Padrões eliminados: `>` literal, ícone Home, cores inconsistentes `text-gray-500`/`text-gray-900`.
 
 ### 🟥 Agora — débitos técnicos isolados (sem decisão de produto)
 
