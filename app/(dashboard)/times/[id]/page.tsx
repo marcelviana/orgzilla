@@ -14,10 +14,10 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Users, MoreVertical, Briefcase } from 'lucide-react'
-import { DetailsSkeleton, Breadcrumb, StatusBadge, EmptyState } from '@/components/shared'
+import { DetailsSkeleton, Breadcrumb, StatusBadge, EmptyState, ConfirmDialog } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
-import { getTimeById, type TimeDetalhe } from '@/app/actions/times.actions'
+import { getTimeById, softDeleteTime, updateTime, type TimeDetalhe } from '@/app/actions/times.actions'
 
 export default function TimeDetailPage() {
   const router = useRouter()
@@ -26,6 +26,7 @@ export default function TimeDetailPage() {
 
   const [isLoading, setIsLoading] = useState(true)
   const [time, setTime] = useState<TimeDetalhe | null>(null)
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false)
 
   useEffect(() => {
     async function loadTime() {
@@ -51,6 +52,26 @@ export default function TimeDetailPage() {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+  }
+
+  // Status do time é binário (ativo/inativo). O toggle é coerente com o estado
+  // atual: time ativo → desativa (softDeleteTime); inativo → reativa (updateTime).
+  const handleToggleStatus = async () => {
+    if (!time) return
+    try {
+      const result = time.ativo
+        ? await softDeleteTime(time.id)
+        : await updateTime(time.id, { ativo: true })
+
+      if (result.success) {
+        setTime({ ...time, ativo: !time.ativo })
+        toast.successDino(time.ativo ? 'Time desativado com sucesso!' : 'Time reativado com sucesso!')
+      } else {
+        toast.error(result.error || 'Erro ao alterar status do time')
+      }
+    } catch (error) {
+      toast.error(handleError(error, 'database'))
+    }
   }
 
 
@@ -108,14 +129,11 @@ export default function TimeDetailPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => console.log('Ver organograma')}>
+                <DropdownMenuItem onClick={() => router.push('/organograma')}>
                   Ver organograma
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => console.log('Adicionar pessoa')}>
-                  Adicionar pessoa ao time
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => console.log('Alterar status')}>
-                  Alterar status
+                <DropdownMenuItem onClick={() => setStatusDialogOpen(true)}>
+                  {time.ativo ? 'Desativar time' : 'Reativar time'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -214,6 +232,20 @@ export default function TimeDetailPage() {
             />
           )}
         </Card>
+
+        <ConfirmDialog
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          title={time.ativo ? 'Desativar este time?' : 'Reativar este time?'}
+          description={
+            time.ativo
+              ? 'O time deixará de aparecer como ativo. Você pode reativá-lo depois.'
+              : 'O time voltará a aparecer como ativo na lista e no organograma.'
+          }
+          variant={time.ativo ? 'danger' : 'info'}
+          confirmText={time.ativo ? 'Desativar' : 'Reativar'}
+          onConfirm={() => void handleToggleStatus()}
+        />
       </div>
     </DashboardShell>
   )

@@ -99,20 +99,29 @@ Registrado em `STATUS.md` §3.7 com o problema descrito e os locais
 (`pessoas/[id]`:353, `pessoas/nova`:277, `pessoas/[id]/editar`:325). Requer implementação +
 teste manual no mobile pelo mantenedor.
 
-### Fase F12 — Remover mock + religar menus inertes
-**Escopo:**
-- Remover o mock `TIMELINE_DATA` (`app/(dashboard)/pessoas/[id]/page.tsx`) — hoje exibe uma
-  timeline fictícia ("João") na aba de histórico de QUALQUER pessoa (dado falso renderizado
-  como verdadeiro).
-- Menus com `onClick={() => console.log(...)}` inertes em `pessoas/[id]` (Mover para time,
-  Adicionar a projeto, Alterar status, Ver histórico) e `times/[id]` (Ver organograma,
-  Adicionar pessoa, Alterar status) → ligar à **ação real** ou **remover** o item.
+### Fase F12 — Remover mock + religar menus inertes — ✅ CONCLUÍDA (4 jun 2026)
 
-**Cuidados:**
-- **ISTO TOCA DADOS/FLUXO**, não só visual. **Acione `revisor-camadas`.** Se conectar a
-  timeline a dados reais, passe por Action → Service (nunca `supabase.from()` na UI).
-- Não validável no ambiente do agente (auth wall) — **sinalize claramente o que ficou sem
-  validação de browser** para o mantenedor testar manualmente.
+**O que foi feito (3 sub-commits + 1 commit defensivo):**
+- `TIMELINE_DATA` (mock hardcoded de "João") removido de `pessoas/[id]/page.tsx`. A aba
+  "Histórico profissional" agora consome `getHistoricoProfissional(id)` em
+  `pessoas.actions.ts`, que monta a timeline a partir de `historico_cargo` + `historico_time`
+  via `HistoricoService`. LGPD: a action **nunca** acessa `pessoa_remuneracao`/reajuste.
+  `EmptyState` exibido quando não há registros. Ordenação com guard defensivo para `data` nula
+  (`NaN → +Infinity`, i.e., vai para o fim).
+- Menus de `pessoas/[id]`: "Ver histórico completo" → muda para a aba histórico;
+  "Mover para outro time" e "Alterar status" → navegam para `/pessoas/[id]/editar`;
+  "Adicionar a Projeto" → **removido** (sem UI de seleção; ver §5 item M).
+- Menus de `times/[id]`: "Ver organograma" → `router.push('/organograma')` geral (ver §5 item N);
+  "Alterar status" → toggle via `ConfirmDialog` coerente com `time.ativo`
+  (`softDeleteTime`/`updateTime`); "Adicionar pessoa ao time" → **removido** (ver §5 item O).
+- Nenhum `console.log`, `TIMELINE_DATA` nem mock residual permanece em `pessoas/[id]` ou
+  `times/[id]`.
+
+**Débitos deferidos registrados:**
+- §3.3 — `addPessoaAoProjeto` fura a camada (acesso direto a `pessoa_projeto_produto` na Action).
+- §5 item M — UI de alocação a projeto a partir de `pessoas/[id]`.
+- §5 item N — Organograma focado por time (hoje navega para o geral).
+- §5 item O — Adicionar pessoa ao time a partir de `times/[id]`.
 
 ### Fase F13 — currentUser mock → dado real de sessão
 **Escopo:** substituir o `currentUser` mock "João Silva" por dado real da sessão em

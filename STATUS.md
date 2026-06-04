@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 4 de junho de 2026 (F12 sub-commit 2: menus inertes de `pessoas/[id]` religados/removidos; débitos de alocação a projeto registrados — §3.3 e §5 item M)
+**Última atualização:** 4 de junho de 2026 (F12 concluída: timeline profissional real via `getHistoricoProfissional` → `HistoricoService`; menus inertes de `pessoas/[id]` e `times/[id]` religados/removidos; débitos deferidos em §3.3 e §5 itens M/N/O)
 
 ---
 
@@ -239,6 +239,8 @@ J. **Busca avançada** — delta em relação à busca atual já real a definir.
 K. **Endurecimento para produção** — rate limiting, revalidação de cache (após OAuth resolvido).
 L. **Sistema de notificações** — sino no header já comentado aguardando backend. Requer tabela `notificacao`, Action/Service, políticas de acesso e UI. Badge numérico só reativar com fonte de dados real.
 M. **UI de alocação a projeto a partir de `pessoas/[id]`** — o item de menu "Adicionar a Projeto" foi **removido na F12** porque não havia UI de seleção (projeto + data de início) e construí-la era feature nova, fora do escopo da migração de design. Requer um diálogo de seleção (projeto + data) ligado a `addPessoaAoProjeto`. Ao implementar, **migrar antes** `addPessoaAoProjeto` para a camada (ver §3.3, débito aberto). A alocação a projeto segue disponível pela página do projeto e pelo form de edição da pessoa.
+N. **Organograma focado por time** — "Ver organograma" em `times/[id]` (F12) navega para o `/organograma` **geral**; a rota não aceita parâmetro de time. Focar o organograma no time aberto (ex.: `/organograma?time=<id>` com scroll/zoom no nó) requer plumbing de query-param + interação no canvas — adiado.
+O. **Adicionar pessoa ao time a partir de `times/[id]`** — item de menu **removido na F12** (não havia UI de seleção de pessoa, e `pessoas/nova` não lê query-param de time). Requer um diálogo de seleção de pessoa existente → `updatePessoa(pessoaId, { time_id })`, ou plumbing de query-param em `pessoas/nova`. A alocação a time segue disponível pelo form de edição da pessoa.
 
 ### Decisões de produto pendentes antes da Phase 3
 > Responder estas perguntas desbloqueia G–J. Sem resposta, os itens ficam em 🟩.
