@@ -39,8 +39,8 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, EmptyState } from '@/components/shared'
+import { Briefcase, TrendingUp, BarChart3, Plus, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, Loader2 } from 'lucide-react'
+import { TableSkeleton, PageHeader, EmptyState, SearchInput } from '@/components/shared'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -382,15 +382,13 @@ export default function CargosPage() {
           badge={{ label: "Admin", variant: "admin" }}
           actions={
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar cargos..."
-                  className="w-64 pl-9"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+              <SearchInput
+                placeholder="Buscar cargos..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery('')}
+                className="w-64"
+              />
 
               <Button
                 variant="outline"

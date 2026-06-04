@@ -12,9 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Search } from 'lucide-react'
-import { TableSkeleton, PageHeader, StatusBadge, ConfirmDialog, EmptyState } from '@/components/shared'
+import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical } from 'lucide-react'
+import { TableSkeleton, PageHeader, StatusBadge, ConfirmDialog, EmptyState, SearchInput } from '@/components/shared'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
@@ -102,15 +101,13 @@ export default function ProjetosPage() {
           breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos" }]}
           actions={
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar projetos..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
-              </div>
+              <SearchInput
+                placeholder="Buscar projetos..."
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onClear={() => setSearchTerm('')}
+                className="w-64"
+              />
               <div className="flex items-center gap-1 border rounded-lg p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
