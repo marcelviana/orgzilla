@@ -426,9 +426,18 @@ export async function getHistoricoProfissional(
       detalhes: registro.data_fim ? 'Alocação encerrada' : 'Alocação atual',
     }))
 
-    const timeline = [...eventosCargo, ...eventosTime].sort(
-      (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
-    )
+    // Ordena por data (mais antigo primeiro). Guard defensivo: data nula/inválida
+    // (cadastro incremental permite data_entrada/data_inicio_cargo_atual nulas no
+    // schema) vai para o fim — a ordenação nunca quebra com NaN.
+    const ordemData = (valor: string): number => {
+      const ts = new Date(valor).getTime()
+      return Number.isNaN(ts) ? Number.POSITIVE_INFINITY : ts
+    }
+    const timeline = [...eventosCargo, ...eventosTime].sort((a, b) => {
+      const da = ordemData(a.data)
+      const db = ordemData(b.data)
+      return da === db ? 0 : da - db
+    })
 
     return { success: true, data: timeline }
   } catch (error) {
