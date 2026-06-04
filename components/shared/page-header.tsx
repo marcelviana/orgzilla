@@ -44,7 +44,7 @@ export function PageHeader({
     <div className="border-b border-border pb-6 mb-6">
       {breadcrumb && <Breadcrumb items={breadcrumb} className="mb-4" />}
 
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-center gap-4">
           {backButton && (
             <Button
@@ -79,7 +79,7 @@ export function PageHeader({
           </div>
         </div>
 
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
     </div>
   )

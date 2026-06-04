@@ -79,7 +79,7 @@ export function DashboardContent({
       trend: metrics.tendenciaPessoas,
       trendLabel: "este mês",
       icon: Users,
-      color: "bg-orange-100 text-primary",
+      color: "bg-primary/10 text-primary",
       href: "/pessoas"
     },
     {
@@ -88,7 +88,7 @@ export function DashboardContent({
       trend: metrics.tendenciaTimes,
       trendLabel: "sem mudanças",
       icon: Network,
-      color: "bg-orange-100 text-primary",
+      color: "bg-accent/10 text-accent",
       href: "/times"
     },
     {
@@ -97,7 +97,7 @@ export function DashboardContent({
       trend: metrics.tendenciaVagas,
       trendLabel: "esta semana",
       icon: Briefcase,
-      color: "bg-orange-100 text-primary",
+      color: "bg-warning/10 text-warning",
       href: "/times" // Link para times onde as vagas são gerenciadas
     },
     {
@@ -106,7 +106,7 @@ export function DashboardContent({
       trend: metrics.tendenciaProjetos,
       trendLabel: "desde último mês",
       icon: FolderKanban,
-      color: "bg-orange-100 text-primary",
+      color: "bg-success/10 text-success",
       href: "/projetos"
     },
   ]

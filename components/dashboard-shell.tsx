@@ -262,6 +262,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
                 </Button>
               </SheetTrigger>
             </Sheet>
+
+            {/* Âncora de contexto no mobile (não é o título da página — o
+                PageHeader é o h1; este span só reancora o contexto ao rolar) */}
+            <span className="text-base font-semibold capitalize text-secondary lg:hidden">
+              {activeRoute}
+            </span>
           </div>
 
           {/* Right Side */}

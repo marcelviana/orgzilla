@@ -874,7 +874,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             <nav className="space-y-6">
               {navSections.map((section) => (
                 <div key={section.title}>
-                  <h3 className="mb-2 text-xs font-semibold uppercase text-muted-foreground">{section.title}</h3>
+                  <h3 className="mb-2 text-xs font-semibold text-muted-foreground">{section.title}</h3>
                   <div className="space-y-1">
                     {section.items.map((item) => {
                       if (item.adminOnly && !isAdmin) return null
