@@ -362,7 +362,7 @@ export default function PersonProfilePage() {
           <TabsContent value="geral" className="space-y-4">
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Dados Pessoais</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Nome Completo</p>
                   <p className="font-medium">{pessoa.nome}</p>
@@ -390,7 +390,7 @@ export default function PersonProfilePage() {
 
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4">Dados Profissionais</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Cargo Atual</p>
                   <p className="font-medium">{pessoa.cargo?.nome || 'Sem cargo definido'}</p>
@@ -565,7 +565,7 @@ export default function PersonProfilePage() {
 
           {/* TAB 4: Projects */}
           <TabsContent value="projetos" className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="p-4">
                 <p className="text-sm text-muted-foreground">Total Projetos</p>
                 <p className="text-2xl font-bold">

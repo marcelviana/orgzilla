@@ -14,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -592,9 +591,6 @@ export default function CargosPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox aria-label="Selecionar todos os cargos" />
-                  </TableHead>
                   <TableHead>Nome do Cargo</TableHead>
                   <TableHead>Trilha de Carreira</TableHead>
                   <TableHead>Nível</TableHead>
@@ -606,9 +602,6 @@ export default function CargosPage() {
               <TableBody>
                 {filteredPositions.map((position) => (
                   <TableRow key={position.id}>
-                    <TableCell>
-                      <Checkbox aria-label={`Selecionar ${position.nome}`} />
-                    </TableCell>
                     <TableCell className="font-medium">{position.nome}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={trackColors[position.trilha?.nome || '']}>

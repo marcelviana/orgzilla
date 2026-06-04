@@ -418,7 +418,7 @@ export default function CareerTracksPage() {
         />
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -580,7 +580,7 @@ export default function CareerTracksPage() {
                 <div className="border-t pt-4 mb-4" />
 
                 {/* Metrics */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                     <div>
@@ -971,7 +971,7 @@ export default function CareerTracksPage() {
                 {/* Information */}
                 <div>
                   <h3 className="font-semibold mb-3">Informações</h3>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Nome</p>
                       <p className="font-medium">{selectedTrack?.nome}</p>
