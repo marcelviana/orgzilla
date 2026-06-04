@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -13,12 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Search } from 'lucide-react'
-import { TableSkeleton, PageHeader, StatusBadge, ConfirmDialog } from '@/components/shared'
+import { TableSkeleton, PageHeader, StatusBadge, ConfirmDialog, EmptyState } from '@/components/shared'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 
 export default function ProjetosPage() {
+  const router = useRouter()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -170,25 +172,19 @@ export default function ProjetosPage() {
         {/* Projects Grid */}
         {viewMode === 'grid' ? (
           filteredProjects.length === 0 ? (
-            <Card className="p-12 text-center">
-              <FolderKanban className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum projeto cadastrado'}
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm
-                  ? 'Tente ajustar os filtros de busca'
-                  : 'Comece criando seu primeiro projeto'}
-              </p>
-              {!searchTerm && (
-                <Link href="/projetos/novo">
-                  <Button className="bg-orange-500 hover:bg-orange-600">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Novo Projeto
-                  </Button>
-                </Link>
-              )}
-            </Card>
+            searchTerm ? (
+              <EmptyState
+                illustration="search"
+                title="Nenhum projeto encontrado"
+                description="Tente ajustar os filtros de busca."
+              />
+            ) : (
+              <EmptyState
+                title="Nenhum projeto cadastrado"
+                description="Comece criando seu primeiro projeto."
+                action={{ label: "Novo projeto", onClick: () => router.push('/projetos/novo') }}
+              />
+            )
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProjects.map((project) => (
@@ -259,25 +255,19 @@ export default function ProjetosPage() {
           <Card>
             <div className="overflow-x-auto">
               {filteredProjects.length === 0 ? (
-                <div className="p-12 text-center">
-                  <FolderKanban className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum projeto cadastrado'}
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {searchTerm
-                      ? 'Tente ajustar os filtros de busca'
-                      : 'Comece criando seu primeiro projeto'}
-                  </p>
-                  {!searchTerm && (
-                    <Link href="/projetos/novo">
-                      <Button className="bg-orange-500 hover:bg-orange-600">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Novo Projeto
-                      </Button>
-                    </Link>
-                  )}
-                </div>
+                searchTerm ? (
+                  <EmptyState
+                    illustration="search"
+                    title="Nenhum projeto encontrado"
+                    description="Tente ajustar os filtros de busca."
+                  />
+                ) : (
+                  <EmptyState
+                    title="Nenhum projeto cadastrado"
+                    description="Comece criando seu primeiro projeto."
+                    action={{ label: "Novo projeto", onClick: () => router.push('/projetos/novo') }}
+                  />
+                )
               ) : (
                 <table className="w-full">
                   <thead className="border-b bg-gray-50">

@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, StatusBadge } from '@/components/shared'
+import { TableSkeleton, PageHeader, StatusBadge, EmptyState } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -1096,8 +1096,11 @@ export default function CareerTracksPage() {
                         </tr>
                       ) : cargosModal.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="p-8 text-center text-sm text-muted-foreground">
-                            Nenhum cargo nesta trilha.
+                          <td colSpan={4}>
+                            <EmptyState
+                              icon={<Briefcase className="h-10 w-10" />}
+                              title="Nenhum cargo nesta trilha"
+                            />
                           </td>
                         </tr>
                       ) : (
@@ -1149,9 +1152,10 @@ export default function CareerTracksPage() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : cargosModal.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Nenhum cargo encontrado nesta trilha.
-                </p>
+                <EmptyState
+                  icon={<Briefcase className="h-10 w-10" />}
+                  title="Nenhum cargo encontrado nesta trilha"
+                />
               ) : (
                 cargosModal.map((cargo) => (
                   <Card key={cargo.id} className="p-4">
@@ -1218,8 +1222,11 @@ export default function CareerTracksPage() {
                       </tr>
                     ) : pessoasModal.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-8 text-center text-sm text-muted-foreground">
-                          Nenhuma pessoa encontrada nesta trilha.
+                        <td colSpan={4}>
+                          <EmptyState
+                            icon={<Users className="h-10 w-10" />}
+                            title="Nenhuma pessoa encontrada nesta trilha"
+                          />
                         </td>
                       </tr>
                     ) : (

@@ -11,8 +11,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
-import { ChevronRight, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, PageHeader, ConfirmDialog } from '@/components/shared'
+import { ChevronRight, Loader2, Users } from 'lucide-react'
+import { DetailsSkeleton, PageHeader, ConfirmDialog, EmptyState } from '@/components/shared'
 import { getTimeById, updateTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -337,9 +337,10 @@ export default function EditarTimePage() {
                   </button>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Nenhuma pessoa disponível para seleção
-                </p>
+                <EmptyState
+                  icon={<Users className="h-10 w-10" />}
+                  title="Nenhuma pessoa disponível para seleção"
+                />
               )}
             </div>
           </DialogContent>

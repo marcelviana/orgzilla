@@ -30,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, Trash2 } from 'lucide-react'
-import { TableSkeleton, PageHeader } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState } from '@/components/shared'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
@@ -457,23 +457,20 @@ export default function TagsPage() {
 
         {/* Tags Grid */}
         {filteredAndSortedTags.length === 0 ? (
-          <div className="bg-white rounded-lg border p-12 text-center">
-            <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
-              {searchQuery ? 'Nenhuma tag encontrada' : 'Nenhuma tag criada'}
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              {searchQuery
-                ? `Nenhuma tag encontrada para "${searchQuery}"`
-                : 'Comece criando sua primeira tag'}
-            </p>
-            {!searchQuery && (
-              <Button onClick={openCreateModal} className="bg-primary-strong hover:bg-primary-strong/90">
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Primeira Tag
-              </Button>
-            )}
-          </div>
+          searchQuery ? (
+            <EmptyState
+              illustration="search"
+              title="Nenhuma tag encontrada"
+              description={`Nenhuma tag encontrada para "${searchQuery}".`}
+            />
+          ) : (
+            <EmptyState
+              icon={<Tag className="h-12 w-12" />}
+              title="Nenhuma tag criada"
+              description="Comece criando sua primeira tag."
+              action={{ label: "Criar primeira tag", onClick: openCreateModal }}
+            />
+          )
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredAndSortedTags.map((tag) => (
