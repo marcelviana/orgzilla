@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { User, Shield, Bell, Users, BarChart3, TrendingUp, Briefcase, Tag, Network, Palette, Globe, Info, HelpCircle, Lock, ChevronRight, Eye, EyeOff, Check, X, Upload, Edit, Trash2, Plus } from 'lucide-react'
+import { User, Shield, Bell, Users, BarChart3, TrendingUp, Briefcase, Tag, Network, Palette, Globe, Info, HelpCircle, ChevronRight, Eye, EyeOff, Check, X, Upload, Edit, Trash2, Plus } from 'lucide-react'
 import Link from "next/link"
 import { useRouter } from 'next/navigation'
 import Image from "next/image"
@@ -875,7 +875,6 @@ export default function ConfiguracoesClient({ usuario, niveis, trilhas, tags }: 
                         >
                           <Icon className="h-4 w-4 flex-shrink-0" />
                           <span>{item.label}</span>
-                          {item.adminOnly && !isAdmin && <Lock className="ml-auto h-3 w-3" />}
                         </button>
                       )
                     })}
