@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, PageHeader } from '@/components/shared'
+import { DetailsSkeleton, PageHeader, ConfirmDialog } from '@/components/shared'
 import { getTimeById, updateTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -38,6 +38,7 @@ export default function EditarTimePage() {
   const [showParentSelect, setShowParentSelect] = useState(false)
   const [showManagerSelect, setShowManagerSelect] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
   const [selectedGestor, setSelectedGestor] = useState<{ id: string; nome: string; cargo: string | null; time: string | null } | null>(null)
   const [selectedTimePai, setSelectedTimePai] = useState<{ id: string; nome: string } | null>(null)
 
@@ -149,9 +150,7 @@ export default function EditarTimePage() {
 
   const handleCancel = () => {
     if (isDirty) {
-      if (confirm('Descartar alterações?')) {
-        router.push(`/times/${timeId}`)
-      }
+      setShowDiscardConfirm(true)
     } else {
       router.push(`/times/${timeId}`)
     }
@@ -346,6 +345,17 @@ export default function EditarTimePage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <ConfirmDialog
+        open={showDiscardConfirm}
+        onOpenChange={setShowDiscardConfirm}
+        title="Descartar alterações?"
+        description="As alterações não salvas serão perdidas."
+        variant="warning"
+        confirmText="Descartar"
+        cancelText="Continuar editando"
+        onConfirm={() => router.push(`/times/${timeId}`)}
+      />
     </DashboardShell>
   )
 }

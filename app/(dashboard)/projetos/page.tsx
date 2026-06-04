@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical, Search } from 'lucide-react'
-import { TableSkeleton, PageHeader, StatusBadge } from '@/components/shared'
+import { TableSkeleton, PageHeader, StatusBadge, ConfirmDialog } from '@/components/shared'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
@@ -23,6 +23,7 @@ export default function ProjetosPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [projetos, setProjetos] = useState<ProjetoListItem[]>([])
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; nome: string } | null>(null)
 
   async function loadProjetos() {
     try {
@@ -57,11 +58,7 @@ export default function ProjetosPage() {
       })
   }, [])
 
-  const handleDeleteProjeto = async (id: string, nome: string) => {
-    if (!confirm(`Deseja realmente desativar o projeto "${nome}"?`)) {
-      return
-    }
-
+  const handleDeleteProjeto = async (id: string) => {
     try {
       const result = await softDeleteProjeto(id)
       if (result.success) {
@@ -217,7 +214,7 @@ export default function ProjetosPage() {
                         {project.ativo && (
                           <DropdownMenuItem
                             className="text-red-600"
-                            onClick={() => { void handleDeleteProjeto(project.id, project.nome) }}
+                            onClick={() => setDeleteTarget({ id: project.id, nome: project.nome })}
                           >
                             Desativar
                           </DropdownMenuItem>
@@ -322,7 +319,7 @@ export default function ProjetosPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="text-red-600 hover:text-red-700"
-                                onClick={() => { void handleDeleteProjeto(project.id, project.nome) }}
+                                onClick={() => setDeleteTarget({ id: project.id, nome: project.nome })}
                               >
                                 Desativar
                               </Button>
@@ -338,6 +335,16 @@ export default function ProjetosPage() {
           </Card>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}
+        title="Desativar projeto?"
+        description={deleteTarget ? `O projeto "${deleteTarget.nome}" será desativado e deixará de aparecer nas listagens.` : ''}
+        variant="danger"
+        confirmText="Desativar"
+        onConfirm={() => { if (deleteTarget) void handleDeleteProjeto(deleteTarget.id) }}
+      />
     </DashboardShell>
   )
 }

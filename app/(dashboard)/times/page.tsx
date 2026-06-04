@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
-import { PageHeader, EmptyState } from '@/components/shared'
+import { PageHeader, EmptyState, ConfirmDialog } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,
@@ -31,16 +31,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import {
@@ -368,25 +358,15 @@ export default function TimesPage() {
         )}
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Desativar Time</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja desativar este time? Esta ação pode ser revertida reativando o time posteriormente.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => { if (timeToDelete) void handleDelete(timeToDelete) }}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Desativar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Desativar time?"
+          description="O time será desativado. Você pode reativá-lo depois."
+          variant="danger"
+          confirmText="Desativar"
+          onConfirm={() => { if (timeToDelete) void handleDelete(timeToDelete) }}
+        />
       </div>
     </DashboardShell>
   )
