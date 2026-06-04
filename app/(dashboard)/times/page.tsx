@@ -260,7 +260,7 @@ export default function TimesPage() {
             <Button asChild className="h-9">
               <Link href="/times/novo">
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Time
+                Criar time
               </Link>
             </Button>
             </div>

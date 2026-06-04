@@ -375,7 +375,7 @@ export default function UsuariosPage() {
               />
               <Button onClick={() => setCreateModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                Criar Usuário
+                Criar usuário
               </Button>
             </div>
           }
@@ -455,15 +455,15 @@ export default function UsuariosPage() {
                 </div>
 
                 <div>
-                  <Label>Pessoa Vinculada</Label>
+                  <Label>Pessoa vinculada</Label>
                   <Select value={filterLinked} onValueChange={setFilterLinked}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="todos">Todos</SelectItem>
-                      <SelectItem value="vinculados">Com Pessoa Vinculada</SelectItem>
-                      <SelectItem value="sem-vinculo">Sem Vínculo</SelectItem>
+                      <SelectItem value="vinculados">Com pessoa vinculada</SelectItem>
+                      <SelectItem value="sem-vinculo">Sem vínculo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -479,7 +479,7 @@ export default function UsuariosPage() {
                     setFilterLinked("todos")
                   }}
                 >
-                  Limpar Filtros
+                  Limpar filtros
                 </Button>
               </div>
             </div>
@@ -507,9 +507,9 @@ export default function UsuariosPage() {
                 <TableHead>Usuário</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Tipo de Perfil</TableHead>
-                <TableHead>Pessoa Vinculada</TableHead>
+                <TableHead>Pessoa vinculada</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Último Acesso</TableHead>
+                <TableHead>Último acesso</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
@@ -598,7 +598,7 @@ export default function UsuariosPage() {
                             }}
                           >
                             <Unlink className="mr-2 h-4 w-4" />
-                            Desvincular Pessoa
+                            Desvincular pessoa
                           </DropdownMenuItem>
                         ) : (
                           <DropdownMenuItem
@@ -608,7 +608,7 @@ export default function UsuariosPage() {
                             }}
                           >
                             <LinkIcon className="mr-2 h-4 w-4" />
-                            Vincular Pessoa
+                            Vincular pessoa
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
@@ -765,7 +765,7 @@ export default function UsuariosPage() {
             <div className="p-6 pb-4 border-b">
               <DialogHeader>
                 <DialogTitle>
-                  {createModalOpen ? "Novo Usuário" : "Editar Usuário"}
+                  {createModalOpen ? "Novo usuário" : "Editar usuário"}
                 </DialogTitle>
                 <DialogDescription>
                   {createModalOpen
@@ -949,7 +949,7 @@ export default function UsuariosPage() {
                       Salvando...
                     </>
                   ) : (
-                    'Salvar Usuário'
+                    'Salvar usuário'
                   )}
                 </Button>
               </DialogFooter>
@@ -971,7 +971,7 @@ export default function UsuariosPage() {
             }}
           >
             <DialogHeader>
-              <DialogTitle>Excluir Usuário?</DialogTitle>
+              <DialogTitle>Excluir usuário?</DialogTitle>
               <DialogDescription>
                 Esta ação não pode ser desfeita. O usuário perderá acesso ao
                 sistema.
@@ -1033,7 +1033,7 @@ export default function UsuariosPage() {
             }}
           >
             <DialogHeader>
-              <DialogTitle>Vincular Pessoa</DialogTitle>
+              <DialogTitle>Vincular pessoa</DialogTitle>
               <DialogDescription>
                 Selecione a pessoa para vincular ao usuário {currentUser?.nome}
               </DialogDescription>
@@ -1081,7 +1081,7 @@ export default function UsuariosPage() {
             onEscapeKeyDown={() => setUnlinkModalOpen(false)}
           >
             <DialogHeader>
-              <DialogTitle>Desvincular Pessoa?</DialogTitle>
+              <DialogTitle>Desvincular pessoa?</DialogTitle>
               <DialogDescription>
                 Usuário continuará existindo mas sem vínculo com a pessoa{" "}
                 {currentUser?.pessoa?.nome}

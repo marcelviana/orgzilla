@@ -88,8 +88,8 @@ export default function EditarProjeto() {
     <DashboardShell>
       <div className="p-6">
         <PageHeader
-          title="Editar Projeto"
-          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Editar Projeto" }]}
+          title="Editar projeto"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Editar projeto" }]}
           description="Atualize as informações do projeto"
         />
 
@@ -182,7 +182,7 @@ export default function EditarProjeto() {
                 onClick={() => setAddPeopleModalOpen(true)}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Adicionar Pessoas
+                Adicionar pessoas
               </Button>
             </div>
 
@@ -208,11 +208,11 @@ export default function EditarProjeto() {
                 <Button variant="outline">Cancelar</Button>
               </Link>
               <Button variant="destructive" onClick={() => setDeleteModalOpen(true)}>
-                Excluir Projeto
+                Excluir projeto
               </Button>
             </div>
             <Button onClick={handleSave} className="bg-orange-500 hover:bg-orange-600">
-              Salvar Projeto
+              Salvar projeto
             </Button>
           </div>
         </Card>
@@ -222,7 +222,7 @@ export default function EditarProjeto() {
       <Dialog open={addPeopleModalOpen} onOpenChange={setAddPeopleModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adicionar Pessoas ao Projeto</DialogTitle>
+            <DialogTitle>Adicionar pessoas ao projeto</DialogTitle>
             <DialogDescription>
               Selecione as pessoas que deseja adicionar ao projeto
             </DialogDescription>
@@ -297,7 +297,7 @@ export default function EditarProjeto() {
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Excluir Projeto?</DialogTitle>
+            <DialogTitle>Excluir projeto?</DialogTitle>
             <DialogDescription>
               Tem certeza? Esta ação não pode ser desfeita.
             </DialogDescription>

@@ -315,22 +315,22 @@ export default function EditPessoaPage() {
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8 pb-32">
         <PageHeader
-          title="Editar Pessoa"
-          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Editar Pessoa" }]}
+          title="Editar pessoa"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Editar pessoa" }]}
           description={`Atualize os dados de ${nome}`}
         />
 
         {/* Tabbed Form - Same structure as nova/page.tsx */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className={cn('grid w-full', canViewSalary ? 'grid-cols-5' : 'grid-cols-4')}>
-            <TabsTrigger value="pessoais">Dados Pessoais</TabsTrigger>
-            <TabsTrigger value="profissionais">Dados Profissionais</TabsTrigger>
-            {canViewSalary && <TabsTrigger value="financeiros">Dados Financeiros</TabsTrigger>}
+            <TabsTrigger value="pessoais">Dados pessoais</TabsTrigger>
+            <TabsTrigger value="profissionais">Dados profissionais</TabsTrigger>
+            {canViewSalary && <TabsTrigger value="financeiros">Dados financeiros</TabsTrigger>}
             <TabsTrigger value="projetos">Projetos/Produtos</TabsTrigger>
             <TabsTrigger value="tags">Tags</TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: Dados Pessoais */}
+          {/* TAB 1: Dados pessoais */}
           <TabsContent value="pessoais" className="bg-white rounded-lg shadow p-6 space-y-6">
             {/* Avatar Upload */}
             <div className="flex items-center gap-6">
@@ -369,7 +369,7 @@ export default function EditPessoaPage() {
 
               <div className="md:col-span-2">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="nomeSocial">Nome Social</Label>
+                  <Label htmlFor="nomeSocial">Nome social</Label>
                   <Popover>
                     <PopoverTrigger>
                       <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
@@ -414,7 +414,7 @@ export default function EditPessoaPage() {
               </div>
 
               <div>
-                <Label htmlFor="emailPessoal">Email Pessoal</Label>
+                <Label htmlFor="emailPessoal">Email pessoal</Label>
                 <Input
                   id="emailPessoal"
                   type="email"
@@ -451,7 +451,7 @@ export default function EditPessoaPage() {
             </div>
           </TabsContent>
 
-          {/* TAB 2: Dados Profissionais */}
+          {/* TAB 2: Dados profissionais */}
           <TabsContent value="profissionais" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -512,7 +512,7 @@ export default function EditPessoaPage() {
               </div>
 
               <div>
-                <Label>Data de Entrada</Label>
+                <Label>Data de entrada</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -534,7 +534,7 @@ export default function EditPessoaPage() {
               </div>
 
               <div>
-                <Label>Data Início no Cargo Atual</Label>
+                <Label>Data início no cargo atual</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full justify-start text-left font-normal", errors.dataInicioCargo && 'border-error')}>
@@ -581,7 +581,7 @@ export default function EditPessoaPage() {
 
               {status === 'Desligado' && (
                 <div>
-                  <Label>Data de Desligamento <span className="text-error">*</span></Label>
+                  <Label>Data de desligamento <span className="text-error">*</span></Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className={cn("w-full justify-start text-left font-normal", errors.dataDesligamento && 'border-error')}>
@@ -606,7 +606,7 @@ export default function EditPessoaPage() {
             </div>
           </TabsContent>
 
-          {/* TAB 3: Dados Financeiros (SENSÍVEL - LGPD: apenas gestor) */}
+          {/* TAB 3: Dados financeiros (SENSÍVEL - LGPD: apenas gestor) */}
           {canViewSalary && (
           <TabsContent value="financeiros" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
@@ -618,7 +618,7 @@ export default function EditPessoaPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="salario">Salário Atual</Label>
+                <Label htmlFor="salario">Salário atual</Label>
                 <Input
                   id="salario"
                   value={salario}
@@ -632,12 +632,12 @@ export default function EditPessoaPage() {
               </div>
 
               <div>
-                <Label>Data Último Reajuste</Label>
+                <Label>Data último reajuste</Label>
                 <Input disabled value={dataUltimoReajuste} placeholder="Sem reajustes" />
               </div>
 
               <div className="md:col-span-2">
-                <Label>Motivo Último Reajuste</Label>
+                <Label>Motivo último reajuste</Label>
                 <Textarea disabled value={motivoUltimoReajuste} placeholder="Nenhum reajuste registrado" rows={3} />
               </div>
             </div>
@@ -653,12 +653,12 @@ export default function EditPessoaPage() {
           <TabsContent value="projetos" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold">Alocações em Projetos</h3>
+                <h3 className="text-lg font-semibold">Alocações em projetos</h3>
                 <p className="text-sm text-muted-foreground">Gerencie em quais projetos esta pessoa está alocada</p>
               </div>
               <Button onClick={handleAddProject} size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Adicionar Alocação
+                Adicionar alocação
               </Button>
             </div>
 
@@ -717,7 +717,7 @@ export default function EditPessoaPage() {
 
                       <div>
                         <div className="flex items-center gap-2">
-                          <Label>Data Fim</Label>
+                          <Label>Data fim</Label>
                           <Popover>
                             <PopoverTrigger>
                               <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
@@ -754,7 +754,7 @@ export default function EditPessoaPage() {
           {/* TAB 5: Tags */}
           <TabsContent value="tags" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div>
-              <h3 className="text-lg font-semibold">Tags de Habilidades</h3>
+              <h3 className="text-lg font-semibold">Tags de habilidades</h3>
               <p className="text-sm text-muted-foreground">Adicione tags para identificar habilidades e características</p>
             </div>
 
@@ -828,7 +828,7 @@ export default function EditPessoaPage() {
                 Salvando...
               </>
             ) : (
-              'Salvar Alterações'
+              'Salvar alterações'
             )}
           </Button>
         </div>

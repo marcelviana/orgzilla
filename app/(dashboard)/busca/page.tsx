@@ -166,13 +166,13 @@ export default function BuscaPage() {
             <p className="mb-6 text-muted-foreground">Encontre pessoas, times, projetos e cargos</p>
             <div className="flex flex-wrap justify-center gap-2">
               <Button variant="outline" size="sm" asChild>
-                <Link href="/pessoas">Ver Todas as Pessoas</Link>
+                <Link href="/pessoas">Ver todas as pessoas</Link>
               </Button>
               <Button variant="outline" size="sm" asChild>
-                <Link href="/times">Ver Todos os Times</Link>
+                <Link href="/times">Ver todos os times</Link>
               </Button>
               <Button variant="outline" size="sm" asChild>
-                <Link href="/projetos">Ver Todos os Projetos</Link>
+                <Link href="/projetos">Ver todos os projetos</Link>
               </Button>
             </div>
           </Card>
@@ -227,7 +227,7 @@ export default function BuscaPage() {
 
                 <Card className={`space-y-6 p-4 ${showFilters ? "block" : "hidden lg:block"}`}>
                   <div>
-                    <h3 className="mb-3 font-semibold text-secondary">Tipo de Resultado</h3>
+                    <h3 className="mb-3 font-semibold text-secondary">Tipo de resultado</h3>
                     <div className="space-y-2">
                       {([
                         { type: "pessoa" as SearchResultType, label: "Pessoas", count: displayResults.pessoas.length },
@@ -322,7 +322,7 @@ export default function BuscaPage() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Button variant="ghost" size="sm" asChild>
-                                    <Link href={`/pessoas/${pessoa.id}`}>Ver Perfil</Link>
+                                    <Link href={`/pessoas/${pessoa.id}`}>Ver perfil</Link>
                                   </Button>
                                   <Button variant="ghost" size="icon" aria-label="Favoritar" className="h-8 w-8">
                                     <Star className="h-4 w-4" />
@@ -363,7 +363,7 @@ export default function BuscaPage() {
                                   </h3>
                                 </div>
                                 <Button variant="ghost" size="sm" asChild>
-                                  <Link href={`/times/${time.id}`}>Ver Time</Link>
+                                  <Link href={`/times/${time.id}`}>Ver time</Link>
                                 </Button>
                               </Card>
                             ))}
@@ -400,7 +400,7 @@ export default function BuscaPage() {
                                   </h3>
                                 </div>
                                 <Button variant="ghost" size="sm" asChild>
-                                  <Link href={`/projetos/${projeto.id}`}>Ver Projeto</Link>
+                                  <Link href={`/projetos/${projeto.id}`}>Ver projeto</Link>
                                 </Button>
                               </Card>
                             ))}
@@ -437,7 +437,7 @@ export default function BuscaPage() {
                                   </h3>
                                 </div>
                                 <Button variant="ghost" size="sm" asChild>
-                                  <Link href={`/configuracoes/cargos?id=${cargo.id}`}>Ver Cargo</Link>
+                                  <Link href={`/configuracoes/cargos?id=${cargo.id}`}>Ver cargo</Link>
                                 </Button>
                               </Card>
                             ))}

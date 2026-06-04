@@ -19,7 +19,7 @@ export default function NotFound() {
         onClick: () => router.push('/'),
       }}
       secondaryAction={{
-        label: 'Ver Todas as Pessoas',
+        label: 'Ver todas as pessoas',
         icon: <Users className="h-5 w-5 mr-2" />,
         onClick: () => router.push('/pessoas'),
       }}

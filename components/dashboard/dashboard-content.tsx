@@ -62,7 +62,7 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const METRIC_CARDS = [
     {
-      title: "Total de Pessoas",
+      title: "Total de pessoas",
       value: metrics.totalPessoas,
       trend: metrics.tendenciaPessoas,
       trendLabel: "este mês",
@@ -71,7 +71,7 @@ export function DashboardContent({
       href: "/pessoas"
     },
     {
-      title: "Times Ativos",
+      title: "Times ativos",
       value: metrics.totalTimes,
       trend: metrics.tendenciaTimes,
       trendLabel: "sem mudanças",
@@ -80,7 +80,7 @@ export function DashboardContent({
       href: "/times"
     },
     {
-      title: "Vagas Abertas",
+      title: "Vagas abertas",
       value: metrics.totalVagas,
       trend: metrics.tendenciaVagas,
       trendLabel: "esta semana",
@@ -89,7 +89,7 @@ export function DashboardContent({
       href: "/times" // Link para times onde as vagas são gerenciadas
     },
     {
-      title: "Projetos Ativos",
+      title: "Projetos ativos",
       value: metrics.totalProjetos,
       trend: metrics.tendenciaProjetos,
       trendLabel: "desde último mês",
@@ -232,14 +232,14 @@ export function DashboardContent({
         <Link
           href="/times/novo"
           className="flex h-12 w-12 items-center justify-center rounded-full bg-accent shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl"
-          title="Criar Time"
+          title="Criar time"
         >
           <Plus className="h-6 w-6 text-white" />
         </Link>
         <Link
           href="/pessoas/novo"
           className="flex h-14 w-14 items-center justify-center rounded-full bg-primary shadow-lg transition-all duration-200 hover:scale-110 hover:shadow-xl"
-          title="Adicionar Pessoa"
+          title="Adicionar pessoa"
         >
           <Plus className="h-7 w-7 text-white" />
         </Link>

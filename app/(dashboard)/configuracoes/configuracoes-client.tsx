@@ -104,7 +104,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
     {
       title: "Conta",
       items: [
-        { id: "perfil" as Section, label: "Meu Perfil", icon: User, adminOnly: false },
+        { id: "perfil" as Section, label: "Meu perfil", icon: User, adminOnly: false },
         { id: "seguranca" as Section, label: "Segurança", icon: Shield, adminOnly: false },
         { id: "notificacoes" as Section, label: "Notificações", icon: Bell, adminOnly: false },
       ],
@@ -114,7 +114,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
       items: [
         { id: "usuarios" as Section, label: "Usuários", icon: Users, adminOnly: true },
         { id: "niveis" as Section, label: "Níveis", icon: BarChart3, adminOnly: true },
-        { id: "trilhas" as Section, label: "Trilhas de Carreira", icon: TrendingUp, adminOnly: true },
+        { id: "trilhas" as Section, label: "Trilhas de carreira", icon: TrendingUp, adminOnly: true },
         { id: "cargos" as Section, label: "Cargos", icon: Briefcase, adminOnly: true },
         { id: "tags" as Section, label: "Tags", icon: Tag, adminOnly: true },
         { id: "times-config" as Section, label: "Times", icon: Network, adminOnly: true },
@@ -130,7 +130,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
     {
       title: "Sobre",
       items: [
-        { id: "sobre" as Section, label: "Sobre o Sistema", icon: Info, adminOnly: false },
+        { id: "sobre" as Section, label: "Sobre o sistema", icon: Info, adminOnly: false },
         { id: "ajuda" as Section, label: "Ajuda", icon: HelpCircle, adminOnly: false },
       ],
     },
@@ -142,7 +142,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-3xl font-bold text-secondary">Meu Perfil</h2>
+              <h2 className="text-3xl font-bold text-secondary">Meu perfil</h2>
               <p className="text-sm text-muted-foreground">Gerencie suas informações pessoais</p>
             </div>
 
@@ -153,7 +153,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 </Avatar>
                 <Button variant="outline" size="sm">
                   <Upload className="mr-2 h-4 w-4" />
-                  Alterar Foto
+                  Alterar foto
                 </Button>
                 <div className="text-center">
                   <h3 className="text-xl font-bold text-secondary">{currentUser.nome}</h3>
@@ -205,7 +205,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             </Card>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Preferências de Email</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Preferências de email</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -230,7 +230,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 </div>
               </div>
               <div className="mt-6">
-                <Button>Salvar Preferências</Button>
+                <Button>Salvar preferências</Button>
               </div>
             </Card>
           </div>
@@ -245,10 +245,10 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             </div>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Alterar Senha</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Alterar senha</h3>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="current-password">Senha Atual</Label>
+                  <Label htmlFor="current-password">Senha atual</Label>
                   <div className="relative">
                     <Input id="current-password" type={showPassword ? "text" : "password"} />
                     <Button
@@ -263,7 +263,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="new-password">Nova Senha</Label>
+                  <Label htmlFor="new-password">Nova senha</Label>
                   <Input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                   <div className="mt-2 space-y-1">
                     <div className="flex items-center gap-2 text-sm">
@@ -281,22 +281,22 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
+                  <Label htmlFor="confirm-password">Confirmar nova senha</Label>
                   <Input id="confirm-password" type="password" />
                 </div>
-                <Button>Alterar Senha</Button>
+                <Button>Alterar senha</Button>
               </div>
             </Card>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Atividade de Login</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Atividade de login</h3>
               <div className="rounded-lg bg-gray-50 p-4 text-sm text-muted-foreground">
                 Histórico de sessões ainda não disponível nesta versão.
               </div>
             </Card>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Autenticação de Dois Fatores</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Autenticação de dois fatores</h3>
               <div className="rounded-lg bg-gray-50 p-4">
                 <p className="mb-2 text-sm font-medium">Status: Não configurado</p>
                 <p className="mb-4 text-sm text-muted-foreground">Adicione uma camada extra de segurança à sua conta</p>
@@ -317,10 +317,10 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             </div>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Preferências de Notificação</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Preferências de notificação</h3>
               <div className="space-y-6">
                 <div>
-                  <h4 className="mb-3 font-medium text-secondary">Notificações do Sistema</h4>
+                  <h4 className="mb-3 font-medium text-secondary">Notificações do sistema</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Atualizações do sistema</span>
@@ -335,7 +335,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
 
                 {isGestor && (
                   <div>
-                    <h4 className="mb-3 font-medium text-secondary">Notificações de Equipe</h4>
+                    <h4 className="mb-3 font-medium text-secondary">Notificações de equipe</h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm">Nova pessoa na equipe</span>
@@ -358,7 +358,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 )}
 
                 <div>
-                  <h4 className="mb-3 font-medium text-secondary">Notificações de Projetos</h4>
+                  <h4 className="mb-3 font-medium text-secondary">Notificações de projetos</h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Adicionado a projeto</span>
@@ -394,18 +394,18 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             </Card>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Método de Entrega</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Método de entrega</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Notificações por Email</p>
+                    <p className="font-medium">Notificações por email</p>
                     <p className="text-sm text-muted-foreground">Receba notificações em seu email</p>
                   </div>
                   <Switch defaultChecked />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Notificações no Aplicativo</p>
+                    <p className="font-medium">Notificações no aplicativo</p>
                     <p className="text-sm text-muted-foreground">Veja notificações dentro do Orgzilla</p>
                   </div>
                   <Switch defaultChecked />
@@ -419,7 +419,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 </div>
               </div>
               <div className="mt-6">
-                <Button>Salvar Preferências</Button>
+                <Button>Salvar preferências</Button>
               </div>
             </Card>
           </div>
@@ -429,14 +429,14 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-3xl font-bold text-secondary">Gerenciamento de Usuários</h2>
+              <h2 className="text-3xl font-bold text-secondary">Gerenciamento de usuários</h2>
               <p className="text-sm text-muted-foreground">Gerencie usuários e permissões do sistema</p>
             </div>
 
             <Card className="p-6">
               <p className="mb-4 text-foreground">Para gerenciar usuários completo com criação, edição e exclusão, acesse a página dedicada:</p>
               <Button onClick={() => router.push("/configuracoes/usuarios")}>
-                Ver Todos os Usuários
+                Ver todos os usuários
               </Button>
             </Card>
           </div>
@@ -459,7 +459,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
 
             <Card className="p-6">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-secondary">Lista de Níveis</h3>
+                <h3 className="text-lg font-semibold text-secondary">Lista de níveis</h3>
               </div>
               {niveis.length === 0 ? (
                 <EmptyState title="Nenhum nível cadastrado" description="Os níveis aparecerão aqui quando forem criados." />
@@ -516,7 +516,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-3xl font-bold text-secondary">Trilhas de Carreira</h2>
+              <h2 className="text-3xl font-bold text-secondary">Trilhas de carreira</h2>
               <p className="text-sm text-muted-foreground">Gerencie as trilhas profissionais da organização</p>
             </div>
 
@@ -524,7 +524,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
               <Card className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total de Trilhas</p>
+                    <p className="text-sm text-muted-foreground">Total de trilhas</p>
                     <p className="mt-1 text-3xl font-bold text-secondary">{trilhas.length}</p>
                   </div>
                   <TrendingUp className="h-10 w-10 text-primary" />
@@ -553,7 +553,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                   }}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Criar Nova Trilha
+                  Criar nova trilha
                 </Button>
               </div>
               {trilhas.length === 0 ? (
@@ -563,7 +563,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b text-left text-sm text-muted-foreground">
-                        <th className="pb-3">Nome da Trilha</th>
+                        <th className="pb-3">Nome da trilha</th>
                         <th className="pb-3">Descrição</th>
                         <th className="pb-3">Cargos</th>
                         <th className="pb-3">Pessoas</th>
@@ -630,7 +630,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                   }}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Criar Nova Tag
+                  Criar nova tag
                 </Button>
               </div>
               {tags.length === 0 ? (
@@ -707,7 +707,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             </Card>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Cor de Destaque</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Cor de destaque</h3>
               <p className="mb-4 text-sm text-muted-foreground">A cor primária do Orgzilla é o Laranja Kaiju (#FF7A00) e não pode ser alterada</p>
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 rounded-lg bg-primary" />
@@ -729,7 +729,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             </div>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Idioma da Interface</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Idioma da interface</h3>
               <Select defaultValue="pt-br">
                 <SelectTrigger className="w-full md:w-80">
                   <SelectValue />
@@ -753,7 +753,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-3xl font-bold text-secondary">Sobre o Sistema</h2>
+              <h2 className="text-3xl font-bold text-secondary">Sobre o sistema</h2>
               <p className="text-sm text-muted-foreground">Informações sobre o Orgzilla</p>
             </div>
 
@@ -761,7 +761,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
               <div className="flex flex-col items-center text-center">
                 <Image src="/images/logo-fundo-claro.png" alt="Orgzilla" width={200} height={100} className="mb-4" />
                 <h3 className="text-2xl font-bold text-secondary">Orgzilla</h3>
-                <p className="mt-2 text-muted-foreground">Sistema de Gestão de Pessoas e Times</p>
+                <p className="mt-2 text-muted-foreground">Sistema de gestão de pessoas e times</p>
                 <Badge className="mt-4 bg-primary-strong text-white">Versão 1.0.0</Badge>
               </div>
             </Card>
@@ -814,7 +814,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             </div>
 
             <Card className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-secondary">Precisa de Ajuda?</h3>
+              <h3 className="mb-4 text-lg font-semibold text-secondary">Precisa de ajuda?</h3>
               <p className="mb-4 text-foreground">Entre em contato com nosso time de suporte através dos canais abaixo:</p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-4">
@@ -921,12 +921,12 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
         <DialogContent className="sm:max-w-md w-full p-0">
           <div className="p-6">
             <DialogHeader>
-              <DialogTitle>{editingItem ? "Editar Tag" : "Criar Nova Tag"}</DialogTitle>
+              <DialogTitle>{editingItem ? "Editar tag" : "Criar nova tag"}</DialogTitle>
               <DialogDescription>Configure o nome e a cor da tag</DialogDescription>
             </DialogHeader>
             <div className="mt-4 space-y-4">
               <div>
-                <Label htmlFor="tag-name">Nome da Tag *</Label>
+                <Label htmlFor="tag-name">Nome da tag *</Label>
                 <Input id="tag-name" defaultValue={editingItem?.nome} placeholder="Ex: Frontend" />
               </div>
               <div>
@@ -949,12 +949,12 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
         <DialogContent className="sm:max-w-lg w-full p-0">
           <div className="p-6">
             <DialogHeader>
-              <DialogTitle>{editingItem ? "Editar Trilha" : "Criar Nova Trilha"}</DialogTitle>
+              <DialogTitle>{editingItem ? "Editar trilha" : "Criar nova trilha"}</DialogTitle>
               <DialogDescription>Configure o nome e descrição da trilha de carreira</DialogDescription>
             </DialogHeader>
             <div className="mt-4 space-y-4">
               <div>
-                <Label htmlFor="trilha-name">Nome da Trilha *</Label>
+                <Label htmlFor="trilha-name">Nome da trilha *</Label>
                 <Input id="trilha-name" defaultValue={editingItem?.nome} placeholder="Ex: Engenharia de Software" />
               </div>
               <div>
@@ -962,7 +962,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                 <Textarea id="trilha-desc" defaultValue={editingItem?.descricao} placeholder="Descreva a trilha de carreira" rows={3} />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="trilha-status">Status Ativo</Label>
+                <Label htmlFor="trilha-status">Status ativo</Label>
                 <Switch id="trilha-status" defaultChecked={editingItem?.ativo ?? true} />
               </div>
             </div>
@@ -981,7 +981,7 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
         <DialogContent className="sm:max-w-lg w-full p-0">
           <div className="p-6">
             <DialogHeader>
-              <DialogTitle>{editingItem ? "Editar Nível" : "Criar Novo Nível"}</DialogTitle>
+              <DialogTitle>{editingItem ? "Editar nível" : "Criar novo nível"}</DialogTitle>
               <DialogDescription>Configure os detalhes do nível hierárquico</DialogDescription>
             </DialogHeader>
             <div className="mt-4 space-y-4">

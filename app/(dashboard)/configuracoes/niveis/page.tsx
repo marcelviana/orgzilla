@@ -310,7 +310,7 @@ export default function NiveisPage() {
             <h3 className="text-lg font-semibold mb-2">Erro ao carregar níveis</h3>
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={() => { void loadNiveis() }} variant="outline">
-              Tentar Novamente
+              Tentar novamente
             </Button>
           </div>
         </div>
@@ -342,7 +342,7 @@ export default function NiveisPage() {
                 title={!isAdmin ? 'Apenas administradores podem criar níveis' : ''}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Nível
+                Criar nível
               </Button>
             </div>
           }
@@ -545,7 +545,7 @@ export default function NiveisPage() {
                             }}
                           >
                             <Eye className="h-4 w-4 mr-2" />
-                            Ver Detalhes
+                            Ver detalhes
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
@@ -567,7 +567,7 @@ export default function NiveisPage() {
                             }}
                           >
                             <Users className="h-4 w-4 mr-2" />
-                            Ver Pessoas
+                            Ver pessoas
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => {
@@ -576,7 +576,7 @@ export default function NiveisPage() {
                             }}
                           >
                             <Briefcase className="h-4 w-4 mr-2" />
-                            Ver Cargos
+                            Ver cargos
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
@@ -628,7 +628,7 @@ export default function NiveisPage() {
         >
           <div className="p-6 border-b">
             <DialogHeader>
-              <DialogTitle>Novo Nível</DialogTitle>
+              <DialogTitle>Novo nível</DialogTitle>
               <DialogDescription>
                 Crie um novo nível na hierarquia
               </DialogDescription>
@@ -677,7 +677,7 @@ export default function NiveisPage() {
             {formNivelAnterior && formNivelAnterior !== 'null' && (
               <div className="bg-gray-50 rounded-lg p-4 border">
                 <p className="text-sm font-medium mb-2">
-                  Visualização da Hierarquia:
+                  Visualização da hierarquia:
                 </p>
                 <div className="flex items-center gap-2 text-sm">
                   {getHierarchyChain(formNivelAnterior).map((l, idx) => (
@@ -687,7 +687,7 @@ export default function NiveisPage() {
                     </div>
                   ))}
                   <Badge className="bg-primary-strong hover:bg-primary-strong">
-                    {formNome || 'Novo Nível'}
+                    {formNome || 'Novo nível'}
                   </Badge>
                 </div>
               </div>
@@ -737,7 +737,7 @@ export default function NiveisPage() {
         >
           <div className="p-6 border-b">
             <DialogHeader>
-              <DialogTitle>Editar Nível</DialogTitle>
+              <DialogTitle>Editar nível</DialogTitle>
               <DialogDescription>
                 Atualize as informações do nível {selectedLevel?.nome}
               </DialogDescription>
@@ -792,7 +792,7 @@ export default function NiveisPage() {
             {formNivelAnterior && formNivelAnterior !== 'null' && (
               <div className="bg-gray-50 rounded-lg p-4 border">
                 <p className="text-sm font-medium mb-2">
-                  Visualização da Hierarquia:
+                  Visualização da hierarquia:
                 </p>
                 <div className="flex items-center gap-2 text-sm flex-wrap">
                   {getHierarchyChain(formNivelAnterior).map((l, idx) => (
@@ -851,7 +851,7 @@ export default function NiveisPage() {
           onEscapeKeyDown={() => setDeleteModalOpen(false)}
         >
           <DialogHeader>
-            <DialogTitle>Excluir Nível?</DialogTitle>
+            <DialogTitle>Excluir nível?</DialogTitle>
             <DialogDescription>
               {selectedLevel != null && ((selectedLevel.pessoas ?? 0) > 0 || (selectedLevel.cargos ?? 0) > 0) ? (
                 <div className="space-y-2">
@@ -891,7 +891,7 @@ export default function NiveisPage() {
               }
             >
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isSubmitting ? 'Excluindo...' : 'Excluir Nível'}
+              {isSubmitting ? 'Excluindo...' : 'Excluir nível'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -942,7 +942,7 @@ export default function NiveisPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="border rounded-lg p-4">
                   <p className="text-sm text-muted-foreground">
-                    Total de Pessoas
+                    Total de pessoas
                   </p>
                   <p className="text-2xl font-bold mt-1">
                     {selectedLevel?.pessoas || 0}
@@ -950,7 +950,7 @@ export default function NiveisPage() {
                 </div>
                 <div className="border rounded-lg p-4">
                   <p className="text-sm text-muted-foreground">
-                    Total de Cargos
+                    Total de cargos
                   </p>
                   <p className="text-2xl font-bold mt-1">
                     {selectedLevel?.cargos || 0}
@@ -971,7 +971,7 @@ export default function NiveisPage() {
                     >
                       <span>{cargo}</span>
                       <Button variant="ghost" size="sm">
-                        Ver Cargo
+                        Ver cargo
                       </Button>
                     </div>
                   ))}
@@ -1007,11 +1007,11 @@ export default function NiveisPage() {
                 }
               </p>
               <p className="text-sm text-muted-foreground">
-                Para ver a lista completa, acesse a página de Pessoas e filtre por este nível.
+                Para ver a lista completa, acesse a página de pessoas e filtre por este nível.
               </p>
               <Link href="/pessoas">
                 <Button className="mt-4 bg-primary-strong hover:bg-primary-strong/90 text-white">
-                  Ir para Pessoas
+                  Ir para pessoas
                 </Button>
               </Link>
             </div>
@@ -1047,7 +1047,7 @@ export default function NiveisPage() {
                       </p>
                     </div>
                     <Button variant="outline" size="sm">
-                      Ver Cargo
+                      Ver cargo
                     </Button>
                   </div>
                 ))}
@@ -1055,7 +1055,7 @@ export default function NiveisPage() {
                   className="w-full bg-primary-strong hover:bg-primary-strong/90 text-white mt-4"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Criar Novo Cargo neste Nível
+                  Criar novo cargo neste nível
                 </Button>
               </div>
             ) : (
@@ -1082,7 +1082,7 @@ export default function NiveisPage() {
           onEscapeKeyDown={() => setInfoModalOpen(false)}
         >
           <DialogHeader>
-            <DialogTitle>Como Funcionam os Níveis?</DialogTitle>
+            <DialogTitle>Como funcionam os níveis?</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
