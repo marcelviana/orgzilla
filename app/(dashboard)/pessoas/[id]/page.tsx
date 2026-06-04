@@ -20,7 +20,7 @@ import { ArrowLeft, Mail, Phone, Pencil, MoreVertical, TrendingUp, Lock, Loader2
 import { DetailsSkeleton, Breadcrumb, StatusBadge, EmptyState } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
-import { getPessoaById } from '@/app/actions/pessoas.actions'
+import { getPessoaById, getHistoricoProfissional, type EventoTimeline } from '@/app/actions/pessoas.actions'
 import { getAnotacoesDaPessoa, criarAnotacaoDaPessoa } from '@/app/actions/anotacoes.actions'
 import type { AnotacaoComUsuario } from '@/lib/repositories/anotacao.repository'
 
@@ -64,14 +64,6 @@ type PessoaData = {
   created_at: string
 }
 
-const TIMELINE_DATA = [
-  { tipo: 'entrada', titulo: 'Entrou na empresa', data: '2023-01-15', detalhes: 'Como Engineer I no time de Backend' },
-  { tipo: 'promocao', titulo: 'Promovido para Engineer II', data: '2023-07-01', detalhes: 'De L2 para L3' },
-  { tipo: 'mudanca_time', titulo: 'Mudou para time de Engenharia', data: '2023-10-15', detalhes: 'De Backend para Engenharia (time pai)' },
-  { tipo: 'projeto', titulo: 'Alocado no Projeto Alpha', data: '2024-01-15', detalhes: 'Início da alocação' },
-  { tipo: 'promocao', titulo: 'Promovido para Senior Engineer', data: '2024-06-20', detalhes: 'De L3 para L4' }
-]
-
 export default function PersonProfilePage() {
   const router = useRouter()
   const params = useParams()
@@ -84,14 +76,16 @@ export default function PersonProfilePage() {
   const [notes, setNotes] = useState<AnotacaoComUsuario[]>([])
   const [newNote, setNewNote] = useState('')
   const [isSavingNote, setIsSavingNote] = useState(false)
+  const [timeline, setTimeline] = useState<EventoTimeline[]>([])
 
   useEffect(() => {
     async function loadPessoa() {
       setIsLoading(true)
       try {
-        const [pessoaResult, anotacoesResult] = await Promise.all([
+        const [pessoaResult, anotacoesResult, historicoResult] = await Promise.all([
           getPessoaById(pessoaId),
           getAnotacoesDaPessoa(pessoaId),
+          getHistoricoProfissional(pessoaId),
         ])
 
         if (pessoaResult.success && pessoaResult.data) {
@@ -105,6 +99,10 @@ export default function PersonProfilePage() {
 
         if (anotacoesResult.success && anotacoesResult.data) {
           setNotes(anotacoesResult.data)
+        }
+
+        if (historicoResult.success && historicoResult.data) {
+          setTimeline(historicoResult.data)
         }
       } catch (error) {
         toast.error(handleError(error, 'database'))
@@ -171,10 +169,8 @@ export default function PersonProfilePage() {
 
   const getEventIcon = (tipo: string) => {
     switch (tipo) {
-      case 'entrada': return '🎉'
-      case 'promocao': return '⬆️'
-      case 'mudanca_time': return '👥'
-      case 'projeto': return '📁'
+      case 'cargo': return '⬆️'
+      case 'time': return '👥'
       default: return '●'
     }
   }
@@ -497,25 +493,32 @@ export default function PersonProfilePage() {
           <TabsContent value="historico">
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-6">Linha do tempo profissional</h3>
-              <div className="space-y-6">
-                {TIMELINE_DATA.map((event, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-lg">
-                        {getEventIcon(event.tipo)}
+              {timeline.length === 0 ? (
+                <EmptyState
+                  title="Sem histórico profissional ainda"
+                  description="Mudanças de cargo e de time aparecerão aqui conforme forem registradas."
+                />
+              ) : (
+                <div className="space-y-6">
+                  {timeline.map((event, index) => (
+                    <div key={index} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-lg">
+                          {getEventIcon(event.tipo)}
+                        </div>
+                        {index < timeline.length - 1 && (
+                          <div className="w-0.5 h-full bg-gray-200 mt-2" />
+                        )}
                       </div>
-                      {index < TIMELINE_DATA.length - 1 && (
-                        <div className="w-0.5 h-full bg-gray-200 mt-2" />
-                      )}
+                      <div className="flex-1 pb-6">
+                        <p className="font-semibold">{event.titulo}</p>
+                        <p className="text-sm text-muted-foreground">{formatDate(event.data)}</p>
+                        <p className="text-sm mt-2">{event.detalhes}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 pb-6">
-                      <p className="font-semibold">{event.titulo}</p>
-                      <p className="text-sm text-muted-foreground">{formatDate(event.data)}</p>
-                      <p className="text-sm mt-2">{event.detalhes}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
           </TabsContent>
 

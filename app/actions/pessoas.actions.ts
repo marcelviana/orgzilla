@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin, getUsuarioLogado } from '@/lib/middleware'
 import { PessoaRepository, CargoRepository, TimeRepository } from '@/lib/repositories'
-import { PessoaService, PermissaoService } from '@/lib/services'
+import { PessoaService, PermissaoService, HistoricoService } from '@/lib/services'
 import type { PessoaInsert, PessoaUpdate, PessoaComRelacionamentos, PessoaRemuneracao } from '@/lib/types'
 import { handleError } from '@/lib/errors/error-handler'
 
@@ -346,6 +346,91 @@ export async function getPessoaById(
     }
 
     return { success: true, data: pessoa }
+  } catch (error) {
+    const appError = handleError(error, 'database')
+    return { success: false, error: appError.message }
+  }
+}
+
+/**
+ * Evento da linha do tempo profissional de uma pessoa.
+ * Cobre apenas cargos e times — NUNCA reajuste/salário (ver getHistoricoProfissional).
+ */
+export type EventoTimeline = {
+  tipo: 'cargo' | 'time'
+  titulo: string
+  data: string
+  detalhes: string
+}
+
+/**
+ * Busca a linha do tempo profissional de uma pessoa (cargos + times).
+ *
+ * Fonte: historico_cargo + historico_time via HistoricoService.
+ * ⚠️ LGPD: NÃO inclui historico_reajuste/salário (dado sensível, gestor-only) —
+ * reajuste tem sua própria aba protegida e NÃO entra na timeline profissional.
+ * Por isso usa buscarHistoricoCargos + buscarHistoricoTimes, nunca
+ * gerarRelatorioCompleto (que agregaria reajustes).
+ *
+ * Permissão: mesma regra de getPessoaById (gestor só vê a própria hierarquia).
+ */
+export async function getHistoricoProfissional(
+  id: string
+): Promise<ActionResult<EventoTimeline[]>> {
+  try {
+    const supabase = await createClient()
+    const usuario = await getUsuarioLogado()
+
+    if (!usuario) {
+      return { success: false, error: 'Não autenticado' }
+    }
+
+    const pessoaRepo = new PessoaRepository(supabase)
+    const pessoa = await pessoaRepo.findByIdWithRelationships(id)
+
+    if (!pessoa) {
+      return { success: false, error: 'Pessoa não encontrada' }
+    }
+
+    // Gestor só vê pessoas da sua hierarquia (mesma regra de getPessoaById)
+    const permissaoService = new PermissaoService(supabase)
+    if (usuario.tipo_perfil === 'gestor') {
+      const timeIdsHierarquia = await permissaoService.getTimesHierarquia(usuario)
+      if (!pessoa.time_id || !timeIdsHierarquia.includes(pessoa.time_id)) {
+        return { success: false, error: 'Sem permissão para visualizar esta pessoa' }
+      }
+    }
+
+    const historicoService = new HistoricoService(supabase)
+    const [cargos, times] = await Promise.all([
+      historicoService.buscarHistoricoCargos(id),
+      historicoService.buscarHistoricoTimes(id),
+    ])
+
+    const eventosCargo: EventoTimeline[] = cargos.map((registro) => {
+      const detalhes = [registro.cargo?.nivel?.nome, registro.cargo?.trilha?.nome]
+        .filter(Boolean)
+        .join(' · ')
+      return {
+        tipo: 'cargo',
+        titulo: registro.cargo?.nome ? `Cargo: ${registro.cargo.nome}` : 'Cargo atribuído',
+        data: registro.data_inicio,
+        detalhes: detalhes || 'Sem nível ou trilha definidos',
+      }
+    })
+
+    const eventosTime: EventoTimeline[] = times.map((registro) => ({
+      tipo: 'time',
+      titulo: registro.time?.nome ? `Time: ${registro.time.nome}` : 'Alocação de time',
+      data: registro.data_inicio,
+      detalhes: registro.data_fim ? 'Alocação encerrada' : 'Alocação atual',
+    }))
+
+    const timeline = [...eventosCargo, ...eventosTime].sort(
+      (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
+    )
+
+    return { success: true, data: timeline }
   } catch (error) {
     const appError = handleError(error, 'database')
     return { success: false, error: appError.message }
