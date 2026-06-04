@@ -32,7 +32,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { PageHeader, EmptyState } from '@/components/shared'
-import { toast } from 'sonner'
+import { toast } from '@/lib/ui/toast-config'
+import { handleError } from '@/lib/errors/error-handler'
 import type { PessoasResult } from '@/app/actions/pessoas.actions'
 import { exportPessoasCSV } from '@/app/actions/pessoas.actions'
 
@@ -163,13 +164,12 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
         link.click()
         URL.revokeObjectURL(url)
 
-        toast.success('🦖 Dados exportados com sucesso!')
+        toast.successDino('Dados exportados com sucesso!')
       } else {
         toast.error(result.error || 'Erro ao exportar dados')
       }
     } catch (error) {
-      console.error('[Export] Erro:', error)
-      toast.error('Erro ao exportar dados')
+      toast.error(handleError(error, 'database'))
     }
   }
 

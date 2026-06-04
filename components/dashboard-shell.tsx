@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, Users, Network, Workflow, Briefcase, BarChart3, Settings, LogOut, Menu, Search, ChevronDown, ChevronRight, Tag, TrendingUp, ShieldAlert } from 'lucide-react'
-import { toast } from 'sonner'
+import { toast } from '@/lib/ui/toast-config'
+import { handleError } from '@/lib/errors/error-handler'
 import { useUser } from '@/components/providers/user-provider'
 
 type NavItem = {
@@ -94,14 +95,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
       const data = (await response.json()) as { error?: string }
 
       if (response.ok) {
-        toast.success('🦖 Até logo!')
+        toast.successDino('Até logo!')
         window.location.href = '/login'
       } else {
         toast.error(data.error || 'Erro ao fazer logout')
       }
     } catch (error) {
-      console.error('[Logout] Erro:', error)
-      toast.error('Ops! Orgzilla tropeçou ao fazer logout')
+      toast.error(handleError(error, 'network'))
     }
   }
 
