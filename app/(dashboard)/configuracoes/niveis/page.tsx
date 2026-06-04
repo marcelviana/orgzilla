@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, EmptyState } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState, StatsCard } from '@/components/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
@@ -350,54 +350,27 @@ export default function NiveisPage() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="bg-white rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Total de Níveis
-                </p>
-                <p className="text-3xl font-bold mt-2">{levels.length}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  L1 até L16
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Layers className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Níveis em Uso</p>
-                <p className="text-3xl font-bold mt-2">{niveisEmUso}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  com pessoas alocadas
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
-                <Users className="h-6 w-6 text-accent" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Cargos por Nível
-                </p>
-                <p className="text-3xl font-bold mt-2">{totalCargos}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  cargos criados
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                <Briefcase className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Total de Níveis"
+            value={levels.length}
+            icon={<Layers className="h-6 w-6" />}
+            iconWrapperClassName="bg-primary/10 text-primary"
+            subtext="L1 até L16"
+          />
+          <StatsCard
+            title="Níveis em Uso"
+            value={niveisEmUso}
+            icon={<Users className="h-6 w-6" />}
+            iconWrapperClassName="bg-accent/10 text-accent"
+            subtext="com pessoas alocadas"
+          />
+          <StatsCard
+            title="Cargos por Nível"
+            value={totalCargos}
+            icon={<Briefcase className="h-6 w-6" />}
+            iconWrapperClassName="bg-success/10 text-success"
+            subtext="cargos criados"
+          />
         </div>
 
         {/* Visual Hierarchy */}

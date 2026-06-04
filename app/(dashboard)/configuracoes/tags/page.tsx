@@ -30,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Tag, TrendingUp, Users, Plus, ArrowUpDown, Pencil, X, Upload, Download, Trash2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, EmptyState, SearchInput } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState, SearchInput, StatsCard } from '@/components/shared'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
@@ -384,48 +384,26 @@ export default function TagsPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total de Tags</p>
-                <p className="text-3xl font-bold mt-1">{totalTags}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {usedTags} em uso, {unusedTags} não usadas
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Tag className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Mais Usada</p>
-                <p className="text-3xl font-bold mt-1">{mostUsedTag?.nome || 'N/A'}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  em {mostUsedTag?.pessoas || 0} pessoas
-                </p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-accent/10 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-accent" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pessoas com Tags</p>
-                <p className="text-3xl font-bold mt-1">{totalPeopleWithTags}</p>
-                <p className="text-xs text-muted-foreground mt-1">70% do time</p>
-              </div>
-              <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center">
-                <Users className="h-6 w-6 text-success" />
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Total de Tags"
+            value={totalTags}
+            icon={<Tag className="h-6 w-6" />}
+            iconWrapperClassName="bg-primary/10 text-primary"
+            subtext={`${usedTags} em uso, ${unusedTags} não usadas`}
+          />
+          <StatsCard
+            title="Mais Usada"
+            value={mostUsedTag?.nome || 'N/A'}
+            icon={<TrendingUp className="h-6 w-6" />}
+            iconWrapperClassName="bg-accent/10 text-accent"
+            subtext={`em ${mostUsedTag?.pessoas || 0} pessoas`}
+          />
+          <StatsCard
+            title="Pessoas com Tags"
+            value={totalPeopleWithTags}
+            icon={<Users className="h-6 w-6" />}
+            iconWrapperClassName="bg-success/10 text-success"
+          />
         </div>
 
         {/* Filter Chips */}
