@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 4 de junho de 2026 (F12 sub-commit 1: aba "Histórico profissional" de `pessoas/[id]` migrada de mock `TIMELINE_DATA` para dados reais via `getHistoricoProfissional`)
+**Última atualização:** 4 de junho de 2026 (F12 sub-commit 2: menus inertes de `pessoas/[id]` religados/removidos; débitos de alocação a projeto registrados — §3.3 e §5 item M)
 
 ---
 
@@ -111,6 +111,9 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 - ✅ `pessoas.actions.ts`: função `anexarRemuneracaoLista` removida da Action; lógica LGPD de enriquecimento de lista com salário extraída para `PessoaService.enriquecerListaComRemuneracao`. Import direto de `PessoaRemuneracaoRepository` removido da Action.
 - ✅ `dashboard.actions.ts`: blocos `catch` migrados de `console.error` para `handleError` (convenção de `lib/errors/error-handler.ts`).
 - ✅ `times.actions.ts`: função `buildTimeHierarchy` eliminada; `getTimesHierarquia` usa `timeService.buscarHierarquiaComEstatisticas` (proteção a ciclos via Set de visitados). Tipos `TimeComEstatisticas` e `TimeHierarquico` definidos em `lib/services/time.service.ts`, re-exportados via `lib/services/index.ts` e `times.actions.ts`.
+
+**Débito aberto (registrado na F12):**
+- 🟥 `addPessoaAoProjeto` (`app/actions/projetos.actions.ts`) **fura a camada**: faz `supabase.from('pessoa_projeto_produto')` (select de verificação + insert) direto na Action, em vez de passar por Repository/Service de alocação. Débito **pré-existente**, não introduzido pela F12 (apenas constatado ao remover o menu que o acionaria — ver §5, item M). Migrar para o padrão (Repository de `pessoa_projeto_produto` → Service) numa fase futura, idealmente junto com a UI de alocação.
 
 **Consequências (resolvidas):**
 - ✅ Recursão de hierarquia não está mais duplicada nem desprotegida: era ilimitada (loop infinito em ciclo de `time_pai_id`); agora há uma única implementação com `Set` de visitados.
@@ -235,6 +238,7 @@ I. **Upload de avatar** — bucket, tamanho máximo, campo no schema a definir.
 J. **Busca avançada** — delta em relação à busca atual já real a definir.
 K. **Endurecimento para produção** — rate limiting, revalidação de cache (após OAuth resolvido).
 L. **Sistema de notificações** — sino no header já comentado aguardando backend. Requer tabela `notificacao`, Action/Service, políticas de acesso e UI. Badge numérico só reativar com fonte de dados real.
+M. **UI de alocação a projeto a partir de `pessoas/[id]`** — o item de menu "Adicionar a Projeto" foi **removido na F12** porque não havia UI de seleção (projeto + data de início) e construí-la era feature nova, fora do escopo da migração de design. Requer um diálogo de seleção (projeto + data) ligado a `addPessoaAoProjeto`. Ao implementar, **migrar antes** `addPessoaAoProjeto` para a camada (ver §3.3, débito aberto). A alocação a projeto segue disponível pela página do projeto e pelo form de edição da pessoa.
 
 ### Decisões de produto pendentes antes da Phase 3
 > Responder estas perguntas desbloqueia G–J. Sem resposta, os itens ficam em 🟩.

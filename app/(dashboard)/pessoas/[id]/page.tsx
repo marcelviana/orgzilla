@@ -262,16 +262,13 @@ export default function PersonProfilePage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => console.log('Mover para outro time')}>
+                  <DropdownMenuItem onClick={() => router.push(`/pessoas/${pessoa.id}/editar`)}>
                     Mover para outro time
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Adicionar a projeto')}>
-                    Adicionar a Projeto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Alterar status')}>
+                  <DropdownMenuItem onClick={() => router.push(`/pessoas/${pessoa.id}/editar`)}>
                     Alterar status
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => console.log('Ver histórico completo')}>
+                  <DropdownMenuItem onClick={() => setActiveTab('historico')}>
                     Ver histórico completo
                   </DropdownMenuItem>
                 </DropdownMenuContent>
