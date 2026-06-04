@@ -55,6 +55,7 @@ Todas com `tsc --noEmit` 0, `pnpm lint` 0, `pnpm build` ok, `pnpm test` 106/106 
 | **F9 — Acessibilidade** | `aria-label` descritivo (por ação/entidade) em ~26 botões só-ícone; senha com label dinâmico. Nenhum estilo de foco alterado. | `f49b6d6` |
 | **F10 — Toasts** | `sonner` cru → `handleError` (nos catch) + `toast-config` (mensagens próprias) em `dashboard-shell` e `pessoas-table`. | `476fb64` |
 | **F11 — Polish** | Métricas do dashboard diferenciadas por token (primary/accent/warning/success); `Button` ganha `focus-visible:ring-offset-2`; âncora de contexto mobile no topbar (`<span>`, não `<h1>`); PageHeader responsivo; grids de conteúdo com breakpoints; `uppercase` removido (ALL CAPS); checkboxes decorativos de cargos removidos. | `8c73e9c` |
+| **Fase A — SearchInput + StatsCard** | `SearchInput` em 7 telas (pessoas, times, projetos, configuracoes/{cargos,tags,trilhas,usuarios}); estendido com `onKeyDown` (preserva Enter→aplicar de pessoas), `className` (larguras/`hidden sm:block`) e `onClear` (botão X nas 6 client-side). `StatsCard` em dashboard, projetos e configuracoes/{cargos,niveis,tags,usuarios}; estendido com `iconWrapperClassName` (diferenciação por token, preserva F11), `href` (Link real, §7) e valor em `font-heading` (§3.2). Limpa cores não-token (orange-100/cyan-100/blue-*/green-*/error→tokens) e remove subtext fabricado "70% do time" (tags). **FilterPanel ADIADO** (ver §4); **trilhas stats** ficam inline (valores hardcoded — mock). | `f00172a`, `c9acb60` |
 
 > Outros commits no histórico (ex.: `604e34a` memória de agente, `09066d6` gitignore,
 > `fe16ecf`/`b15fbe6` edições do próprio DESIGN_SYSTEM.md) **não** são fases desta migração.
@@ -68,25 +69,14 @@ render autenticado precisam de **teste manual do mantenedor**.
 
 ## 3. Fases PENDENTES (em ordem; cuidados embutidos)
 
-### Fase A — Adoção dos componentes compartilhados
-**Escopo:** substituir implementações inline de busca, filtros e métricas pelos componentes
-compartilhados `SearchInput`, `FilterPanel`, `StatsCard` nas telas que ainda reinventam
-(achado M2 do audit: o componente existe mas tem ~0 uso fora de `components/shared/`).
-Telas com busca/filtro/stats inline: `pessoas-table`, `times/page`, `projetos/page`,
-`configuracoes/*` (cargos, niveis, tags, trilhas, usuarios), `dashboard-content`.
-
-**Cuidados:**
-1. **Inventarie primeiro**, depois faça **SUB-COMMITS por componente** — um commit para
-   `SearchInput`, outro para `FilterPanel`, outro para `StatsCard`. Não um commit gigante.
-2. **Fidelidade funcional** (um bug de comportamento perdido passa em tsc/lint sem erro):
-   - Não perder **debounce** de busca onde existir.
-   - Não perder **estado de filtro** (selects, toggles, "limpar filtros").
-   - Não quebrar a **integração com a URL**: a busca do header navega para `/busca?q=<termo>`
-     e a página `/busca` lê o `?q=` (sincroniza via `useEffect`). Preservar esse fluxo.
-3. Se um componente compartilhado **não cobre** um caso real, **NÃO force** — relate e deixe
-   inline com nota, OU estenda o componente conscientemente (decisão de API, avise o mantenedor).
-4. Se a migração tocar **como os dados são buscados/filtrados** no Service/Action, **acione
-   `revisor-camadas`**.
+### Fase A — Adoção dos componentes compartilhados — ✅ CONCLUÍDA (ver §2)
+`SearchInput` e `StatsCard` adotados (commits `f00172a`, `c9acb60`). **`FilterPanel` foi
+ADIADO** por decisão consciente: na inspeção real, todas as telas de filtro têm toggle próprio
+(`showFilters`/`filtersExpanded`) + sentinela `todos`/`all`, e o `FilterPanel` é autossuficiente
+(header colapsável + contador `filter(Boolean)`). Adotá-lo sem estender causaria toggle duplo e
+contador sempre-ativo. Registrado como débito em §4. `trilhas` manteve as stats inline porque
+seus números (`6/42/127`) são hardcoded (mock) — componentizar daria aparência oficial a dado
+falso; ver §4.
 
 ### Fase B — Passe de copy (Title Case → sentence case)
 **Escopo:** corrigir Title Case de UI para sentence case em todo o projeto (§3.2). O ALL CAPS
@@ -154,6 +144,22 @@ quando nada mais vai mexer em confirmação, para não retrabalhar.
 ---
 
 ## 4. Débitos registrados (não são fases; anotar/decidir)
+
+- **FilterPanel não adotado (adiado na Fase A).** O componente
+  `components/shared/filter-panel.tsx` segue com ~0 uso. Para ser adotável sem regressão, precisa
+  de: (a) **estado de abertura externo** (`open`/`onToggle` controlados) — hoje ele gerencia o
+  próprio colapso, conflitando com o toggle que cada tela já tem; (b) **contador ciente de
+  sentinela** — hoje conta `Object.values(values).filter(Boolean)`, e os valores `todos`/`all`
+  (truthy) inflam o badge e nunca desabilitam o "Limpar"; (c) decidir o **item "Todos" por
+  select** vs. valor vazio. Telas candidatas quando estendido: `pessoas` (filtro server-side via
+  URL — passar por `applyFilters`/`clearFilters`), `times`, `cargos`, `usuarios`. `tags` (chips) e
+  `trilhas` (botões) usam outra UX e podem nunca encaixar. Sem essa extensão, **não force** (era a
+  opção "estender e aplicar amplo", não escolhida nesta rodada).
+- **Stats de `configuracoes/trilhas` são hardcoded (mock).** Os 3 cards exibem `6` (trilhas),
+  `42` (cargos) e `127` (pessoas) fixos no JSX, além de subtexts fabricados ("5 ativas, 1 inativa"
+  etc.). Por isso ficaram **fora** da migração ao `StatsCard` na Fase A — componentizar daria
+  aparência oficial a dado falso (§9 / CLAUDE.md "não adicione mocks"). Pendência: ligar a números
+  reais (via Action/Service da trilha) **antes** de adotar o `StatsCard` ali. Próximo de F12.
 
 - **Gradiente `#0F1419` do login** (`app/login/page.tsx`): hex cru numa superfície escura
   (não é data-viz). **Atenção:** já existe `--color-surface-dark` no `globals.css`, mas ele
