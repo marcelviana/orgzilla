@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 4 de junho de 2026 (F13 concluída: `currentUser` mock "João Silva" removido de `configuracoes` e `unauthorized`; sessão real via `getUsuarioLogado()` em ambas; 2 débitos novos registrados em §3.3)
+**Última atualização:** 4 de junho de 2026 (`ConfirmDialog` estendido com async, disabled, slot e ReactNode; 3 dialogs de exclusão de config pages migrados para ele; fase final do design system concluída)
 
 ---
 
@@ -100,6 +100,11 @@ Checklist de retomada do ambiente:
 
 **Bug resolvido:** `PessoaRepository.findComFiltrosPaginados` passava `.eq('time_id', 'todos')` ao banco quando `filters.timeId` era o sentinela `'todos'`, em vez de ignorar o filtro. Corrigido adicionando `&& filters.timeId !== 'todos'` na condição da linha 352 de `lib/repositories/pessoa.repository.ts`. Teste em `repositories.test.ts` atualizado para verificar que o filtro `.eq` **não** é aplicado quando `timeId` é `'todos'`.
 
+**Débito de teste pendente:** cobertura de regressão de permissão ausente para duas áreas verificadas apenas por inspeção/revisor-camadas:
+- Gating de `tipo_perfil` nas Server Actions de admin de `configuracoes` e `unauthorized` (F13): o `checkPermission`/`requireAdmin` nessas actions foi verificado por inspeção de código, mas não há teste automatizado que exercite a rejeição para perfis não-admin.
+- Checagem de permissão da Action `getHistoricoProfissional` (F12): a lógica de autorização foi verificada por revisão, sem cobertura de teste.
+Candidato a `escritor-testes` em tarefa própria pós-migração, conforme a regra do `CLAUDE.md` de que lógica de permissão crítica deve ter teste.
+
 ### 3.3 Débito arquitetural — padrões de acesso a dados misturados
 A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parcialmente aplicada**:
 
@@ -173,6 +178,31 @@ As `TabsList` das telas de pessoa usam `grid w-full grid-cols-5` (cai para `grid
 - `app/(dashboard)/pessoas/nova/page.tsx:277` e `app/(dashboard)/pessoas/[id]/editar/page.tsx:325` — abas: dados pessoais, dados profissionais, dados financeiros (gestor), projetos/produtos, tags.
 
 **Por que ficou como débito (não foi alterado):** trocar o `grid-cols-5` por uma tab-strip com scroll horizontal **não é um swap trivial** — muda a distribuição das abas em todos os breakpoints (não só mobile), exigindo classes responsivas que convivam com o estilo base do shadcn (`inline-flex`/`h-9`/`bg-muted`/`p-1`) e tratamento de *scroll-into-view* da aba ativa e affordance de rolagem. É mudança de **UX de navegação**, e essas telas são **autenticadas** — não validáveis no viewport real do agente (auth wall). Decisão consciente: não fazer mudança de navegação às cegas. Requer implementação + **teste manual no mobile** pelo mantenedor.
+
+### 3.8 Design system — ConfirmDialog estendido e dialogs de exclusão migrados (fase final)
+
+**Concluído em 4 jun 2026.** `components/shared/confirm-dialog.tsx` recebeu extensão de API totalmente retrocompatível com os 5 usos pré-existentes em `times/*` e `projetos/*` (commit `68e7045`):
+
+- `description: string | ReactNode` — string renderiza em `<p>` padrão; ReactNode usa `asChild`, evitando `<div>`/`<p>` aninhado e warning de hidratação.
+- `confirmDisabled?: boolean` — desabilita o botão de confirmar por condição externa; combina com `requiresTypedConfirmation`.
+- `onConfirm: () => void | Promise<void>` — detecção automática de Promise: síncrono fecha imediatamente (comportamento anterior preservado); Promise ativa estado de loading INTERNO (Loader2 no botão via `await`), fecha só quando resolve. Não há prop `loading` externa.
+- Trava de fechamento durante o loading: ESC (`onEscapeKeyDown` + `handleOpenChange`), Cancelar (`disabled`) e clique-fora (bloqueado pelo `AlertDialog`). Corrige de quebra o bug em que ESC fechava o dialog de níveis no meio do delete.
+- `children?: ReactNode` — slot no corpo (entre descrição e botões) para controles extras como checkbox.
+- Botão de confirmar migrado de `AlertDialogAction` para `Button`, cedendo o controle de fechamento ao `handleConfirm` (elimina race condition do Radix auto-close com o `await`).
+
+**3 dialogs de exclusão migrados para o `ConfirmDialog` estendido:**
+
+| Página | Commit | Destaques |
+|---|---|---|
+| `configuracoes/niveis` | `0209bd4` | `onConfirm` async; `confirmDisabled = pessoas > 0 \|\| cargos > 0`; `description` ReactNode; cores tokenizadas: `text-red-600` → `text-danger`, `text-amber-600` → `text-warning`; `setIsSubmitting` do delete removido |
+| `configuracoes/cargos` | `8657765` | `onConfirm` async; `confirmDisabled = pessoas > 0`; `description` ReactNode com contagem/pluralização; estado morto `const [, setIsSubmitting] = useState(false)` e escritas no-op em criar/editar/excluir removidos |
+| `configuracoes/usuarios` | `514d966` | Checkbox "Entendo as consequências" no slot `children`; `confirmDisabled = !deleteConfirmed`; `onConfirm` async; UX de marcar caixa preservada |
+
+**Estado do token `text-destructive`:**
+
+- **Resolvido nas config pages migradas:** `configuracoes/cargos` (2 itens de menu "Excluir" passaram de `text-destructive` para `text-danger`) e `configuracoes/niveis` (dialog usava `text-red-600`/`text-amber-600`, agora `text-danger`/`text-warning`).
+- **Pendente — JSX de app:** `app/(dashboard)/times/page.tsx` linhas 506 e 612 ainda usam `text-destructive` em JSX de dropdown. Resolúvel por find-replace para `text-danger`.
+- **Pendente — primitivos shadcn (requer decisão de tema):** `components/ui/toast.tsx` e `components/ui/dropdown-menu.tsx` referenciam `--destructive` como variável CSS (variante de dado Radix, `border-destructive`, `bg-destructive`, etc.). Um find-replace simples para `text-danger` **não resolve**: o token `--destructive` precisaria ser definido em `app/globals.css`, ou os primitivos precisariam ser reescritos para usar `--color-danger`. Requer decisão de tema antes de mexer.
 
 ---
 

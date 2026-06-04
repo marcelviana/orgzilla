@@ -9,8 +9,9 @@
 ## 1. Contexto e fonte de verdade
 
 **O que é:** adequar todo o projeto ao `DESIGN_SYSTEM.md` (reescrito/expandido). A migração
-foi quebrada em fases pequenas e revisáveis; F1–F11 já foram executadas (ver §2). Restam
-as fases de §3 e os débitos de §4.
+foi quebrada em fases pequenas e revisáveis. **Todas as fases (§2 + §3) estão CONCLUÍDAS** —
+a última (extensão do ConfirmDialog + dialogs guardados) fechou em 4 jun 2026. Restam apenas
+os **débitos de §4** (não são fases; anotação/decisão).
 
 **Fonte de verdade (em conflito, vale nesta ordem):**
 1. `STATUS.md` — estado real do projeto (o que está pronto/mock/quebrado).
@@ -142,20 +143,43 @@ null-handling e passa nome + label de perfil a `app/unauthorized/unauthorized-cl
 - `<Lock>` dead code em `configuracoes-client.tsx:878` (inalcançável após `return null` na L865).
 - Assimetria de permissão em tags: servidor aceita admin OU gestor; UI gatea só por admin — decisão de produto pendente.
 
-### Fase final — Extensão do ConfirmDialog + dialogs guardados
-**Escopo:** estender `components/shared/confirm-dialog.tsx` com:
-- `confirmDisabled?: boolean` (desabilitar o botão de confirmar por condição externa),
-- `description` aceitando `ReactNode` (hoje é `string`),
-- estado de `loading` no botão de confirmar (sem auto-fechar enquanto a ação async roda).
+### Fase final — Extensão do ConfirmDialog + dialogs guardados — ✅ CONCLUÍDA (4 jun 2026)
 
-Então migrar os **3 dialogs de exclusão guardados** das config pages para o ConfirmDialog:
-`configuracoes/usuarios` ("Excluir Usuário?"), `configuracoes/cargos` ("Excluir Cargo?" — bloqueia
-quando há pessoas no cargo, botão disabled, descrição com markup), `configuracoes/niveis`
-("Excluir Nível?" — com `isSubmitting`/loading). Hoje são `Dialog` cru porque o ConfirmDialog
-atual não modela bloqueio condicional/disabled/loading.
+**Com esta fase, TODAS as fases da migração ao DESIGN_SYSTEM.md estão fechadas.**
 
-**Cuidado:** é **design de API de componente**, não migração mecânica. Fazer **por último**,
-quando nada mais vai mexer em confirmação, para não retrabalhar.
+**Sub-commit 1 (`68e7045`) — extensão do `components/shared/confirm-dialog.tsx`** (tudo opcional,
+retrocompatível com os 5 usos em `times/*` e `projetos`):
+- `description: string | ReactNode` — string em `<p>`; ReactNode via `asChild` (o conteúdo
+  define o próprio elemento raiz, evitando `<div>`/`<p>` aninhado + warning de hidratação).
+- `confirmDisabled?: boolean` — desabilita confirmar por condição externa; combina com
+  `requiresTypedConfirmation`.
+- `onConfirm: () => void | Promise<void>` — `handleConfirm` detecta Promise: síncrono fecha na
+  hora (idêntico ao anterior); Promise → loading INTERNO derivado do await (Loader2 no botão),
+  fecha só quando resolve. **Sem prop `loading` externa** (decisão tomada: loading derivado).
+- Trava de fechamento durante o loading: ESC (`onEscapeKeyDown` + `handleOpenChange`), clique-fora
+  (já bloqueado pelo `AlertDialog`) e Cancelar (`disabled`). Corrige de quebra o bug do níveis
+  (fechava por ESC no meio do delete).
+- `children?: ReactNode` — slot no corpo (entre descrição e botões) para controle extra (checkbox).
+- Botão de confirmar passou de `AlertDialogAction` para `Button`, para o fechamento ser controlado
+  só pelo `handleConfirm` (sem auto-close do Radix correndo com o await).
+
+**Sub-commits 2–4 — 3 dialogs de exclusão migrados:**
+- `configuracoes/niveis` ("Excluir nível?", `0209bd4`): onConfirm async, `confirmDisabled =
+  pessoas>0 || cargos>0`, description ReactNode; cores tokenizadas (`text-red-600`→`text-danger`,
+  `text-amber-600`→`text-warning`); `setIsSubmitting` do delete removido.
+- `configuracoes/cargos` ("Excluir cargo?", `8657765`): onConfirm async, `confirmDisabled =
+  pessoas>0`, description ReactNode com contagem/pluralização; estado morto
+  `const [, setIsSubmitting] = useState(false)` + escritas no-op removidos; os 2 itens de menu
+  "Excluir" `text-destructive`→`text-danger`.
+- `configuracoes/usuarios` ("Excluir usuário?", `514d966`): checkbox "Entendo as consequências"
+  no slot `children`, `confirmDisabled = !deleteConfirmed`, onConfirm async; UX de marcar caixa
+  preservada (decisão: NÃO trocar por digitar palavra).
+
+Contrato de erro adotado nos 3: o `onConfirm` relança em falha (exceção **ou** `result.success
+=== false`, ambos com toast) para manter o dialog aberto; resolve no sucesso → o ConfirmDialog
+fecha sozinho. Detalhe de `asChild`: cor semântica vai em **elemento filho**, nunca no nó raiz da
+description (a classe `text-muted-foreground` do `AlertDialogDescription` é mesclada no raiz e
+colidiria). Gate por sub-commit: tsc 0 / lint 0 / build / 106 testes.
 
 ---
 
@@ -189,6 +213,12 @@ quando nada mais vai mexer em confirmação, para não retrabalhar.
   (usado por primitivos shadcn), `bg-destructive`/`text-destructive-foreground` (já corrigido
   no `Button` na F7, mas pode haver outros usos), `ring-destructive`. Cada um: definir o token
   no `globals.css` ou trocar pela classe correta — **não** silenciar com hex.
+  - **`text-destructive` (atualização 4 jun 2026):** RESOLVIDO nas config pages migradas na fase
+    final — `configuracoes/cargos` (2 itens de menu) e `configuracoes/niveis` (dialog) agora usam
+    `text-danger`/`text-warning`. **Ainda pendente** em `app/(dashboard)/times/page.tsx:506,612`
+    (resolúvel por find-replace → `text-danger`) e nos primitivos shadcn `components/ui/toast.tsx`
+    e `components/ui/dropdown-menu.tsx` (estes NÃO por find-replace: exigem definir `--destructive`
+    no tema do `globals.css` ou reescrever os primitivos para `--color-danger`). Ver `STATUS.md` §3.8.
   *(Nota: `bg-input`/`border-input`/`border-border` NÃO são fantasmas — `--color-input` e
   `--color-border` estão definidos no `@theme inline` (#d1d5db). Não incluir no sweep.)*
 - **`bg-gray-*` / `border-gray-*` / `hover:bg-gray-*`** ainda espalhados: a F3 tokenizou
