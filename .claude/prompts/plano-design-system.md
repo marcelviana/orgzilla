@@ -1,0 +1,238 @@
+# Plano — Migração ao DESIGN_SYSTEM.md (estado e continuação)
+
+> **Para retomar numa sessão NOVA e enxuta.** Este documento é autossuficiente: contém
+> o que já foi feito (com commits) e o que falta (com os cuidados embutidos). Quem ler
+> só este arquivo consegue continuar sem o histórico da conversa original.
+
+---
+
+## 1. Contexto e fonte de verdade
+
+**O que é:** adequar todo o projeto ao `DESIGN_SYSTEM.md` (reescrito/expandido). A migração
+foi quebrada em fases pequenas e revisáveis; F1–F11 já foram executadas (ver §2). Restam
+as fases de §3 e os débitos de §4.
+
+**Fonte de verdade (em conflito, vale nesta ordem):**
+1. `STATUS.md` — estado real do projeto (o que está pronto/mock/quebrado).
+2. `CLAUDE.md` — arquitetura em camadas e convenções de código.
+3. `DESIGN_SYSTEM.md` — identidade visual, tokens, padrões de UI/UX.
+
+Leia os três antes de começar qualquer fase. Em dúvida sobre *como a tela se parece/comporta*,
+vale o `DESIGN_SYSTEM.md`; sobre *estado*, o `STATUS.md`; sobre *arquitetura*, o `CLAUDE.md`.
+
+**Regra de processo (não negociável):**
+- **UMA fase por vez.** Ao terminar, **PARE**, dê um resumo e **aguarde o "ok"** do mantenedor.
+  Nunca emende a próxima fase sem confirmação.
+- Fase grande → **sub-commits revisáveis** (um por preocupação/componente), nunca um commit
+  gigante atravessando várias preocupações.
+- Cada fase deve passar o gate de validação (§5) antes do commit.
+- Decisão de design subjetiva ou que muda comportamento/permissão/salário → **pergunte antes**,
+  não decida sozinho.
+
+**Agentes auxiliares disponíveis:** `revisor-design` (crítica de UI), `revisor-camadas`
+(aderência à arquitetura — acionar quando tocar acesso/fluxo de dados), `guardiao-rls-lgpd`
+(dados sensíveis/RLS/permissão — read-only, pede confirmação humana), `escritor-testes`,
+`sincronizador-docs` (atualiza STATUS/CLAUDE/README).
+
+---
+
+## 2. Fases CONCLUÍDAS (não refazer)
+
+Todas com `tsc --noEmit` 0, `pnpm lint` 0, `pnpm build` ok, `pnpm test` 106/106 no momento do commit.
+
+| Fase | O que fez | Commit |
+|---|---|---|
+| **F1 — Tokens** | Adiciona `primary-strong (#C85F00)` + semânticos (`success #1FA971`, `warning #E8A317`, `danger #FF5A5F`, `info #00C8FF` + `-light`) ao `app/globals.css` (`@theme inline`). | `f77894a` |
+| **F2 — Contraste do laranja** | Texto branco sobre `#FF7A00` (reprova WCAG AA) → `primary-strong`. `Button` default vira `bg-primary-strong text-white`; item ativo da sidebar, badges, avatares, botões. | `df9f8d0` |
+| **F3 — Tokeniza hex de className + text-gray** | `text-[#…]`/`bg-[#…]`/`border-[#…]` → tokens; `text-gray-*` → `foreground`/`muted-foreground` (claro) e `text-white/70…` (sidebar escura). | `51f4520` |
+| **F3.5 — Chart tokens** | `--chart-1..8` + `--chart-grid`/`--chart-axis` em `:root` (FORA do `@theme inline`, senão não são emitidos p/ uso via prop). Religa Recharts/xyflow (relatorios, dashboard-content, organograma). | `4e25a37` |
+| **F4 — StatusBadge + semântica §6.9** | `StatusBadge` único e normalizado (ativo→success, férias→info, licença/afastamento→warning, **desligado→danger**, inativo/encerrado→neutro); texto escuro sobre tinta (AA). Substitui 3 impls inline + badges de projeto/time. Estado em gráficos → `--success/--warning/--danger/--info` em `:root`. Trend up/down→success/danger. | `b31318f` |
+| **F5 — PageHeader + remove título do shell** | `PageHeader` (com Breadcrumb) em todas as list/form/config/landing; `<h1>` de rota removido do `dashboard-shell`. Detalhe (pessoa/time/projeto), perfil, organograma e dashboard mantêm header próprio (DESIGN_SYSTEM §5), cada um com 1 `<h1>`. | `063ff08` |
+| **F6 — EmptyState** | `<p>` cru de lista vazia → `EmptyState`, diferenciando vazio vs busca/filtro; "entidade não encontrada" → `illustration="error"` + ação; gráficos vazios → ícone neutro. | `164c936` |
+| **F6 follow-up** | Casos que o grep da F6 não pegou (empties em `<h3>`/`<td>`/modais) + `bg-orange-500` residual em projetos. | `0e55538` |
+| **F7 — ConfirmDialog** | Variantes do `confirm-dialog` → tokens semânticos + texto escuro (AA). `window.confirm` eliminado (projetos, times/novo, times/[id]/editar). `times/page` AlertDialog → ConfirmDialog. **Bug:** `Button variant="destructive"` usava `bg-destructive` (token inexistente) → `bg-danger text-secondary`. | `5943a1e` |
+| **F8 — Inputs nativos → primitivos** | `<input type=radio\|checkbox>` → `RadioGroup`/`Checkbox`. Criado `components/ui/radio-group.tsx`. Handlers reescritos junto (`onChange/e.target` → `onValueChange(string)`/`onCheckedChange(boolean)`). | `0d4a4cb` |
+| **F9 — Acessibilidade** | `aria-label` descritivo (por ação/entidade) em ~26 botões só-ícone; senha com label dinâmico. Nenhum estilo de foco alterado. | `f49b6d6` |
+| **F10 — Toasts** | `sonner` cru → `handleError` (nos catch) + `toast-config` (mensagens próprias) em `dashboard-shell` e `pessoas-table`. | `476fb64` |
+| **F11 — Polish** | Métricas do dashboard diferenciadas por token (primary/accent/warning/success); `Button` ganha `focus-visible:ring-offset-2`; âncora de contexto mobile no topbar (`<span>`, não `<h1>`); PageHeader responsivo; grids de conteúdo com breakpoints; `uppercase` removido (ALL CAPS); checkboxes decorativos de cargos removidos. | `8c73e9c` |
+
+> Outros commits no histórico (ex.: `604e34a` memória de agente, `09066d6` gitignore,
+> `fe16ecf`/`b15fbe6` edições do próprio DESIGN_SYSTEM.md) **não** são fases desta migração.
+
+**Limitação de ambiente recorrente:** o agente **não consegue testar o caminho autenticado**
+(o app redireciona para `/login` sem sessão/credenciais). Toda validação visual de telas de
+dashboard ficou por inspeção de código + `build`/`tsc`/`lint`/`test`. Telas que dependem de
+render autenticado precisam de **teste manual do mantenedor**.
+
+---
+
+## 3. Fases PENDENTES (em ordem; cuidados embutidos)
+
+### Fase A — Adoção dos componentes compartilhados
+**Escopo:** substituir implementações inline de busca, filtros e métricas pelos componentes
+compartilhados `SearchInput`, `FilterPanel`, `StatsCard` nas telas que ainda reinventam
+(achado M2 do audit: o componente existe mas tem ~0 uso fora de `components/shared/`).
+Telas com busca/filtro/stats inline: `pessoas-table`, `times/page`, `projetos/page`,
+`configuracoes/*` (cargos, niveis, tags, trilhas, usuarios), `dashboard-content`.
+
+**Cuidados:**
+1. **Inventarie primeiro**, depois faça **SUB-COMMITS por componente** — um commit para
+   `SearchInput`, outro para `FilterPanel`, outro para `StatsCard`. Não um commit gigante.
+2. **Fidelidade funcional** (um bug de comportamento perdido passa em tsc/lint sem erro):
+   - Não perder **debounce** de busca onde existir.
+   - Não perder **estado de filtro** (selects, toggles, "limpar filtros").
+   - Não quebrar a **integração com a URL**: a busca do header navega para `/busca?q=<termo>`
+     e a página `/busca` lê o `?q=` (sincroniza via `useEffect`). Preservar esse fluxo.
+3. Se um componente compartilhado **não cobre** um caso real, **NÃO force** — relate e deixe
+   inline com nota, OU estenda o componente conscientemente (decisão de API, avise o mantenedor).
+4. Se a migração tocar **como os dados são buscados/filtrados** no Service/Action, **acione
+   `revisor-camadas`**.
+
+### Fase B — Passe de copy (Title Case → sentence case)
+**Escopo:** corrigir Title Case de UI para sentence case em todo o projeto (§3.2). O ALL CAPS
+já foi feito na F11. Atinge: rótulos de abas (`TabsTrigger`), títulos de seção (`<h3>`),
+rótulos de botão, títulos de modal/dialog. Ex.: "Informações Gerais" → "Informações gerais";
+"Ver Todos os Projetos" → "Ver todos os projetos"; "Excluir Cargo?" → "Excluir cargo?".
+
+**Cuidados:**
+- Tem que ser **COMPLETO, não parcial.** Corrigir numa tela e deixar a tela-irmã em Title Case
+  é **pior** que não corrigir (cria inconsistência). Ex.: as abas "Dados Pessoais"/"Dados
+  Profissionais" aparecem em `pessoas/[id]`, `pessoas/nova` e `pessoas/[id]/editar` — corrija
+  as três juntas.
+- **NÃO tocar maiúscula legítima de CONTEÚDO/dado:** nomes próprios, nomes de pessoa/time/cargo,
+  siglas ("RLS", "LGPD", "CSV", "OAuth"), topônimos ("São Paulo"). Só **rótulos de UI** mudam,
+  nunca dados renderizados.
+
+### Fase C — Overflow das abas no mobile (pequena; pode virar só débito)
+**Escopo:** `TabsList` com `grid-cols-5` (ex.: `pessoas/[id]`, `pessoas/nova`,
+`pessoas/[id]/editar`) espreme 5 abas em telas ~375px. Avaliar tab-strip com scroll horizontal.
+
+**Cuidado:** mudar a tab-strip é **mudança de UX com risco** (quebra a distribuição uniforme).
+Se não for trivial/seguro, **registre como débito no STATUS.md** em vez de forçar.
+
+### Fase F12 — Remover mock + religar menus inertes
+**Escopo:**
+- Remover o mock `TIMELINE_DATA` (`app/(dashboard)/pessoas/[id]/page.tsx`) — hoje exibe uma
+  timeline fictícia ("João") na aba de histórico de QUALQUER pessoa (dado falso renderizado
+  como verdadeiro).
+- Menus com `onClick={() => console.log(...)}` inertes em `pessoas/[id]` (Mover para time,
+  Adicionar a projeto, Alterar status, Ver histórico) e `times/[id]` (Ver organograma,
+  Adicionar pessoa, Alterar status) → ligar à **ação real** ou **remover** o item.
+
+**Cuidados:**
+- **ISTO TOCA DADOS/FLUXO**, não só visual. **Acione `revisor-camadas`.** Se conectar a
+  timeline a dados reais, passe por Action → Service (nunca `supabase.from()` na UI).
+- Não validável no ambiente do agente (auth wall) — **sinalize claramente o que ficou sem
+  validação de browser** para o mantenedor testar manualmente.
+
+### Fase F13 — currentUser mock → dado real de sessão
+**Escopo:** substituir o `currentUser` mock "João Silva" por dado real da sessão em
+`app/(dashboard)/configuracoes/configuracoes-client.tsx` (linha ~38) e `app/unauthorized/page.tsx`.
+
+**Cuidados:**
+- Toca **SESSÃO/USUÁRIO.** **Acione `revisor-camadas`** (usuário sempre do contexto de auth;
+  nunca hardcode UUID — regra do CLAUDE.md).
+- Se o `currentUser` real puxar qualquer dado de perfil que inclua **informação sensível**
+  (remuneração/permissão), **acione TAMBÉM `guardiao-rls-lgpd`** e pare para confirmação.
+- Não validável no ambiente do agente (auth wall) — depende de teste manual do mantenedor.
+
+### Fase final — Extensão do ConfirmDialog + dialogs guardados
+**Escopo:** estender `components/shared/confirm-dialog.tsx` com:
+- `confirmDisabled?: boolean` (desabilitar o botão de confirmar por condição externa),
+- `description` aceitando `ReactNode` (hoje é `string`),
+- estado de `loading` no botão de confirmar (sem auto-fechar enquanto a ação async roda).
+
+Então migrar os **3 dialogs de exclusão guardados** das config pages para o ConfirmDialog:
+`configuracoes/usuarios` ("Excluir Usuário?"), `configuracoes/cargos` ("Excluir Cargo?" — bloqueia
+quando há pessoas no cargo, botão disabled, descrição com markup), `configuracoes/niveis`
+("Excluir Nível?" — com `isSubmitting`/loading). Hoje são `Dialog` cru porque o ConfirmDialog
+atual não modela bloqueio condicional/disabled/loading.
+
+**Cuidado:** é **design de API de componente**, não migração mecânica. Fazer **por último**,
+quando nada mais vai mexer em confirmação, para não retrabalhar.
+
+---
+
+## 4. Débitos registrados (não são fases; anotar/decidir)
+
+- **Gradiente `#0F1419` do login** (`app/login/page.tsx`): hex cru numa superfície escura
+  (não é data-viz). **Atenção:** já existe `--color-surface-dark` no `globals.css`, mas ele
+  vale **`#ffffff`** (branco) — provável erro de nome herdado do scaffold; NÃO serve para o
+  gradiente escuro. Decidir entre (a) corrigir o `--color-surface-dark` existente para a cor
+  escura real e usá-lo, ou (b) criar um token novo com nome inequívoco (ex.: `--color-night`)
+  e deixar/renomear o `surface-dark` branco. Não criar um `--surface-dark` "do zero" sem antes
+  resolver o que já existe — colidiria. (Deferido desde a F3.)
+- **Tokens-fantasma** (classes que NÃO resolvem para nenhum token e renderizam sem efeito):
+  fazer um sweep. Confirmados como ainda ausentes do `@theme`: `text-primary-foreground`
+  (usado por primitivos shadcn), `bg-destructive`/`text-destructive-foreground` (já corrigido
+  no `Button` na F7, mas pode haver outros usos), `ring-destructive`. Cada um: definir o token
+  no `globals.css` ou trocar pela classe correta — **não** silenciar com hex.
+  *(Nota: `bg-input`/`border-input`/`border-border` NÃO são fantasmas — `--color-input` e
+  `--color-border` estão definidos no `@theme inline` (#d1d5db). Não incluir no sweep.)*
+- **`bg-gray-*` / `border-gray-*` / `hover:bg-gray-*`** ainda espalhados: a F3 tokenizou
+  `text-gray-*` e hex de className, mas não os fundos/bordas cinza da paleta Tailwind padrão.
+  Avaliar migração para `bg-muted`/`border-border` (muda o tom; conferir visual).
+- **Cores de categoria ad hoc** em `cargos` (`trackColors`: `bg-blue-100`, `bg-green-100`…)
+  e dots `bg-green-500`/`bg-gray-400` (ex.: radios de status em `times/novo`): decorativas/
+  categóricas, não status semântico — decidir se padroniza ou deixa.
+- **Foco — verificação leve (não débito de correção):** o `globals.css` tem a utility
+  `.orgzilla-focus` com `ring-offset-2`, e a F11 adicionou `focus-visible:ring-offset-2` ao
+  `Button`. O `--color-ring` segue `#ff7a00` (laranja), mas o `ring-offset` resolve o contraste
+  (anel branco separa). Conferir apenas que não há **dois mecanismos de foco concorrentes**
+  (utility + classe do Button) gerando offset duplicado em algum lugar.
+- **Gate de CI** fixando **Node 24** (engine do projeto) rodando `tsc`+`lint`+`test`+`build`
+  com `pnpm --frozen-lockfile`. (Já existe `.github/workflows/ci.yml` — confirmar que usa Node 24.)
+- **Checkboxes decorativos / botão morto de cargos:** RESOLVIDOS (F11 removeu checkboxes de
+  seleção de linha; F6 follow-up removeu "Criar Primeiro Cargo"). Só conferir que não voltaram.
+
+---
+
+## 5. Restrições globais (valem para TODAS as fases)
+
+- **Sem `any`, sem `eslint-disable`, sem afrouxar config** (tsconfig/eslint), sem deps/actions
+  com `"latest"`. Se a tipagem honesta não der, **pare e leve ao mantenedor** — não silencie.
+- **Cor só via token** — nunca hex cru novo no JSX. Estrutura de tokens no `app/globals.css`
+  (um único arquivo — não criar segundo):
+  - **Marca e semânticos para uso via CLASSE** vivem no `@theme inline`: `--color-primary`,
+    `--color-primary-strong`, `--color-secondary`, `--color-accent`, `--color-success`,
+    `--color-warning`, `--color-danger`, `--color-info` (+ `-light`/`-hover`), etc. Geram
+    utilitários `bg-*`/`text-*`/`border-*`.
+  - **Data-viz para uso via PROP** vive em `:root` (FORA do `@theme inline`, senão o Tailwind
+    não emite a var): `--chart-1..8`, `--chart-grid`, `--chart-axis`, e o ESPELHO semântico
+    `--success`/`--warning`/`--danger`/`--info` (mesma cor dos `--color-*`, nome sem `--color-`,
+    porque Recharts/xyflow consomem via `fill`/`stroke` onde `var()` é a única opção).
+- **Nomenclatura:** arquivos de componente em **kebab-case SEM exceção** (inclui
+  `components/shared/`; `components/ui/` segue o lowercase do shadcn, compatível); identificador
+  do componente em **PascalCase**.
+- **Gate por fase:** `npx tsc --noEmit` → 0 · `pnpm lint` → 0 · `pnpm build` → passa ·
+  `pnpm test` → passa (106 testes) · **1 commit** (ou sub-commits revisáveis) · **PAUSA + resumo**
+  aguardando ok.
+- **Node 24** é o engine do projeto. O ambiente pode derivar para uma versão errada (já
+  aconteceu o shell cair para Node v10, quebrando `tsc`/`pnpm`). Se acontecer, valide com:
+  `export PATH="$HOME/.nvm/versions/node/v24.16.0/bin:$PATH"` antes de rodar os comandos.
+- **Padrão de tipagem do Supabase query builder** (do CLAUDE.md): usar a interface
+  `SelectQueryBuilder` (de `lib/repositories/base.repository.ts`) e forçar a conversão na
+  criação da query com `as unknown as SelectQueryBuilder` — filtros condicionais reatribuem
+  sem perder tipos. **Nunca** `let query: any` nem `eslint-disable`.
+- **Segurança/LGPD:** salário vive em `pessoa_remuneracao` (1:1, RLS só gestor); admin e
+  visualizador NÃO veem salário. Qualquer toque em remuneração/`pessoa_remuneracao`/
+  `PermissaoService`/RLS/exposição de salário → **pare e confirme com o mantenedor**; acione
+  `guardiao-rls-lgpd`. Proteção em profundidade: RLS no banco **e** filtragem no app, nunca só uma.
+- **Ao final do conjunto de fases:** acionar `sincronizador-docs` e **atualizar o `STATUS.md`**
+  (aderência ao DESIGN_SYSTEM.md, fases concluídas, débitos pendentes com motivo).
+
+---
+
+## 6. Decisões já tomadas nesta migração (não reabrir sem motivo)
+
+- **desligado → `danger`** (era cinza) no StatusBadge.
+- **Header próprio** (não PageHeader) é aceito em telas de identidade/canvas: detalhe de
+  pessoa/time/projeto, perfil, organograma, dashboard (banner de boas-vindas) — cada uma com
+  **exatamente um `<h1>`** + Breadcrumb compartilhado.
+- **Texto escuro (`text-secondary`/foreground) sobre tinta semântica** em badges e botões de
+  confirmação — porque os tokens semânticos são mid-shade e reprovariam AA com texto branco.
+- **Chart tokens** = paleta categórica `--chart-1..8` (decisão de design já materializada).
+- **Tokens semânticos existem em DOIS lugares, por design** (não é erro, não unificar):
+  `--color-success`/`--color-warning`/`--color-danger`/`--color-info` no `@theme inline`
+  (para classes `bg-*`/`text-*`) **e** `--success`/`--warning`/`--danger`/`--info` em `:root`
+  (para consumo via prop `fill`/`stroke` em gráficos). Mesma cor, nomes distintos, intencional.
