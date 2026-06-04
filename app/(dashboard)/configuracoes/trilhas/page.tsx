@@ -25,8 +25,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, Search, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, StatusBadge, EmptyState } from '@/components/shared'
+import { Plus, Grid3x3, List, TrendingUp, Briefcase, Users, MoreVertical, BarChart3, X, Trash2, Copy, Eye, Edit, XCircle, ArrowRight, Loader2 } from 'lucide-react'
+import { TableSkeleton, PageHeader, StatusBadge, EmptyState, SearchInput } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -380,15 +380,13 @@ export default function CareerTracksPage() {
           badge={{ label: "Admin", variant: "admin" }}
           actions={
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar trilhas..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-64"
-                />
-              </div>
+              <SearchInput
+                placeholder="Buscar trilhas..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery('')}
+                className="w-64"
+              />
               <div className="flex gap-1 rounded-lg border p-1">
                 <Button
                   variant={view === 'grid' ? 'secondary' : 'ghost'}

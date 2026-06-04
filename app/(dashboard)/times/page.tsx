@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { DashboardShell } from '@/components/dashboard-shell'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -19,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, Search, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter } from 'lucide-react'
+import { Plus, LayoutGrid, Network, TableIcon, Users, Briefcase, FolderKanban, MoreVertical, ChevronDown, ChevronRight, Edit, Eye, Trash2, Filter } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
-import { PageHeader, EmptyState, ConfirmDialog } from '@/components/shared'
+import { PageHeader, EmptyState, ConfirmDialog, SearchInput } from '@/components/shared'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Table,
@@ -210,16 +209,13 @@ export default function TimesPage() {
           actions={
             <div className="flex flex-wrap items-center gap-2">
             {/* Search */}
-            <div className="relative flex-1 sm:flex-initial">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar times..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full sm:w-[240px]"
-              />
-            </div>
+            <SearchInput
+              placeholder="Buscar times..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery('')}
+              className="flex-1 sm:flex-initial sm:w-[240px]"
+            />
 
             {/* View Toggle */}
             <div className="flex gap-1 bg-muted p-1 rounded-lg">

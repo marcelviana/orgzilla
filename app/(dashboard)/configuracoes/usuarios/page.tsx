@@ -39,9 +39,9 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
+import { Users, ShieldAlert, Network, Plus, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
-import { PageHeader } from '@/components/shared'
+import { PageHeader, SearchInput } from '@/components/shared'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import Link from "next/link"
 import {
@@ -366,16 +366,13 @@ export default function UsuariosPage() {
           badge={{ label: "Admin", variant: "admin" }}
           actions={
             <div className="flex items-center gap-3">
-              <div className="relative hidden sm:block">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar usuários..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 pl-10"
-                />
-              </div>
+              <SearchInput
+                placeholder="Buscar usuários..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery('')}
+                className="hidden sm:block w-64"
+              />
               <Button onClick={() => setCreateModalOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Criar Usuário

@@ -4,9 +4,8 @@ import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, Download, Plus, ChevronDown, ChevronUp, MoreVertical, X } from 'lucide-react'
+import { Download, Plus, ChevronDown, ChevronUp, MoreVertical, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -31,7 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { StatusBadge } from '@/components/shared/status-badge'
-import { PageHeader, EmptyState } from '@/components/shared'
+import { PageHeader, EmptyState, SearchInput } from '@/components/shared'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError } from '@/lib/errors/error-handler'
 import type { PessoasResult } from '@/app/actions/pessoas.actions'
@@ -195,18 +194,15 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
           breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas" }]}
           actions={
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1 sm:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') applyFilters()
-                  }}
-                  className="pl-10"
-                />
-              </div>
+              <SearchInput
+                placeholder="Buscar por nome, email..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') applyFilters()
+                }}
+                className="flex-1 sm:w-80"
+              />
               <Button variant="outline" className="gap-2" onClick={() => { void handleExport() }}>
                 <Download className="h-4 w-4" />
                 Exportar

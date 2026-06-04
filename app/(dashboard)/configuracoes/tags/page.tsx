@@ -29,8 +29,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Tag, TrendingUp, Users, Plus, Search, ArrowUpDown, Pencil, X, Upload, Download, Trash2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, EmptyState } from '@/components/shared'
+import { Tag, TrendingUp, Users, Plus, ArrowUpDown, Pencil, X, Upload, Download, Trash2 } from 'lucide-react'
+import { TableSkeleton, PageHeader, EmptyState, SearchInput } from '@/components/shared'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
 import {
@@ -353,15 +353,13 @@ export default function TagsPage() {
           badge={{ label: "Admin", variant: "admin" }}
           actions={
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar tags..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-[250px]"
-                />
-              </div>
+              <SearchInput
+                placeholder="Buscar tags..."
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery('')}
+                className="w-[250px]"
+              />
 
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[180px]">
