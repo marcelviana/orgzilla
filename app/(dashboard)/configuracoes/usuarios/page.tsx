@@ -592,7 +592,7 @@ export default function UsuariosPage() {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="Ações do usuário">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -731,6 +731,7 @@ export default function UsuariosPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Limpar seleção"
                   className="text-white hover:bg-secondary/80"
                   onClick={() => setSelectedUsers([])}
                 >
@@ -900,6 +901,7 @@ export default function UsuariosPage() {
                       type="button"
                       variant="ghost"
                       size="icon"
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                       className="absolute right-0 top-0 h-full"
                       onClick={() => setShowPassword(!showPassword)}
                     >

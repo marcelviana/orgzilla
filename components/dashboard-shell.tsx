@@ -220,6 +220,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Sair"
             className="h-8 w-8 text-white/70 hover:bg-secondary/80 hover:text-white"
             onClick={(e) => {
               e.preventDefault()
@@ -256,7 +257,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
             {/* Mobile Menu Button */}
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden">
+                <Button variant="ghost" size="icon" aria-label="Abrir menu" className="lg:hidden">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>

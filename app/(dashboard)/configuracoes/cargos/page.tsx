@@ -396,6 +396,7 @@ export default function CargosPage() {
               <Button
                 variant="outline"
                 size="icon"
+                aria-label="Filtros"
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="h-4 w-4" />
@@ -405,6 +406,7 @@ export default function CargosPage() {
                 <Button
                   variant={view === 'table' ? 'secondary' : 'ghost'}
                   size="icon"
+                  aria-label="Visualização em tabela"
                   className={`h-8 w-8 ${view === 'table' ? 'text-white' : ''}`}
                   onClick={() => setView('table')}
                 >
@@ -413,6 +415,7 @@ export default function CargosPage() {
                 <Button
                   variant={view === 'grid' ? 'secondary' : 'ghost'}
                   size="icon"
+                  aria-label="Visualização em grade"
                   className={`h-8 w-8 ${view === 'grid' ? 'text-white' : ''}`}
                   onClick={() => setView('grid')}
                 >
@@ -636,7 +639,7 @@ export default function CargosPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" aria-label="Ações do cargo">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -696,7 +699,7 @@ export default function CargosPage() {
                     <h3 className="font-semibold">{position.nome}</h3>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <Button variant="ghost" size="icon" aria-label="Ações do cargo" className="h-8 w-8">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

@@ -161,6 +161,7 @@ export default function EditarProjeto() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Remover pessoa"
                         onClick={() => handleRemovePerson(pessoa.id)}
                       >
                         <X className="w-4 h-4" />

@@ -50,6 +50,7 @@ export function PageHeader({
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Voltar"
               onClick={() => window.history.back()}
             >
               <ArrowLeft className="h-5 w-5" />
