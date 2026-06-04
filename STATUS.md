@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 4 de junho de 2026 (F12 concluída: timeline profissional real via `getHistoricoProfissional` → `HistoricoService`; menus inertes de `pessoas/[id]` e `times/[id]` religados/removidos; débitos deferidos em §3.3 e §5 itens M/N/O)
+**Última atualização:** 4 de junho de 2026 (F13 concluída: `currentUser` mock "João Silva" removido de `configuracoes` e `unauthorized`; sessão real via `getUsuarioLogado()` em ambas; 2 débitos novos registrados em §3.3)
 
 ---
 
@@ -66,7 +66,8 @@ Checklist de retomada do ambiente:
 |---|---|
 | `busca` | ✅ Dados reais via `buscarEntidades` (`busca.actions.ts`): executa em paralelo `getPessoasComFiltros`, `getTimesParaFiltro`, `getProjetosParaFiltro`, `getCargosParaFiltro` |
 | `relatorios` | ✅ Dados reais via `relatorios.actions.ts`: distribuição por nível/status, top times, pessoas por cargo, vagas, projetos; tab Financeiro protegida por `PermissaoService` (gestor only, LGPD), agregados salariais com supressão n<3 |
-| `configuracoes/page.tsx` (landing) | ⚠️ Dados reais via `getNiveisComEstatisticas`, `getTrilhasComEstatisticas`, `getTagsComEstatisticas`; histórico de login substituído por mensagem estática "em breve" (não implementado) |
+| `configuracoes/page.tsx` (landing) | ⚠️ Dados reais via `getNiveisComEstatisticas`, `getTrilhasComEstatisticas`, `getTagsComEstatisticas`; histórico de login substituído por mensagem estática "em breve" (não implementado). `currentUser` mock removido: `page.tsx` busca `getUsuarioLogado()` e passa `usuario: UsuarioLogado` por prop ao client; gating `isAdmin`/`isGestor` reflete `tipo_perfil` real |
+| `unauthorized/page.tsx` | ✅ Server component com `getUsuarioLogado()` + null-handling; nome e label de perfil passados a `unauthorized-client.tsx` (split necessário: rota fora do grupo `(dashboard)`, sem `UserProvider`). `export const dynamic = 'force-dynamic'` aplicado. Mock "João Silva" removido |
 | `configuracoes/tags` | ✅ Pessoas reais via `getPessoasComTag`; import/export pendentes (disabled) |
 | `perfil` (troca de senha) | ✅ Real: chama `atualizarSenhaAction` → `AuthService.atualizarSenha` |
 | `configuracoes/cargos` | ✅ Real: cargos via `cargos.actions`, pessoas via `getPessoasNoCargo` com filtro de hierarquia |
@@ -112,8 +113,10 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 - ✅ `dashboard.actions.ts`: blocos `catch` migrados de `console.error` para `handleError` (convenção de `lib/errors/error-handler.ts`).
 - ✅ `times.actions.ts`: função `buildTimeHierarchy` eliminada; `getTimesHierarquia` usa `timeService.buscarHierarquiaComEstatisticas` (proteção a ciclos via Set de visitados). Tipos `TimeComEstatisticas` e `TimeHierarquico` definidos em `lib/services/time.service.ts`, re-exportados via `lib/services/index.ts` e `times.actions.ts`.
 
-**Débito aberto (registrado na F12):**
+**Débitos abertos:**
 - 🟥 `addPessoaAoProjeto` (`app/actions/projetos.actions.ts`) **fura a camada**: faz `supabase.from('pessoa_projeto_produto')` (select de verificação + insert) direto na Action, em vez de passar por Repository/Service de alocação. Débito **pré-existente**, não introduzido pela F12 (apenas constatado ao remover o menu que o acionaria — ver §5, item M). Migrar para o padrão (Repository de `pessoa_projeto_produto` → Service) numa fase futura, idealmente junto com a UI de alocação.
+- 🟡 `<Lock>` dead code em `app/(dashboard)/configuracoes/configuracoes-client.tsx:878`: o ícone `<Lock>` é renderizado sob `item.adminOnly && !isAdmin`, mas a linha 865 (`if (item.adminOnly && !isAdmin) return null`) já descarta o item antes de chegar nesse ponto — o `<Lock>` é código inalcançável. Débito de limpeza; sem impacto funcional (registrado na F13).
+- 🟡 **Assimetria de permissão em tags (decisão de produto pendente):** `app/actions/tags.actions.ts` (`checkPermission`) autoriza **admin OU gestor** no servidor, mas a UI de Configurações (`configuracoes-client.tsx:106`) gatea a seção "Tags" sob `item.adminOnly: true`, exibindo-a **apenas para admin**. Não é vulnerabilidade (o servidor impõe o perfil; visualizador é barrado nas duas camadas). Decisão de produto pendente: gestor PODE gerenciar tags (apertar a UI para incluir gestor) ou NÃO (apertar o servidor para `requireAdmin`)? Manter inconsistência indefinidamente não é opção — decidir e unificar (registrado na F13).
 
 **Consequências (resolvidas):**
 - ✅ Recursão de hierarquia não está mais duplicada nem desprotegida: era ilimitada (loop infinito em ciclo de `time_pai_id`); agora há uma única implementação com `Set` de visitados.

@@ -123,16 +123,24 @@ teste manual no mobile pelo mantenedor.
 - §5 item N — Organograma focado por time (hoje navega para o geral).
 - §5 item O — Adicionar pessoa ao time a partir de `times/[id]`.
 
-### Fase F13 — currentUser mock → dado real de sessão
-**Escopo:** substituir o `currentUser` mock "João Silva" por dado real da sessão em
-`app/(dashboard)/configuracoes/configuracoes-client.tsx` (linha ~38) e `app/unauthorized/page.tsx`.
+### Fase F13 — currentUser mock → dado real de sessão — ✅ CONCLUÍDA (4 jun 2026)
 
-**Cuidados:**
-- Toca **SESSÃO/USUÁRIO.** **Acione `revisor-camadas`** (usuário sempre do contexto de auth;
-  nunca hardcode UUID — regra do CLAUDE.md).
-- Se o `currentUser` real puxar qualquer dado de perfil que inclua **informação sensível**
-  (remuneração/permissão), **acione TAMBÉM `guardiao-rls-lgpd`** e pare para confirmação.
-- Não validável no ambiente do agente (auth wall) — depende de teste manual do mantenedor.
+**Sub-commit 1 (`989a2a0`) — Configurações:**
+`app/(dashboard)/configuracoes/page.tsx` passa a buscar `getUsuarioLogado()` e prop-drilla
+`usuario: UsuarioLogado` para `configuracoes-client.tsx`. Gating `isAdmin`/`isGestor` derivado
+de `usuario.tipo_perfil` real — corrige vazamento de UI que o mock admin-fixo mascarava.
+Campo Telefone removido do display (decisão: não estender o acessor central de sessão por
+campo cosmético). Não toca `pessoa_remuneracao` (LGPD ok).
+
+**Sub-commit 2 (staging → main) — Unauthorized:**
+`app/unauthorized/page.tsx` virou server component que lê `getUsuarioLogado()` com
+null-handling e passa nome + label de perfil a `app/unauthorized/unauthorized-client.tsx`
+(split server/client necessário: rota fora do grupo `(dashboard)`, sem `UserProvider`/
+`useUser()`). Mock "João Silva" removido. `export const dynamic = 'force-dynamic'` aplicado.
+
+**Débitos deferidos registrados em `STATUS.md` §3.3:**
+- `<Lock>` dead code em `configuracoes-client.tsx:878` (inalcançável após `return null` na L865).
+- Assimetria de permissão em tags: servidor aceita admin OU gestor; UI gatea só por admin — decisão de produto pendente.
 
 ### Fase final — Extensão do ConfirmDialog + dialogs guardados
 **Escopo:** estender `components/shared/confirm-dialog.tsx` com:

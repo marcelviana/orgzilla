@@ -1,6 +1,6 @@
 ---
 name: debitos-arquiteturais-pendentes
-description: Padrão de como registrar débitos 🟡 em §3.3 e marcar como ✅ quando resolvidos; histórico dos débitos do commit c6b4e97 e correções TS G2/G3 de 2026-06-01
+description: Padrão de como registrar débitos 🟡 em §3.3 e marcar como ✅ quando resolvidos; histórico dos débitos do commit c6b4e97, correções TS G2/G3 de 2026-06-01, e débitos F13 (2026-06-04)
 metadata:
   type: project
 ---
@@ -14,6 +14,10 @@ Débitos identificados pelo revisor-camadas no commit c6b4e97 e **resolvidos em 
 **Why:** o revisor-camadas detecta débitos mas não corrige código; o sincronizador-docs os registra em §3.3 com símbolo 🟡 e referência de arquivo:linha. Quando corrigidos, os itens 🟡 viram ✅ com breve descrição do que foi feito — nunca removidos silenciosamente.
 
 **How to apply:** débitos novos entram como 🟡 na subseção "Débitos pendentes" de §3.3. Quando resolvidos, reescrever o item como ✅ descrevendo a solução. Não apagar — manter o histórico visível na seção.
+
+**Débitos F13 adicionados em 2026-06-04:**
+- `<Lock>` dead code (`configuracoes-client.tsx:878`): ícone sob condição já filtrada na linha anterior — limpeza simples, sem decisão de produto.
+- Assimetria servidor/UI em tags: `tags.actions.ts` aceita admin OU gestor; UI só exibe para admin. Não é vulnerabilidade, mas é inconsistência que requer decisão de produto antes de corrigir. Padrão novo: **assimetria servidor/UI de permissão** é débito 🟡 (não 🟥), porque o servidor sempre prevalece — a UI é mais restritiva, nunca menos.
 
 Novos tipos exportados pela resolução de débitos: `TimeComEstatisticas` e `TimeHierarquico` em `lib/services/time.service.ts`, re-exportados via `lib/services/index.ts`.
 
