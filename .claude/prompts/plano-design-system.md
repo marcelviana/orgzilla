@@ -55,6 +55,7 @@ Todas com `tsc --noEmit` 0, `pnpm lint` 0, `pnpm build` ok, `pnpm test` 106/106 
 | **F9 — Acessibilidade** | `aria-label` descritivo (por ação/entidade) em ~26 botões só-ícone; senha com label dinâmico. Nenhum estilo de foco alterado. | `f49b6d6` |
 | **F10 — Toasts** | `sonner` cru → `handleError` (nos catch) + `toast-config` (mensagens próprias) em `dashboard-shell` e `pessoas-table`. | `476fb64` |
 | **F11 — Polish** | Métricas do dashboard diferenciadas por token (primary/accent/warning/success); `Button` ganha `focus-visible:ring-offset-2`; âncora de contexto mobile no topbar (`<span>`, não `<h1>`); PageHeader responsivo; grids de conteúdo com breakpoints; `uppercase` removido (ALL CAPS); checkboxes decorativos de cargos removidos. | `8c73e9c` |
+| **Fase B — Title Case → sentence case** | Passe completo de copy de UI para sentence case (§3.2): abas, títulos de seção/card/dialog, botões, labels, opções de Select, TableHead, StatsCard/PageHeader, nav. Sibling tabs corrigidas juntas (pessoas/[id], nova, editar). Toasts de exportação em relatórios incluídos. Dados/enums/nomes próprios preservados ("Dashboard", "Orgzilla", "Google", "Português (Brasil)", "Laranja Kaiju", "Engenharia de Software", presets de cor, mocks). Chave de filtro `'Com Pessoas'` trocada label+comparação. Ambíguas deixadas: assunto mailto (unauthorized), "Configurações > Usuários". | `2967a55` |
 | **Fase A — SearchInput + StatsCard** | `SearchInput` em 7 telas (pessoas, times, projetos, configuracoes/{cargos,tags,trilhas,usuarios}); estendido com `onKeyDown` (preserva Enter→aplicar de pessoas), `className` (larguras/`hidden sm:block`) e `onClear` (botão X nas 6 client-side). `StatsCard` em dashboard, projetos e configuracoes/{cargos,niveis,tags,usuarios}; estendido com `iconWrapperClassName` (diferenciação por token, preserva F11), `href` (Link real, §7) e valor em `font-heading` (§3.2). Limpa cores não-token (orange-100/cyan-100/blue-*/green-*/error→tokens) e remove subtext fabricado "70% do time" (tags). **FilterPanel ADIADO** (ver §4); **trilhas stats** ficam inline (valores hardcoded — mock). | `f00172a`, `c9acb60` |
 
 > Outros commits no histórico (ex.: `604e34a` memória de agente, `09066d6` gitignore,
@@ -78,20 +79,16 @@ contador sempre-ativo. Registrado como débito em §4. `trilhas` manteve as stat
 seus números (`6/42/127`) são hardcoded (mock) — componentizar daria aparência oficial a dado
 falso; ver §4.
 
-### Fase B — Passe de copy (Title Case → sentence case)
-**Escopo:** corrigir Title Case de UI para sentence case em todo o projeto (§3.2). O ALL CAPS
-já foi feito na F11. Atinge: rótulos de abas (`TabsTrigger`), títulos de seção (`<h3>`),
-rótulos de botão, títulos de modal/dialog. Ex.: "Informações Gerais" → "Informações gerais";
-"Ver Todos os Projetos" → "Ver todos os projetos"; "Excluir Cargo?" → "Excluir cargo?".
-
-**Cuidados:**
-- Tem que ser **COMPLETO, não parcial.** Corrigir numa tela e deixar a tela-irmã em Title Case
-  é **pior** que não corrigir (cria inconsistência). Ex.: as abas "Dados Pessoais"/"Dados
-  Profissionais" aparecem em `pessoas/[id]`, `pessoas/nova` e `pessoas/[id]/editar` — corrija
-  as três juntas.
-- **NÃO tocar maiúscula legítima de CONTEÚDO/dado:** nomes próprios, nomes de pessoa/time/cargo,
-  siglas ("RLS", "LGPD", "CSV", "OAuth"), topônimos ("São Paulo"). Só **rótulos de UI** mudam,
-  nunca dados renderizados.
+### Fase B — Passe de copy (Title Case → sentence case) — ✅ CONCLUÍDA (ver §2, `2967a55`)
+Passe completo aplicado por sweep sistemático (3 padrões: 2 maiúsculas adjacentes; conector
+minúsculo + Capitalizada; texto JSX em linha própria) antes de qualquer edição. Sibling tabs
+corrigidas juntas. Dado/enum/nome próprio preservado. Decisão de regra: **palavras de entidade
+PT** (pessoas, times, cargos, níveis, trilhas, tags) viram minúsculas em rótulos/prosa mesmo
+quando nomeiam uma seção (ex.: "Ir para Pessoas"→"Ir para pessoas"), porque são substantivos
+comuns; **"Dashboard"** permanece maiúsculo (nome de UI em inglês, raiz do breadcrumb).
+Ambíguas deixadas como estão: assunto de email `mailto` (`app/unauthorized/page.tsx`) e
+"Configurações > Usuários" (caminho de navegação nomeado, `configuracoes-client.tsx`).
+Nota: stats hardcoded de `trilhas` (mock, §4) tiveram só a copy ajustada, não os números.
 
 ### Fase C — Overflow das abas no mobile (pequena; pode virar só débito)
 **Escopo:** `TabsList` com `grid-cols-5` (ex.: `pessoas/[id]`, `pessoas/nova`,
