@@ -41,7 +41,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Users, ShieldAlert, Network, Plus, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
-import { PageHeader, SearchInput, StatsCard } from '@/components/shared'
+import { PageHeader, SearchInput, StatsCard, ConfirmDialog } from '@/components/shared'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import Link from "next/link"
 import {
@@ -256,20 +256,25 @@ export default function UsuariosPage() {
   const handleDeleteUser = async () => {
     if (!deleteConfirmed || !currentUser) return
 
+    // onConfirm do ConfirmDialog: loading/fechamento geridos pelo componente.
+    // Relança em falha (mantém o dialog aberto); sucesso resolve → fecha sozinho
+    // (o reset de deleteConfirmed acontece no onOpenChange ao fechar).
+    let result: Awaited<ReturnType<typeof softDeleteUsuario>>
     try {
-      const result = await softDeleteUsuario(currentUser.id)
-
-      if (result.success) {
-        toast.success('Usuário desativado com sucesso')
-        setDeleteModalOpen(false)
-        setDeleteConfirmed(false)
-        await loadData()
-      } else {
-        toast.error(handleError(new Error(result.error ?? 'Erro ao desativar usuário'), 'database'))
-      }
+      result = await softDeleteUsuario(currentUser.id)
     } catch (error) {
       toast.error(handleError(error, 'database'))
+      throw error
     }
+
+    if (!result.success) {
+      const msg = result.error ?? 'Erro ao desativar usuário'
+      toast.error(handleError(new Error(msg), 'database'))
+      throw new Error(msg)
+    }
+
+    toast.success('Usuário desativado com sucesso')
+    await loadData()
   }
 
   const handleLinkPessoa = async () => {
@@ -958,66 +963,46 @@ export default function UsuariosPage() {
         </Dialog>
 
         {/* Delete User Modal */}
-        <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-          <DialogContent 
-            className="sm:max-w-md"
-            onInteractOutside={() => {
-              setDeleteModalOpen(false)
-              setDeleteConfirmed(false)
-            }}
-            onEscapeKeyDown={() => {
-              setDeleteModalOpen(false)
-              setDeleteConfirmed(false)
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle>Excluir usuário?</DialogTitle>
-              <DialogDescription>
-                Esta ação não pode ser desfeita. O usuário perderá acesso ao
-                sistema.
-                {currentUser?.pessoa && (
-                  <span className="mt-2 block">
-                    A pessoa {currentUser.pessoa.nome} permanecerá no
-                    sistema, apenas o acesso será removido.
-                  </span>
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex items-start gap-2 py-4">
-              <Checkbox
-                id="confirm"
-                checked={deleteConfirmed}
-                onCheckedChange={(checked) =>
-                  setDeleteConfirmed(checked as boolean)
-                }
-              />
-              <label
-                htmlFor="confirm"
-                className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Entendo as consequências
-              </label>
+        <ConfirmDialog
+          open={deleteModalOpen}
+          onOpenChange={(open) => {
+            setDeleteModalOpen(open)
+            if (!open) setDeleteConfirmed(false)
+          }}
+          title="Excluir usuário?"
+          variant="danger"
+          confirmText="Excluir"
+          confirmDisabled={!deleteConfirmed}
+          onConfirm={handleDeleteUser}
+          description={
+            <div>
+              Esta ação não pode ser desfeita. O usuário perderá acesso ao
+              sistema.
+              {currentUser?.pessoa && (
+                <span className="mt-2 block">
+                  A pessoa {currentUser.pessoa.nome} permanecerá no
+                  sistema, apenas o acesso será removido.
+                </span>
+              )}
             </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setDeleteModalOpen(false)
-                  setDeleteConfirmed(false)
-                }}
-              >
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                disabled={!deleteConfirmed}
-                onClick={() => { void handleDeleteUser() }}
-              >
-                Excluir
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          }
+        >
+          <div className="flex items-start gap-2 py-4">
+            <Checkbox
+              id="confirm"
+              checked={deleteConfirmed}
+              onCheckedChange={(checked) =>
+                setDeleteConfirmed(checked as boolean)
+              }
+            />
+            <label
+              htmlFor="confirm"
+              className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Entendo as consequências
+            </label>
+          </div>
+        </ConfirmDialog>
 
         {/* Link Person Modal */}
         <Dialog open={linkModalOpen} onOpenChange={setLinkModalOpen}>
