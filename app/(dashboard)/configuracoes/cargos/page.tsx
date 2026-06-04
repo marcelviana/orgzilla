@@ -40,7 +40,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Briefcase, TrendingUp, BarChart3, Plus, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, EmptyState, SearchInput, StatsCard } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState, SearchInput, StatsCard, ConfirmDialog } from '@/components/shared'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -104,9 +104,6 @@ export default function CargosPage() {
     status: 'todos',
     sortBy: 'nome',
   })
-
-  // Mutation state
-  const [, setIsSubmitting] = useState(false)
 
   // Load data and check permissions on mount
   useEffect(() => {
@@ -204,8 +201,6 @@ export default function CargosPage() {
     }
 
     try {
-      setIsSubmitting(true)
-
       const result = await createCargo({
         nome: formData.nome,
         trilha_id: formData.trilha_id,
@@ -225,8 +220,6 @@ export default function CargosPage() {
       console.error('[Cargos] Erro ao criar:', error)
       const appError = handleError(error, 'database')
       toast.error(appError)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -246,8 +239,6 @@ export default function CargosPage() {
     }
 
     try {
-      setIsSubmitting(true)
-
       const result = await updateCargo(selectedPosition.id, {
         nome: formData.nome,
         trilha_id: formData.trilha_id || undefined,
@@ -268,8 +259,6 @@ export default function CargosPage() {
       console.error('[Cargos] Erro ao atualizar:', error)
       const appError = handleError(error, 'database')
       toast.error(appError)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -281,26 +270,25 @@ export default function CargosPage() {
       return
     }
 
+    // onConfirm do ConfirmDialog: loading/fechamento geridos pelo componente.
+    // Relança em falha (mantém o dialog aberto); sucesso resolve → fecha sozinho.
+    let result: Awaited<ReturnType<typeof softDeleteCargo>>
     try {
-      setIsSubmitting(true)
-
-      const result = await softDeleteCargo(selectedPosition.id)
-
-      if (result.success) {
-        toast.successDino('Cargo desativado com sucesso!')
-        setDeleteModalOpen(false)
-        setSelectedPosition(null)
-        void loadCargos() // Recarregar lista
-      } else {
-        toast.error(result.error || 'Erro ao desativar cargo')
-      }
+      result = await softDeleteCargo(selectedPosition.id)
     } catch (error) {
       console.error('[Cargos] Erro ao desativar:', error)
-      const appError = handleError(error, 'database')
-      toast.error(appError)
-    } finally {
-      setIsSubmitting(false)
+      toast.error(handleError(error, 'database'))
+      throw error
     }
+
+    if (!result.success) {
+      const msg = result.error || 'Erro ao desativar cargo'
+      toast.error(msg)
+      throw new Error(msg)
+    }
+
+    toast.successDino('Cargo desativado com sucesso!')
+    void loadCargos() // Recarregar lista
   }
 
   const handleDuplicatePosition = (position: CargoComEstatisticas) => {
@@ -641,7 +629,7 @@ export default function CargosPage() {
                               setSelectedPosition(position)
                               setDeleteModalOpen(true)
                             }}
-                            className="text-destructive"
+                            className="text-danger"
                             disabled={position.pessoas > 0}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -701,7 +689,7 @@ export default function CargosPage() {
                             setSelectedPosition(position)
                             setDeleteModalOpen(true)
                           }}
-                          className="text-destructive"
+                          className="text-danger"
                           disabled={position.pessoas > 0}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -866,40 +854,28 @@ export default function CargosPage() {
         </Dialog>
 
         {/* Delete Confirmation Modal */}
-        <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-          <DialogContent 
-            className="sm:max-w-md"
-            onInteractOutside={() => setDeleteModalOpen(false)}
-            onEscapeKeyDown={() => setDeleteModalOpen(false)}
-          >
-            <DialogHeader>
-              <DialogTitle>Excluir cargo?</DialogTitle>
-              <DialogDescription>
-                {selectedPosition && (selectedPosition.pessoas ?? 0) > 0 ? (
-                  <span className="text-destructive">
-                    Não é possível excluir. {selectedPosition.pessoas}{' '}
-                    {selectedPosition.pessoas === 1 ? 'pessoa possui' : 'pessoas possuem'} este cargo.
-                    Mova-as primeiro.
-                  </span>
-                ) : (
-                  'Esta ação não pode ser desfeita.'
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => { void handleDeletePosition() }}
-                disabled={selectedPosition != null && (selectedPosition.pessoas ?? 0) > 0}
-              >
-                Excluir
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <ConfirmDialog
+          open={deleteModalOpen}
+          onOpenChange={setDeleteModalOpen}
+          title="Excluir cargo?"
+          variant="danger"
+          confirmText="Excluir"
+          confirmDisabled={selectedPosition != null && (selectedPosition.pessoas ?? 0) > 0}
+          onConfirm={handleDeletePosition}
+          description={
+            selectedPosition && (selectedPosition.pessoas ?? 0) > 0 ? (
+              <div>
+                <span className="text-danger">
+                  Não é possível excluir. {selectedPosition.pessoas}{' '}
+                  {selectedPosition.pessoas === 1 ? 'pessoa possui' : 'pessoas possuem'} este cargo.
+                  Mova-as primeiro.
+                </span>
+              </div>
+            ) : (
+              'Esta ação não pode ser desfeita.'
+            )
+          }
+        />
 
         {/* View People Modal */}
         <Dialog open={viewPeopleModalOpen} onOpenChange={(open) => { setViewPeopleModalOpen(open); if (!open) setPessoasDoCargo([]) }}>
