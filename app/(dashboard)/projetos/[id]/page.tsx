@@ -7,6 +7,7 @@ import { DashboardShell } from '@/components/dashboard-shell'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import {
   Dialog,
@@ -397,17 +398,15 @@ export default function ProjetoDetailPage() {
                       key={pessoa.id}
                       className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedPeopleIds.includes(pessoa.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
+                        onCheckedChange={(checked) => {
+                          if (checked) {
                             setSelectedPeopleIds([...selectedPeopleIds, pessoa.id])
                           } else {
                             setSelectedPeopleIds(selectedPeopleIds.filter((id) => id !== pessoa.id))
                           }
                         }}
-                        className="w-4 h-4"
                       />
                       <Avatar className="w-10 h-10">
                         <AvatarFallback>{pessoa.nome[0]}</AvatarFallback>

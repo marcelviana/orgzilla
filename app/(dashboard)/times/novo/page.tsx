@@ -14,6 +14,7 @@ import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Info, Plus, X, Users, Loader2 } from 'lucide-react'
 import { DetailsSkeleton, PageHeader, ConfirmDialog, EmptyState } from '@/components/shared'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { createTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -342,36 +343,26 @@ export default function NovoTimePage() {
             
             <div className="space-y-4">
               <Label>Status</Label>
-              <div className="flex gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    value="ativo"
-                    checked={formData.status === 'ativo'}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    className="w-4 h-4 text-primary"
-                  />
+              <RadioGroup
+                value={formData.status}
+                onValueChange={(v) => handleInputChange('status', v)}
+                className="flex gap-6"
+              >
+                <label htmlFor="status-ativo" className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="ativo" id="status-ativo" />
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500"></span>
                     Ativo
                   </span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    value="inativo"
-                    checked={formData.status === 'inativo'}
-                    onChange={(e) => handleInputChange('status', e.target.value)}
-                    className="w-4 h-4"
-                  />
+                <label htmlFor="status-inativo" className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="inativo" id="status-inativo" />
                   <span className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-gray-400"></span>
                     Inativo
                   </span>
                 </label>
-              </div>
+              </RadioGroup>
               <p className="text-xs text-muted-foreground">Times inativos não aparecem em seleções e relatórios</p>
             </div>
           </div>
