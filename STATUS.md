@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 4 de junho de 2026 (débito §3.7: overflow das abas no mobile, registrado na Fase C do design system)
+**Última atualização:** 4 de junho de 2026 (F12 sub-commit 1: aba "Histórico profissional" de `pessoas/[id]` migrada de mock `TIMELINE_DATA` para dados reais via `getHistoricoProfissional`)
 
 ---
 
@@ -72,7 +72,7 @@ Checklist de retomada do ambiente:
 | `configuracoes/cargos` | ✅ Real: cargos via `cargos.actions`, pessoas via `getPessoasNoCargo` com filtro de hierarquia |
 | `configuracoes/trilhas` | ✅ Real: cargos via `CargoService.buscarCargosNaTrilha` (`getCargosNaTrilha`) e pessoas via `PessoaService.buscarPorTrilha` (`getPessoasNaTrilha`) com filtro de hierarquia para gestor |
 | `pessoas/nova` | ✅ Dados reais (projetos e tags via `getProjetosParaFiltro`/`getTagsParaFiltro`) |
-| `pessoas/[id]` (detalhe) | ✅ Dados reais (projetos, tags e anotações via `AnotacaoService`) |
+| `pessoas/[id]` (detalhe) | ✅ Dados reais (projetos, tags e anotações via `AnotacaoService`; aba "Histórico profissional" via `getHistoricoProfissional` → `HistoricoService` — cargos + times, sem reajuste/LGPD) |
 | `pessoas/[id]/editar` | ✅ Dados reais (projetos e tags via `getProjetosParaFiltro`/`getTagsParaFiltro`) |
 | `configuracoes/usuarios` | ✅ Usa actions reais; `mockUsers` removido |
 | Dashboard | ✅ Dados reais |
