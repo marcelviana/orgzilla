@@ -161,8 +161,8 @@ export default function NovoProjeto() {
     <DashboardShell>
       <div className="p-6">
         <PageHeader
-          title="Novo Projeto"
-          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Novo Projeto" }]}
+          title="Novo projeto"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos", href: "/projetos" }, { label: "Novo projeto" }]}
           description="Crie um novo projeto e aloque pessoas"
         />
 
@@ -182,10 +182,10 @@ export default function NovoProjeto() {
               <p className="text-xs text-muted-foreground text-right">{nome.length}/100 caracteres</p>
             </div>
 
-            {/* Pessoas Alocadas */}
+            {/* Pessoas alocadas */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Pessoas Alocadas</Label>
+                <Label>Pessoas alocadas</Label>
                 <Button
                   type="button"
                   variant="outline"
@@ -194,7 +194,7 @@ export default function NovoProjeto() {
                   disabled={availableToAdd.length === 0}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Pessoas
+                  Adicionar pessoas
                 </Button>
               </div>
 
@@ -256,7 +256,7 @@ export default function NovoProjeto() {
                     Salvando...
                   </>
                 ) : (
-                  'Criar Projeto'
+                  'Criar projeto'
                 )}
               </Button>
             </div>
@@ -267,7 +267,7 @@ export default function NovoProjeto() {
         <Dialog open={addPeopleModalOpen} onOpenChange={setAddPeopleModalOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Adicionar Pessoas ao Projeto</DialogTitle>
+              <DialogTitle>Adicionar pessoas ao projeto</DialogTitle>
               <DialogDescription>
                 Selecione as pessoas que deseja alocar neste projeto
               </DialogDescription>

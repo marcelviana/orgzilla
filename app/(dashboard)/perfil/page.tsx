@@ -212,7 +212,7 @@ export default function ProfilePage() {
   return (
     <DashboardShell>
       <div className="mx-auto w-full max-w-[600px] space-y-6">
-        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Meu Perfil" }]} />
+        <Breadcrumb items={[{ label: "Dashboard", href: "/" }, { label: "Meu perfil" }]} />
 
         {/* Header Section */}
         <div className="flex flex-col items-center gap-4 pb-6 text-center">
@@ -285,7 +285,7 @@ export default function ProfilePage() {
                     Salvando...
                   </>
                 ) : (
-                  "Salvar Alterações"
+                  "Salvar alterações"
                 )}
               </Button>
             </div>
@@ -331,7 +331,7 @@ export default function ProfilePage() {
         {user.pessoa ? (
           <Card>
             <CardHeader>
-              <CardTitle>Dados Organizacionais</CardTitle>
+              <CardTitle>Dados organizacionais</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3 rounded-lg bg-blue-50 p-4">
@@ -366,21 +366,21 @@ export default function ProfilePage() {
                 </div>
                 <Link href={`/pessoas/${user.pessoa.id}`}>
                   <Button variant="ghost" size="sm">
-                    Ver Perfil Completo
+                    Ver perfil completo
                     <ExternalLink className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
 
               <p className="text-sm text-muted-foreground">
-                Seus dados organizacionais (cargo, time, salário, projetos) são gerenciados por gestores e administradores na página de Pessoa.
+                Seus dados organizacionais (cargo, time, salário, projetos) são gerenciados por gestores e administradores na página de pessoa.
               </p>
             </CardContent>
           </Card>
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Dados Organizacionais</CardTitle>
+              <CardTitle>Dados organizacionais</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-4">
@@ -421,7 +421,7 @@ export default function ProfilePage() {
                 className="text-white"
               >
                 <Lock className="mr-2 h-4 w-4" />
-                Alterar Senha
+                Alterar senha
               </Button>
             </div>
           </CardContent>
@@ -431,7 +431,7 @@ export default function ProfilePage() {
         <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
           <DialogContent className="sm:max-w-md w-full p-0">
             <DialogHeader className="border-b p-6 pb-4">
-              <DialogTitle>Alterar Senha</DialogTitle>
+              <DialogTitle>Alterar senha</DialogTitle>
               <DialogDescription>
                 Digite sua senha atual e escolha uma nova senha segura
               </DialogDescription>
@@ -440,7 +440,7 @@ export default function ProfilePage() {
             <div className="space-y-5 p-6">
               {/* Current Password */}
               <div className="space-y-2">
-                <Label htmlFor="current-password">Senha Atual *</Label>
+                <Label htmlFor="current-password">Senha atual *</Label>
                 <div className="relative">
                   <Input
                     id="current-password"
@@ -462,7 +462,7 @@ export default function ProfilePage() {
 
               {/* New Password */}
               <div className="space-y-2">
-                <Label htmlFor="new-password">Nova Senha *</Label>
+                <Label htmlFor="new-password">Nova senha *</Label>
                 <div className="relative">
                   <Input
                     id="new-password"
@@ -522,7 +522,7 @@ export default function ProfilePage() {
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirmar Nova Senha *</Label>
+                <Label htmlFor="confirm-password">Confirmar nova senha *</Label>
                 <div className="relative">
                   <Input
                     id="confirm-password"
@@ -568,7 +568,7 @@ export default function ProfilePage() {
                     Alterando...
                   </>
                 ) : (
-                  "Alterar Senha"
+                  "Alterar senha"
                 )}
               </Button>
             </DialogFooter>

@@ -193,7 +193,7 @@ export default function CareerTracksPage() {
     if (activeFilters.length === 0) return matchesSearch
 
     const matchesFilters = activeFilters.every((filter) => {
-      if (filter === 'Com Pessoas') return track.pessoas > 0
+      if (filter === 'Com pessoas') return track.pessoas > 0
       if (filter === 'Vazias') return track.cargos === 0
       if (filter === 'Ativas') return track.ativo
       if (filter === 'Inativas') return !track.ativo
@@ -409,7 +409,7 @@ export default function CareerTracksPage() {
               </div>
               <Button onClick={() => setCreateModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Trilha
+                Criar trilha
               </Button>
             </div>
           }
@@ -421,7 +421,7 @@ export default function CareerTracksPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">
-                  Total de Trilhas
+                  Total de trilhas
                 </p>
                 <p className="text-3xl font-bold mt-2">6</p>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -467,7 +467,7 @@ export default function CareerTracksPage() {
 
         {/* Filters */}
         <div className="flex items-center gap-2">
-          {['Com Pessoas', 'Vazias', 'Ativas', 'Inativas'].map((filter) => (
+          {['Com pessoas', 'Vazias', 'Ativas', 'Inativas'].map((filter) => (
             <Button
               key={filter}
               variant={activeFilters.includes(filter) ? 'default' : 'outline'}
@@ -534,7 +534,7 @@ export default function CareerTracksPage() {
                         }}
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        Ver Detalhes
+                        Ver detalhes
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openEditModal(track)}>
                         <Edit className="h-4 w-4 mr-2" />
@@ -542,11 +542,11 @@ export default function CareerTracksPage() {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openPositionsModal(track)}>
                         <Briefcase className="h-4 w-4 mr-2" />
-                        Ver Cargos
+                        Ver cargos
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openPeopleModal(track)}>
                         <Users className="h-4 w-4 mr-2" />
-                        Ver Pessoas
+                        Ver pessoas
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => handleDuplicateTrack(track)}
@@ -643,7 +643,7 @@ export default function CareerTracksPage() {
                     size="sm"
                     onClick={() => openPositionsModal(track)}
                   >
-                    Ver Todos os Cargos
+                    Ver todos os cargos
                   </Button>
                   <div className="flex gap-2">
                     <Button
@@ -652,7 +652,7 @@ export default function CareerTracksPage() {
                       className="flex-1"
                       onClick={() => openEditModal(track)}
                     >
-                      Editar Trilha
+                      Editar trilha
                     </Button>
                     <Button
                       variant="ghost"
@@ -660,7 +660,7 @@ export default function CareerTracksPage() {
                       className="flex-1"
                       onClick={() => openPeopleModal(track)}
                     >
-                      Gerenciar Pessoas
+                      Gerenciar pessoas
                     </Button>
                   </div>
                 </div>
@@ -677,7 +677,7 @@ export default function CareerTracksPage() {
                 <thead className="border-b">
                   <tr>
                     <th className="text-left p-4 font-semibold">
-                      Nome da Trilha
+                      Nome da trilha
                     </th>
                     <th className="text-left p-4 font-semibold">Descrição</th>
                     <th className="text-left p-4 font-semibold">Cargos</th>
@@ -747,7 +747,7 @@ export default function CareerTracksPage() {
                               }}
                             >
                               <Eye className="h-4 w-4 mr-2" />
-                              Ver Detalhes
+                              Ver detalhes
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => openEditModal(track)}
@@ -811,7 +811,7 @@ export default function CareerTracksPage() {
             <div className="p-6 pb-4 border-b">
               <DialogHeader>
                 <DialogTitle>
-                  {editModalOpen ? 'Editar Trilha' : 'Nova Trilha de Carreira'}
+                  {editModalOpen ? 'Editar trilha' : 'Nova trilha de carreira'}
                 </DialogTitle>
                 <DialogDescription>
                   {editModalOpen
@@ -823,7 +823,7 @@ export default function CareerTracksPage() {
 
             <div className="p-6 space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="nome">Nome da Trilha *</Label>
+                <Label htmlFor="nome">Nome da trilha *</Label>
                 <Input
                   id="nome"
                   placeholder="Ex: Engenharia de Software"
@@ -901,7 +901,7 @@ export default function CareerTracksPage() {
                     style={{ backgroundColor: formData.cor }}
                   />
                   <span className="font-bold">
-                    {formData.nome || 'Nome da Trilha'}
+                    {formData.nome || 'Nome da trilha'}
                   </span>
                   <Badge
                     variant={formData.ativo ? 'default' : 'secondary'}
@@ -931,14 +931,14 @@ export default function CareerTracksPage() {
                   variant="outline"
                   onClick={() => { void handleCreateTrack() }}
                 >
-                  Salvar e Adicionar Cargos
+                  Salvar e adicionar cargos
                 </Button>
               )}
               <Button
                 onClick={() => { void (editModalOpen ? handleEditTrack() : handleCreateTrack()) }}
                 disabled={!formData.nome}
               >
-                {editModalOpen ? 'Salvar Alterações' : 'Salvar Trilha'}
+                {editModalOpen ? 'Salvar alterações' : 'Salvar trilha'}
               </Button>
             </div>
           </DialogContent>
@@ -1038,7 +1038,7 @@ export default function CareerTracksPage() {
 
                 {/* Career Progression */}
                 <div>
-                  <h3 className="font-semibold mb-3">Progressão de Carreira</h3>
+                  <h3 className="font-semibold mb-3">Progressão de carreira</h3>
                   <Card className="p-4">
                     <p className="text-xs text-muted-foreground mb-4">
                       Baseado em cargos criados nesta trilha
@@ -1072,14 +1072,14 @@ export default function CareerTracksPage() {
                   </p>
                   <Button size="sm">
                     <Plus className="h-4 w-4 mr-2" />
-                    Criar Novo Cargo
+                    Criar novo cargo
                   </Button>
                 </div>
                 <Card>
                   <table className="w-full">
                     <thead className="border-b">
                       <tr>
-                        <th className="text-left p-4">Nome do Cargo</th>
+                        <th className="text-left p-4">Nome do cargo</th>
                         <th className="text-left p-4">Nível</th>
                         <th className="text-left p-4">Pessoas</th>
                         <th className="text-left p-4">Status</th>
@@ -1178,7 +1178,7 @@ export default function CareerTracksPage() {
             <div className="p-6 pt-4 border-t flex justify-between">
               <Button variant="outline">
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Novo Cargo nesta Trilha
+                Criar novo cargo nesta trilha
               </Button>
               <Button onClick={() => setPositionsModalOpen(false)}>
                 Fechar
@@ -1257,7 +1257,7 @@ export default function CareerTracksPage() {
             </div>
 
             <div className="p-6 pt-4 border-t flex justify-between">
-              <Button variant="outline">Exportar Lista</Button>
+              <Button variant="outline">Exportar lista</Button>
               <Button onClick={() => setPeopleModalOpen(false)}>Fechar</Button>
             </div>
           </DialogContent>
@@ -1271,7 +1271,7 @@ export default function CareerTracksPage() {
             onEscapeKeyDown={() => setDeleteModalOpen(false)}
           >
             <DialogHeader>
-              <DialogTitle>Excluir Trilha?</DialogTitle>
+              <DialogTitle>Excluir trilha?</DialogTitle>
               <DialogDescription>
                 {selectedTrack && selectedTrack.cargos > 0 ? (
                   <div className="flex items-start gap-2 mt-4 text-error">
@@ -1307,7 +1307,7 @@ export default function CareerTracksPage() {
                 onClick={() => { void handleDeleteTrack() }}
                 disabled={selectedTrack ? selectedTrack.cargos > 0 : true}
               >
-                Excluir Trilha
+                Excluir trilha
               </Button>
             </DialogFooter>
           </DialogContent>

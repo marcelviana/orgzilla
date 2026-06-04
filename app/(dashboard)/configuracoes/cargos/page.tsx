@@ -431,7 +431,7 @@ export default function CargosPage() {
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           <StatsCard
-            title="Total de Cargos"
+            title="Total de cargos"
             value={stats.total}
             icon={<Briefcase className="h-6 w-6" />}
             iconWrapperClassName="bg-primary/10 text-primary"
@@ -445,7 +445,7 @@ export default function CargosPage() {
             subtext="carreiras ativas"
           />
           <StatsCard
-            title="Níveis Usados"
+            title="Níveis usados"
             value={`${stats.niveisMin} - ${stats.niveisMax}`}
             icon={<BarChart3 className="h-6 w-6" />}
             iconWrapperClassName="bg-success/10 text-success"
@@ -466,7 +466,7 @@ export default function CargosPage() {
 
               <div className="grid gap-4 md:grid-cols-4">
                 <div>
-                  <Label>Trilha de Carreira</Label>
+                  <Label>Trilha de carreira</Label>
                   <Select>
                     <SelectTrigger>
                       <SelectValue placeholder="Todas" />
@@ -566,8 +566,8 @@ export default function CargosPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome do Cargo</TableHead>
-                  <TableHead>Trilha de Carreira</TableHead>
+                  <TableHead>Nome do cargo</TableHead>
+                  <TableHead>Trilha de carreira</TableHead>
                   <TableHead>Nível</TableHead>
                   <TableHead>Pessoas</TableHead>
                   <TableHead>Status</TableHead>
@@ -757,7 +757,7 @@ export default function CargosPage() {
             }}
           >
             <DialogHeader>
-              <DialogTitle>{editModalOpen ? 'Editar Cargo' : 'Novo Cargo'}</DialogTitle>
+              <DialogTitle>{editModalOpen ? 'Editar cargo' : 'Novo cargo'}</DialogTitle>
               <DialogDescription>
                 Preencha as informações do cargo. Cargo = Nome + Trilha + Nível.
               </DialogDescription>
@@ -765,7 +765,7 @@ export default function CargosPage() {
 
             <div className="space-y-4 py-4">
               <div>
-                <Label htmlFor="nome">Nome do Cargo *</Label>
+                <Label htmlFor="nome">Nome do cargo *</Label>
                 <Input
                   id="nome"
                   placeholder="Ex: Senior Engineer"
@@ -779,7 +779,7 @@ export default function CargosPage() {
               </div>
 
               <div>
-                <Label htmlFor="trilha">Trilha de Carreira *</Label>
+                <Label htmlFor="trilha">Trilha de carreira *</Label>
                 <Select value={formData.trilha_id} onValueChange={(value) => setFormData({ ...formData, trilha_id: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a trilha" />
@@ -859,7 +859,7 @@ export default function CargosPage() {
                 className="bg-primary-strong hover:bg-primary-strong/90"
                 disabled={!formData.nome || !formData.trilha_id || !formData.nivel_id}
               >
-                {editModalOpen ? 'Salvar Alterações' : 'Salvar Cargo'}
+                {editModalOpen ? 'Salvar alterações' : 'Salvar cargo'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -873,7 +873,7 @@ export default function CargosPage() {
             onEscapeKeyDown={() => setDeleteModalOpen(false)}
           >
             <DialogHeader>
-              <DialogTitle>Excluir Cargo?</DialogTitle>
+              <DialogTitle>Excluir cargo?</DialogTitle>
               <DialogDescription>
                 {selectedPosition && (selectedPosition.pessoas ?? 0) > 0 ? (
                   <span className="text-destructive">
@@ -936,7 +936,7 @@ export default function CargosPage() {
                       )}
                     </div>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/pessoas/${person.id}`}>Ver Perfil</Link>
+                      <Link href={`/pessoas/${person.id}`}>Ver perfil</Link>
                     </Button>
                   </div>
                 ))

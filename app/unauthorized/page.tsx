@@ -25,7 +25,7 @@ export default function Unauthorized() {
               Por que estou vendo isso?
             </h3>
             <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Esta página requer permissões de Administrador ou Gestor</li>
+              <li>• Esta página requer permissões de administrador ou gestor</li>
               <li>• Seu perfil atual: {currentUser.role}</li>
               <li>
                 • Entre em contato com:{' '}
@@ -67,7 +67,7 @@ export default function Unauthorized() {
         onClick: () => router.push('/'),
       }}
       secondaryAction={{
-        label: 'Solicitar Acesso',
+        label: 'Solicitar acesso',
         icon: <Mail className="h-5 w-5 mr-2" />,
         onClick: () => {
           window.location.href = 'mailto:admin@orgzilla.com?subject=Solicitação de Acesso - Orgzilla'

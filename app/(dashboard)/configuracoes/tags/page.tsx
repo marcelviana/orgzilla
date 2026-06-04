@@ -367,16 +367,16 @@ export default function TagsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="name-asc">Por Nome (A-Z)</SelectItem>
-                  <SelectItem value="name-desc">Por Nome (Z-A)</SelectItem>
-                  <SelectItem value="usage-desc">Mais Usadas</SelectItem>
-                  <SelectItem value="usage-asc">Menos Usadas</SelectItem>
+                  <SelectItem value="name-asc">Por nome (A-Z)</SelectItem>
+                  <SelectItem value="name-desc">Por nome (Z-A)</SelectItem>
+                  <SelectItem value="usage-desc">Mais usadas</SelectItem>
+                  <SelectItem value="usage-asc">Menos usadas</SelectItem>
                 </SelectContent>
               </Select>
 
               <Button onClick={openCreateModal}>
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Tag
+                Criar tag
               </Button>
             </div>
           }
@@ -392,7 +392,7 @@ export default function TagsPage() {
             subtext={`${usedTags} em uso, ${unusedTags} não usadas`}
           />
           <StatsCard
-            title="Mais Usada"
+            title="Mais usada"
             value={mostUsedTag?.nome || 'N/A'}
             icon={<TrendingUp className="h-6 w-6" />}
             iconWrapperClassName="bg-accent/10 text-accent"
@@ -420,14 +420,14 @@ export default function TagsPage() {
             size="sm"
             onClick={() => setFilterBy('used')}
           >
-            Em Uso
+            Em uso
           </Button>
           <Button
             variant={filterBy === 'unused' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilterBy('unused')}
           >
-            Não Usadas
+            Não usadas
           </Button>
         </div>
 
@@ -527,15 +527,15 @@ export default function TagsPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={openCreateModal}>
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Tag Rápida
+                Criar tag rápida
               </DropdownMenuItem>
               <DropdownMenuItem disabled>
                 <Upload className="h-4 w-4 mr-2" />
-                Importar Tags
+                Importar tags
               </DropdownMenuItem>
               <DropdownMenuItem disabled>
                 <Download className="h-4 w-4 mr-2" />
-                Exportar Lista
+                Exportar lista
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -549,7 +549,7 @@ export default function TagsPage() {
           onEscapeKeyDown={() => setCreateEditModalOpen(false)}
         >
           <DialogHeader>
-            <DialogTitle>{editMode ? 'Editar Tag' : 'Nova Tag'}</DialogTitle>
+            <DialogTitle>{editMode ? 'Editar tag' : 'Nova tag'}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
@@ -670,7 +670,7 @@ export default function TagsPage() {
               disabled={!formData.nome}
               className="bg-primary-strong hover:bg-primary-strong/90"
             >
-              Salvar Tag
+              Salvar tag
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -762,7 +762,7 @@ export default function TagsPage() {
                 variant="outline"
                 onClick={() => setDetailsModalOpen(false)}
               >
-                Ver Todas as Pessoas
+                Ver todas as pessoas
               </Button>
               {selectedTag && selectedTag.pessoas > 0 && (
                 <Button
@@ -778,7 +778,7 @@ export default function TagsPage() {
                     setBulkRemoveModalOpen(true)
                   }}
                 >
-                  Remover de Todos
+                  Remover de todos
                 </Button>
               )}
             </div>
@@ -790,7 +790,7 @@ export default function TagsPage() {
                   if (selectedTag) openEditModal(selectedTag)
                 }}
               >
-                Editar Tag
+                Editar tag
               </Button>
               <Button onClick={() => setDetailsModalOpen(false)}>Fechar</Button>
             </div>
@@ -802,7 +802,7 @@ export default function TagsPage() {
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Excluir Tag?</DialogTitle>
+            <DialogTitle>Excluir tag?</DialogTitle>
             <DialogDescription>
               {selectedTag && selectedTag.pessoas > 0 ? (
                 <div className="space-y-4 pt-4">
@@ -840,7 +840,7 @@ export default function TagsPage() {
               disabled={selectedTag !== null && selectedTag.pessoas > 0 && !removeFromAll}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Excluir Tag
+              Excluir tag
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -880,7 +880,7 @@ export default function TagsPage() {
               Cancelar
             </Button>
             <Button variant="destructive" onClick={() => { void handleBulkRemove() }}>
-              Remover de Todos
+              Remover de todos
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -890,7 +890,7 @@ export default function TagsPage() {
       <Dialog open={mergeModalOpen} onOpenChange={setMergeModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mesclar Tags</DialogTitle>
+            <DialogTitle>Mesclar tags</DialogTitle>
             <DialogDescription>
               <div className="space-y-4 pt-4">
                 <p>Mesclar esta tag com outra existente</p>
@@ -942,7 +942,7 @@ export default function TagsPage() {
               Cancelar
             </Button>
             <Button onClick={handleMerge} className="bg-primary-strong hover:bg-primary-strong/90">
-              Mesclar Tags
+              Mesclar tags
             </Button>
           </DialogFooter>
         </DialogContent>

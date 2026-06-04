@@ -97,7 +97,7 @@ export default function ProjetosPage() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <PageHeader
-          title="Projetos e Produtos"
+          title="Projetos e produtos"
           breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Projetos" }]}
           actions={
             <div className="flex items-center gap-3">
@@ -131,7 +131,7 @@ export default function ProjetosPage() {
               <Link href="/projetos/novo">
                 <Button>
                   <Plus className="w-4 h-4 mr-2" />
-                  Novo Projeto
+                  Novo projeto
                 </Button>
               </Link>
             </div>
@@ -141,14 +141,14 @@ export default function ProjetosPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatsCard
-            title="Total de Projetos"
+            title="Total de projetos"
             value={projetos.length}
             icon={<FolderKanban className="h-6 w-6" />}
             iconWrapperClassName="bg-primary/10 text-primary"
             subtext={`${projetosAtivos} ativos, ${projetosInativos} inativos`}
           />
           <StatsCard
-            title="Total de Alocações"
+            title="Total de alocações"
             value={totalPessoas}
             icon={<Users className="h-6 w-6" />}
             iconWrapperClassName="bg-accent/10 text-accent"
@@ -192,7 +192,7 @@ export default function ProjetosPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/projetos/${project.id}`}>Ver Detalhes</Link>
+                          <Link href={`/projetos/${project.id}`}>Ver detalhes</Link>
                         </DropdownMenuItem>
                         {project.ativo && (
                           <DropdownMenuItem
@@ -229,7 +229,7 @@ export default function ProjetosPage() {
                   <div className="flex gap-2 mt-4 pt-4 border-t">
                     <Link href={`/projetos/${project.id}`} className="flex-1">
                       <Button variant="ghost" size="sm" className="w-full">
-                        Ver Detalhes
+                        Ver detalhes
                       </Button>
                     </Link>
                   </div>
@@ -288,7 +288,7 @@ export default function ProjetosPage() {
                           <div className="flex gap-2">
                             <Link href={`/projetos/${project.id}`}>
                               <Button variant="ghost" size="sm">
-                                Ver Detalhes
+                                Ver detalhes
                               </Button>
                             </Link>
                             {project.ativo && (

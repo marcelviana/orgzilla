@@ -168,8 +168,8 @@ export default function NovoTimePage() {
     <DashboardShell>
       <div className="p-6 space-y-6">
         <PageHeader
-          title="Novo Time"
-          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: "Novo Time" }]}
+          title="Novo time"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: "Novo time" }]}
           description="Crie um novo time para sua organização"
         />
 
@@ -207,10 +207,10 @@ export default function NovoTimePage() {
               <p className="text-xs text-muted-foreground text-right">{formData.descricao.length}/500 caracteres</p>
             </div>
 
-            {/* Time Pai */}
+            {/* Time pai */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
-                Time Pai
+                Time pai
                 <Info className="w-4 h-4 text-muted-foreground cursor-help" aria-label="Time hierarquicamente superior. Deixe vazio para times de nível raiz" />
               </Label>
               <button
@@ -315,16 +315,16 @@ export default function NovoTimePage() {
                   className="w-full"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Outra Vaga
+                  Adicionar outra vaga
                 </Button>
               </div>
             )}
           </div>
 
-          {/* Section 3: Adicionar Pessoas */}
+          {/* Section 3: Adicionar pessoas */}
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b pb-2">
-              <h2 className="text-xl font-semibold text-foreground">Adicionar Pessoas</h2>
+              <h2 className="text-xl font-semibold text-foreground">Adicionar pessoas</h2>
               <Button
                 type="button"
                 variant="outline"
@@ -332,7 +332,7 @@ export default function NovoTimePage() {
                 className="flex items-center gap-2"
               >
                 <Users className="w-4 h-4" />
-                Adicionar Pessoas
+                Adicionar pessoas
               </Button>
             </div>
           </div>
@@ -378,7 +378,7 @@ export default function NovoTimePage() {
                   Salvando...
                 </>
               ) : (
-                'Salvar Time'
+                'Salvar time'
               )}
             </Button>
           </div>
@@ -388,7 +388,7 @@ export default function NovoTimePage() {
         <Dialog open={showParentSelect} onOpenChange={setShowParentSelect}>
           <DialogContent className="max-w-md w-full p-6">
             <DialogHeader>
-              <DialogTitle>Selecionar Time Pai</DialogTitle>
+              <DialogTitle>Selecionar Time pai</DialogTitle>
               <DialogDescription>Escolha o time hierarquicamente superior</DialogDescription>
             </DialogHeader>
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -425,7 +425,7 @@ export default function NovoTimePage() {
         <Dialog open={showManagerSelect} onOpenChange={setShowManagerSelect}>
           <DialogContent className="max-w-md w-full p-6">
             <DialogHeader>
-              <DialogTitle>Selecionar Gestor</DialogTitle>
+              <DialogTitle>Selecionar gestor</DialogTitle>
               <DialogDescription>Escolha o gestor do time</DialogDescription>
             </DialogHeader>
             <div className="space-y-2 max-h-[400px] overflow-y-auto">

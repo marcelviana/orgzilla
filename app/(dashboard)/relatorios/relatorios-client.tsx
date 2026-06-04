@@ -136,7 +136,7 @@ export function RelatoriosClient({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle>Distribuição por Nível</CardTitle>
+                    <CardTitle>Distribuição por nível</CardTitle>
                     <CardDescription>{totalPessoas} pessoas no total</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleExport('Níveis')}>
@@ -173,7 +173,7 @@ export function RelatoriosClient({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle>Distribuição por Status</CardTitle>
+                    <CardTitle>Distribuição por status</CardTitle>
                     <CardDescription>{totalPessoas} pessoas no total</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleExport('Status')}>
@@ -215,7 +215,7 @@ export function RelatoriosClient({
                   <CardTitle>Top 5 Times</CardTitle>
                   <CardDescription>Por número de pessoas</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => handleExport('Top Times')}>
+                <Button variant="ghost" size="sm" onClick={() => handleExport('Top times')}>
                   <Download className="h-4 w-4" />
                 </Button>
               </CardHeader>
@@ -242,7 +242,7 @@ export function RelatoriosClient({
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Pessoas por Cargo</CardTitle>
+                  <CardTitle>Pessoas por cargo</CardTitle>
                   <CardDescription>Top 10 cargos</CardDescription>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => handleExport('Cargos')}>
@@ -259,7 +259,7 @@ export function RelatoriosClient({
                         <tr className="border-b">
                           <th className="text-left py-3 px-4 font-medium">Cargo</th>
                           <th className="text-right py-3 px-4 font-medium">Quantidade</th>
-                          <th className="text-right py-3 px-4 font-medium">% do Total</th>
+                          <th className="text-right py-3 px-4 font-medium">% do total</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -284,10 +284,10 @@ export function RelatoriosClient({
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Tamanho dos Times</CardTitle>
+                  <CardTitle>Tamanho dos times</CardTitle>
                   <CardDescription>Representação visual proporcional</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => handleExport('Tamanho Times')}>
+                <Button variant="ghost" size="sm" onClick={() => handleExport('Tamanho times')}>
                   <Download className="h-4 w-4" />
                 </Button>
               </CardHeader>
@@ -341,7 +341,7 @@ export function RelatoriosClient({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle>Taxa de Ocupação</CardTitle>
+                    <CardTitle>Taxa de ocupação</CardTitle>
                     <CardDescription>Pessoas atuais vs capacidade total (pessoas + vagas)</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleExport('Ocupação')}>
@@ -373,7 +373,7 @@ export function RelatoriosClient({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle>Times com Vagas</CardTitle>
+                    <CardTitle>Times com vagas</CardTitle>
                     <CardDescription>Posições abertas</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => handleExport('Vagas')}>
@@ -434,7 +434,7 @@ export function RelatoriosClient({
                 {/* Folha total */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Folha Salarial Total</CardTitle>
+                    <CardTitle>Folha salarial total</CardTitle>
                     <CardDescription>Mensal — sua hierarquia</CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -455,10 +455,10 @@ export function RelatoriosClient({
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                       <div>
-                        <CardTitle>Distribuição Salarial por Nível</CardTitle>
+                        <CardTitle>Distribuição salarial por nível</CardTitle>
                         <CardDescription>Min · Mediana · Max</CardDescription>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => handleExport('Salário por Nível')}>
+                      <Button variant="ghost" size="sm" onClick={() => handleExport('Salário por nível')}>
                         <Download className="h-4 w-4" />
                       </Button>
                     </CardHeader>
@@ -495,10 +495,10 @@ export function RelatoriosClient({
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                       <div>
-                        <CardTitle>Média Salarial por Time</CardTitle>
+                        <CardTitle>Média salarial por time</CardTitle>
                         <CardDescription>Valor mensal</CardDescription>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => handleExport('Média Salarial por Time')}>
+                      <Button variant="ghost" size="sm" onClick={() => handleExport('Média salarial por time')}>
                         <Download className="h-4 w-4" />
                       </Button>
                     </CardHeader>
@@ -526,10 +526,10 @@ export function RelatoriosClient({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle>Projetos por Status</CardTitle>
+                    <CardTitle>Projetos por status</CardTitle>
                     <CardDescription>{totalProjetos} projetos no total</CardDescription>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleExport('Status Projetos')}>
+                  <Button variant="ghost" size="sm" onClick={() => handleExport('Status projetos')}>
                     <Download className="h-4 w-4" />
                   </Button>
                 </CardHeader>
@@ -564,10 +564,10 @@ export function RelatoriosClient({
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle>Projetos com Mais Pessoas</CardTitle>
+                    <CardTitle>Projetos com mais pessoas</CardTitle>
                     <CardDescription>Top 5 projetos ativos</CardDescription>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => handleExport('Top Projetos')}>
+                  <Button variant="ghost" size="sm" onClick={() => handleExport('Top projetos')}>
                     <Download className="h-4 w-4" />
                   </Button>
                 </CardHeader>

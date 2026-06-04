@@ -109,13 +109,13 @@ export default function TimeDetailPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => console.log('Ver organograma')}>
-                  Ver Organograma
+                  Ver organograma
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => console.log('Adicionar pessoa')}>
-                  Adicionar Pessoa ao Time
+                  Adicionar pessoa ao time
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => console.log('Alterar status')}>
-                  Alterar Status
+                  Alterar status
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -186,7 +186,7 @@ export default function TimeDetailPage() {
 
         {/* Members List */}
         <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Membros do Time</h3>
+          <h3 className="text-lg font-semibold mb-4">Membros do time</h3>
           {time.membros.length > 0 ? (
             <div className="space-y-3">
               {time.membros.map(membro => (

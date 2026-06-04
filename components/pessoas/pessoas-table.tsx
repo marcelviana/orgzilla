@@ -210,7 +210,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
               <Link href="/pessoas/novo">
                 <Button className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Adicionar Pessoa
+                  Adicionar pessoa
                 </Button>
               </Link>
             </div>
@@ -285,7 +285,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                   onClick={applyFilters}
                   disabled={isPending}
                 >
-                  {isPending ? 'Aplicando...' : 'Aplicar Filtros'}
+                  {isPending ? 'Aplicando...' : 'Aplicar filtros'}
                 </Button>
                 <Button variant="outline" onClick={clearFilters} disabled={isPending}>
                   Limpar
@@ -317,7 +317,7 @@ export function PessoasTable({ initialData, times, cargos, canViewSalary }: Pess
                   <TableHead>Cargo</TableHead>
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Data de Entrada</TableHead>
+                  <TableHead>Data de entrada</TableHead>
                   {canViewSalary && <TableHead>Salário</TableHead>}
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>

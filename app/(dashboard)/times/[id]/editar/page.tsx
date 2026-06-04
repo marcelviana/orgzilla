@@ -171,7 +171,7 @@ export default function EditarTimePage() {
     <DashboardShell>
       <div className="p-6 space-y-6">
         <PageHeader
-          title="Editar Time"
+          title="Editar time"
           breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Times", href: "/times" }, { label: formData.nome, href: `/times/${timeId}` }, { label: "Editar" }]}
           description="Atualize as informações do time"
         />
@@ -274,7 +274,7 @@ export default function EditarTimePage() {
         <Dialog open={showParentSelect} onOpenChange={setShowParentSelect}>
           <DialogContent className="max-w-md w-full p-6">
             <DialogHeader>
-              <DialogTitle>Selecionar Time Pai</DialogTitle>
+              <DialogTitle>Selecionar time pai</DialogTitle>
               <DialogDescription>Escolha o time hierarquicamente superior</DialogDescription>
             </DialogHeader>
             <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -310,7 +310,7 @@ export default function EditarTimePage() {
         <Dialog open={showManagerSelect} onOpenChange={setShowManagerSelect}>
           <DialogContent className="max-w-md w-full p-6">
             <DialogHeader>
-              <DialogTitle>Selecionar Gestor</DialogTitle>
+              <DialogTitle>Selecionar gestor</DialogTitle>
               <DialogDescription>Escolha o gestor do time</DialogDescription>
             </DialogHeader>
             <div className="space-y-2 max-h-[400px] overflow-y-auto">

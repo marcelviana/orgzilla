@@ -248,10 +248,10 @@ export default function ProjetoDetailPage() {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={handleOpenAddPeopleModal}>
                   <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Pessoas
+                  Adicionar pessoas
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { void handleDeleteProject() }} className="text-red-600">
-                  Desativar Projeto
+                  Desativar projeto
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -290,7 +290,7 @@ export default function ProjetoDetailPage() {
         {/* People List */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Pessoas no Projeto</h2>
+            <h2 className="text-xl font-semibold">Pessoas no projeto</h2>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -372,7 +372,7 @@ export default function ProjetoDetailPage() {
         <Dialog open={addPeopleModalOpen} onOpenChange={setAddPeopleModalOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Adicionar Pessoas ao Projeto</DialogTitle>
+              <DialogTitle>Adicionar pessoas ao projeto</DialogTitle>
               <DialogDescription>
                 Selecione as pessoas que deseja alocar neste projeto
               </DialogDescription>
@@ -442,7 +442,7 @@ export default function ProjetoDetailPage() {
         <Dialog open={removePersonModal.open} onOpenChange={(open) => setRemovePersonModal({ open, alocacaoId: null, pessoaNome: null })}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Remover Pessoa do Projeto</DialogTitle>
+              <DialogTitle>Remover pessoa do projeto</DialogTitle>
               <DialogDescription>
                 Tem certeza que deseja remover {removePersonModal.pessoaNome} deste projeto?
                 A data de fim será registrada como hoje.

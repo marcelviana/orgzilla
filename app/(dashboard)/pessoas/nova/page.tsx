@@ -264,8 +264,8 @@ export default function NovasPessoasPage() {
     <DashboardShell>
       <div className="flex-1 space-y-6 p-8 pb-32">
         <PageHeader
-          title="Nova Pessoa"
-          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Nova Pessoa" }]}
+          title="Nova pessoa"
+          breadcrumb={[{ label: "Dashboard", href: "/" }, { label: "Pessoas", href: "/pessoas" }, { label: "Nova pessoa" }]}
           description="Preencha os dados para adicionar uma nova pessoa ao time"
         />
 
@@ -275,14 +275,14 @@ export default function NovasPessoasPage() {
           /* Tabbed Form */
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className={cn('grid w-full', canViewSalary ? 'grid-cols-5' : 'grid-cols-4')}>
-            <TabsTrigger value="pessoais">Dados Pessoais</TabsTrigger>
-            <TabsTrigger value="profissionais">Dados Profissionais</TabsTrigger>
-            {canViewSalary && <TabsTrigger value="financeiros">Dados Financeiros</TabsTrigger>}
+            <TabsTrigger value="pessoais">Dados pessoais</TabsTrigger>
+            <TabsTrigger value="profissionais">Dados profissionais</TabsTrigger>
+            {canViewSalary && <TabsTrigger value="financeiros">Dados financeiros</TabsTrigger>}
             <TabsTrigger value="projetos">Projetos/Produtos</TabsTrigger>
             <TabsTrigger value="tags">Tags</TabsTrigger>
           </TabsList>
 
-          {/* TAB 1: Dados Pessoais */}
+          {/* TAB 1: Dados pessoais */}
           <TabsContent value="pessoais" className="bg-white rounded-lg shadow p-6 space-y-6">
             {/* Avatar Upload */}
             <div className="flex items-center gap-6">
@@ -321,7 +321,7 @@ export default function NovasPessoasPage() {
 
               <div className="md:col-span-2">
                 <div className="flex items-center gap-2">
-                  <Label htmlFor="nomeSocial">Nome Social</Label>
+                  <Label htmlFor="nomeSocial">Nome social</Label>
                   <Popover>
                     <PopoverTrigger>
                       <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
@@ -366,7 +366,7 @@ export default function NovasPessoasPage() {
               </div>
 
               <div>
-                <Label htmlFor="emailPessoal">Email Pessoal</Label>
+                <Label htmlFor="emailPessoal">Email pessoal</Label>
                 <Input
                   id="emailPessoal"
                   type="email"
@@ -403,7 +403,7 @@ export default function NovasPessoasPage() {
             </div>
           </TabsContent>
 
-          {/* TAB 2: Dados Profissionais */}
+          {/* TAB 2: Dados profissionais */}
           <TabsContent value="profissionais" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -486,7 +486,7 @@ export default function NovasPessoasPage() {
               </div>
 
               <div>
-                <Label>Data Início no Cargo Atual</Label>
+                <Label>Data início no cargo atual</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full justify-start text-left font-normal", errors.dataInicioCargo && 'border-error')}>
@@ -558,7 +558,7 @@ export default function NovasPessoasPage() {
             </div>
           </TabsContent>
 
-          {/* TAB 3: Dados Financeiros (SENSÍVEL - LGPD: apenas gestor) */}
+          {/* TAB 3: Dados financeiros (SENSÍVEL - LGPD: apenas gestor) */}
           {canViewSalary && (
           <TabsContent value="financeiros" className="bg-white rounded-lg shadow p-6 space-y-6">
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
@@ -570,7 +570,7 @@ export default function NovasPessoasPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="salario">Salário Atual</Label>
+                <Label htmlFor="salario">Salário atual</Label>
                 <Input
                   id="salario"
                   value={salario}
@@ -584,12 +584,12 @@ export default function NovasPessoasPage() {
               </div>
 
               <div>
-                <Label>Data Último Reajuste</Label>
+                <Label>Data último reajuste</Label>
                 <Input disabled value="" placeholder="Sem reajustes" />
               </div>
 
               <div className="md:col-span-2">
-                <Label>Motivo Último Reajuste</Label>
+                <Label>Motivo último reajuste</Label>
                 <Textarea disabled placeholder="Nenhum reajuste registrado" rows={3} />
               </div>
             </div>
@@ -610,7 +610,7 @@ export default function NovasPessoasPage() {
               </div>
               <Button onClick={handleAddProject} size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Adicionar Alocação
+                Adicionar alocação
               </Button>
             </div>
 
@@ -669,7 +669,7 @@ export default function NovasPessoasPage() {
 
                       <div>
                         <div className="flex items-center gap-2">
-                          <Label>Data Fim</Label>
+                          <Label>Data fim</Label>
                           <Popover>
                             <PopoverTrigger>
                               <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
@@ -783,7 +783,7 @@ export default function NovasPessoasPage() {
                 Salvando...
               </>
             ) : (
-              'Salvar Pessoa'
+              'Salvar pessoa'
             )}
           </Button>
         </div>

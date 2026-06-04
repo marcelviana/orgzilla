@@ -267,16 +267,16 @@ export default function PersonProfilePage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => console.log('Mover para outro time')}>
-                    Mover para Outro Time
+                    Mover para outro time
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => console.log('Adicionar a projeto')}>
                     Adicionar a Projeto
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => console.log('Alterar status')}>
-                    Alterar Status
+                    Alterar status
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => console.log('Ver histórico completo')}>
-                    Ver Histórico Completo
+                    Ver histórico completo
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -325,7 +325,7 @@ export default function PersonProfilePage() {
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Tempo de Casa</p>
+              <p className="text-sm text-muted-foreground mb-1">Tempo de casa</p>
               <p className="text-lg font-semibold">{calculateTimeInCompany(pessoa.data_entrada)}</p>
               {pessoa.data_entrada && (
                 <p className="text-xs text-muted-foreground mt-1">
@@ -351,9 +351,9 @@ export default function PersonProfilePage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="geral">Informações Gerais</TabsTrigger>
-            <TabsTrigger value="historico">Histórico Profissional</TabsTrigger>
-            <TabsTrigger value="salarial">Histórico Salarial</TabsTrigger>
+            <TabsTrigger value="geral">Informações gerais</TabsTrigger>
+            <TabsTrigger value="historico">Histórico profissional</TabsTrigger>
+            <TabsTrigger value="salarial">Histórico salarial</TabsTrigger>
             <TabsTrigger value="projetos">Projetos</TabsTrigger>
             <TabsTrigger value="anotacoes">Anotações</TabsTrigger>
           </TabsList>
@@ -404,7 +404,7 @@ export default function PersonProfilePage() {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Trilha de Carreira</p>
+                  <p className="text-sm text-muted-foreground">Trilha de carreira</p>
                   <p className="font-medium">{pessoa.cargo?.trilha?.nome || 'Sem trilha definida'}</p>
                 </div>
                 <div>
@@ -433,7 +433,7 @@ export default function PersonProfilePage() {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Data de Entrada</p>
+                  <p className="text-sm text-muted-foreground">Data de entrada</p>
                   <p className="font-medium">{pessoa.data_entrada ? formatDate(pessoa.data_entrada) : '-'}</p>
                 </div>
                 <div>
@@ -452,7 +452,7 @@ export default function PersonProfilePage() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Projetos Atuais</h3>
                 <Button variant="link" onClick={() => setActiveTab('projetos')}>
-                  Ver Todos os Projetos
+                  Ver todos os projetos
                 </Button>
               </div>
               {projetosAtivos.length === 0 ? (
@@ -496,7 +496,7 @@ export default function PersonProfilePage() {
           {/* TAB 2: Professional History */}
           <TabsContent value="historico">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-6">Linha do Tempo Profissional</h3>
+              <h3 className="text-lg font-semibold mb-6">Linha do tempo profissional</h3>
               <div className="space-y-6">
                 {TIMELINE_DATA.map((event, index) => (
                   <div key={index} className="flex gap-4">
@@ -554,7 +554,7 @@ export default function PersonProfilePage() {
                 </Card>
 
                 <Card className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Histórico de Reajustes</h3>
+                  <h3 className="text-lg font-semibold mb-4">Histórico de reajustes</h3>
                   <p className="text-sm text-muted-foreground text-center py-8">
                     Histórico de reajustes será implementado em breve
                   </p>
@@ -645,7 +645,7 @@ export default function PersonProfilePage() {
                 <p className="text-xs text-muted-foreground">{newNote.length}/1000 caracteres</p>
                 <Button onClick={() => void handleAddNote()} disabled={!newNote.trim() || isSavingNote}>
                   {isSavingNote ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                  Salvar Anotação
+                  Salvar anotação
                 </Button>
               </div>
             </Card>

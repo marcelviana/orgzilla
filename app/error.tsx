@@ -70,7 +70,7 @@ export default function Error({
       description="Nossos servidores estão com dificuldades no momento. Já estamos trabalhando para resolver. Por favor, tente novamente em alguns instantes."
       illustration="/worried-orange-dinosaur-surrounded-by-error-symbol.jpg"
       primaryAction={{
-        label: 'Tentar Novamente',
+        label: 'Tentar novamente',
         icon: <RefreshCw className="h-5 w-5 mr-2" />,
         onClick: reset,
       }}
