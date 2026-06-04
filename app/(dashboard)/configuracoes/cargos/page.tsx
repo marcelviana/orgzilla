@@ -40,7 +40,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Briefcase, TrendingUp, BarChart3, Plus, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, EmptyState, SearchInput } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState, SearchInput, StatsCard } from '@/components/shared'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -430,50 +430,27 @@ export default function CargosPage() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total de Cargos</p>
-                <p className="text-3xl font-bold">{stats.total}</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {stats.ativos} ativos, {stats.inativos} inativos
-                </p>
-              </div>
-              <div className="rounded-full bg-orange-100 p-3">
-                <Briefcase className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Trilhas</p>
-                <p className="text-3xl font-bold">{stats.trilhas}</p>
-                <p className="text-sm text-muted-foreground mt-1">carreiras ativas</p>
-              </div>
-              <div className="rounded-full bg-cyan-100 p-3">
-                <TrendingUp className="h-6 w-6 text-accent" />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Níveis Usados</p>
-                <p className="text-3xl font-bold">
-                  {stats.niveisMin} - {stats.niveisMax}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {stats.totalNiveis} níveis com cargos
-                </p>
-              </div>
-              <div className="rounded-full bg-blue-100 p-3">
-                <BarChart3 className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </Card>
+          <StatsCard
+            title="Total de Cargos"
+            value={stats.total}
+            icon={<Briefcase className="h-6 w-6" />}
+            iconWrapperClassName="bg-primary/10 text-primary"
+            subtext={`${stats.ativos} ativos, ${stats.inativos} inativos`}
+          />
+          <StatsCard
+            title="Trilhas"
+            value={stats.trilhas}
+            icon={<TrendingUp className="h-6 w-6" />}
+            iconWrapperClassName="bg-accent/10 text-accent"
+            subtext="carreiras ativas"
+          />
+          <StatsCard
+            title="Níveis Usados"
+            value={`${stats.niveisMin} - ${stats.niveisMax}`}
+            icon={<BarChart3 className="h-6 w-6" />}
+            iconWrapperClassName="bg-success/10 text-success"
+            subtext={`${stats.totalNiveis} níveis com cargos`}
+          />
         </div>
 
         {/* Filters Bar */}

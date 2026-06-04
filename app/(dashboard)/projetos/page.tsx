@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Plus, Grid3x3, List, FolderKanban, Users, MoreVertical } from 'lucide-react'
-import { TableSkeleton, PageHeader, StatusBadge, ConfirmDialog, EmptyState, SearchInput } from '@/components/shared'
+import { TableSkeleton, PageHeader, StatusBadge, ConfirmDialog, EmptyState, SearchInput, StatsCard } from '@/components/shared'
 import { getProjetos, softDeleteProjeto, type ProjetoListItem } from '@/app/actions/projetos.actions'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
@@ -140,32 +140,20 @@ export default function ProjetosPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Total de Projetos</p>
-                <p className="text-3xl font-bold text-foreground">{projetos.length}</p>
-                <p className="text-sm text-muted-foreground mt-2">{projetosAtivos} ativos, {projetosInativos} inativos</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <FolderKanban className="w-6 h-6 text-orange-500" />
-              </div>
-            </div>
-          </Card>
-          <Card className="p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Total de Alocações</p>
-                <p className="text-3xl font-bold text-foreground">{totalPessoas}</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {projetos.reduce((acc, p) => acc + p.pessoas_ativas, 0)} alocações ativas
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <Users className="w-6 h-6 text-orange-500" />
-              </div>
-            </div>
-          </Card>
+          <StatsCard
+            title="Total de Projetos"
+            value={projetos.length}
+            icon={<FolderKanban className="h-6 w-6" />}
+            iconWrapperClassName="bg-primary/10 text-primary"
+            subtext={`${projetosAtivos} ativos, ${projetosInativos} inativos`}
+          />
+          <StatsCard
+            title="Total de Alocações"
+            value={totalPessoas}
+            icon={<Users className="h-6 w-6" />}
+            iconWrapperClassName="bg-accent/10 text-accent"
+            subtext={`${projetos.reduce((acc, p) => acc + p.pessoas_ativas, 0)} alocações ativas`}
+          />
         </div>
 
         {/* Projects Grid */}

@@ -41,7 +41,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Users, ShieldAlert, Network, Plus, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
-import { PageHeader, SearchInput } from '@/components/shared'
+import { PageHeader, SearchInput, StatsCard } from '@/components/shared'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import Link from "next/link"
 import {
@@ -383,46 +383,27 @@ export default function UsuariosPage() {
 
         {/* Stats Cards */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-lg border bg-white p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total de Usuários</p>
-                <p className="mt-2 text-3xl font-bold text-secondary">{totalUsers}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {activeUsers} ativos, {inactiveUsers} inativos
-                </p>
-              </div>
-              <div className="rounded-lg bg-primary/10 p-3">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-white p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Administradores</p>
-                <p className="mt-2 text-3xl font-bold text-secondary">{admins}</p>
-                <p className="mt-1 text-sm text-muted-foreground">acesso total</p>
-              </div>
-              <div className="rounded-lg bg-error/10 p-3">
-                <ShieldAlert className="h-6 w-6 text-error" />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-white p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Gestores</p>
-                <p className="mt-2 text-3xl font-bold text-secondary">{gestores}</p>
-                <p className="mt-1 text-sm text-muted-foreground">gerenciam equipes</p>
-              </div>
-              <div className="rounded-lg bg-accent/10 p-3">
-                <Network className="h-6 w-6 text-accent" />
-              </div>
-            </div>
-          </div>
+          <StatsCard
+            title="Total de Usuários"
+            value={totalUsers}
+            icon={<Users className="h-6 w-6" />}
+            iconWrapperClassName="bg-primary/10 text-primary"
+            subtext={`${activeUsers} ativos, ${inactiveUsers} inativos`}
+          />
+          <StatsCard
+            title="Administradores"
+            value={admins}
+            icon={<ShieldAlert className="h-6 w-6" />}
+            iconWrapperClassName="bg-danger/10 text-danger"
+            subtext="acesso total"
+          />
+          <StatsCard
+            title="Gestores"
+            value={gestores}
+            icon={<Network className="h-6 w-6" />}
+            iconWrapperClassName="bg-accent/10 text-accent"
+            subtext="gerenciam equipes"
+          />
         </div>
 
         {/* Filters */}

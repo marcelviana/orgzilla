@@ -1,7 +1,7 @@
 "use client"
 
-import { Users, Network, Briefcase, FolderKanban, Plus, TrendingUp, TrendingDown, Minus, Activity } from 'lucide-react'
-import { EmptyState } from '@/components/shared'
+import { Users, Network, Briefcase, FolderKanban, Plus, TrendingUp, Activity } from 'lucide-react'
+import { EmptyState, StatsCard } from '@/components/shared'
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import Link from "next/link"
 
@@ -60,18 +60,6 @@ export function DashboardContent({
   timeDistribution,
   recentActivities,
 }: DashboardContentProps) {
-  const getTrendIcon = (trend: number) => {
-    if (trend > 0) return <TrendingUp className="h-3 w-3" />
-    if (trend < 0) return <TrendingDown className="h-3 w-3" />
-    return <Minus className="h-3 w-3" />
-  }
-
-  const getTrendColor = (trend: number) => {
-    if (trend > 0) return "bg-success/10 text-success"
-    if (trend < 0) return "bg-danger/10 text-danger"
-    return "bg-muted text-muted-foreground"
-  }
-
   const METRIC_CARDS = [
     {
       title: "Total de Pessoas",
@@ -126,27 +114,18 @@ export function DashboardContent({
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {METRIC_CARDS.map((card) => {
           const Icon = card.icon
+          const direction = card.trend > 0 ? 'up' : card.trend < 0 ? 'down' : 'neutral'
           return (
-            <Link
+            <StatsCard
               key={card.title}
+              title={card.title}
+              value={card.value}
               href={card.href}
-              className="rounded-lg bg-white p-6 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
-                  <p className="mt-2 font-heading text-3xl font-bold text-secondary">{card.value}</p>
-                  <div className={`mt-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${getTrendColor(card.trend)}`}>
-                    {getTrendIcon(card.trend)}
-                    {card.trend !== 0 && <span>{Math.abs(card.trend)}</span>}
-                    <span className="ml-1">{card.trendLabel}</span>
-                  </div>
-                </div>
-                <div className={`flex h-12 w-12 items-center justify-center rounded-full ${card.color}`}>
-                  <Icon className="h-6 w-6" />
-                </div>
-              </div>
-            </Link>
+              icon={<Icon className="h-6 w-6" />}
+              iconWrapperClassName={card.color}
+              trend={{ value: card.trend !== 0 ? String(Math.abs(card.trend)) : '', direction }}
+              subtext={card.trendLabel}
+            />
           )
         })}
       </div>
