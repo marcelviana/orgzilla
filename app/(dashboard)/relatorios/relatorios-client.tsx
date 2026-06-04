@@ -425,10 +425,8 @@ export function RelatoriosClient({
               </Card>
             ) : dadosFinanceiros === null || dadosFinanceiros.salariosPorNivel.length === 0 ? (
               <Card>
-                <CardContent className="flex flex-col items-center justify-center py-16">
-                  <p className="text-lg font-medium text-muted-foreground">
-                    Nenhum dado salarial encontrado na sua hierarquia.
-                  </p>
+                <CardContent>
+                  <ChartEmpty title="Nenhum dado salarial encontrado na sua hierarquia." />
                 </CardContent>
               </Card>
             ) : (

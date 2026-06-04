@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Info, Plus, X, Users, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, PageHeader, ConfirmDialog } from '@/components/shared'
+import { DetailsSkeleton, PageHeader, ConfirmDialog, EmptyState } from '@/components/shared'
 import { createTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -461,9 +461,10 @@ export default function NovoTimePage() {
                   </button>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Nenhuma pessoa disponível para seleção
-                </p>
+                <EmptyState
+                  icon={<Users className="h-10 w-10" />}
+                  title="Nenhuma pessoa disponível para seleção"
+                />
               )}
             </div>
           </DialogContent>

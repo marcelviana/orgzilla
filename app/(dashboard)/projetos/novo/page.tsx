@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, X, Search, Loader2 } from 'lucide-react'
+import { Plus, X, Search, Loader2, Users } from 'lucide-react'
 import { DetailsSkeleton, PageHeader, EmptyState } from '@/components/shared'
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
@@ -287,9 +287,10 @@ export default function NovoProjeto() {
               {/* People List */}
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {filteredAvailable.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">
-                    {searchTerm ? 'Nenhuma pessoa encontrada' : 'Todas as pessoas já foram alocadas'}
-                  </p>
+                  <EmptyState
+                    icon={<Users className="h-10 w-10" />}
+                    title={searchTerm ? 'Nenhuma pessoa encontrada' : 'Todas as pessoas já foram alocadas'}
+                  />
                 ) : (
                   filteredAvailable.map((pessoa) => (
                     <label

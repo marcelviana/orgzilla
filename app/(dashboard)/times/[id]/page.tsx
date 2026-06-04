@@ -208,9 +208,10 @@ export default function TimeDetailPage() {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              Nenhum membro no time ainda
-            </p>
+            <EmptyState
+              title="Nenhum membro no time ainda"
+              description="As pessoas alocadas a este time aparecerão aqui."
+            />
           )}
         </Card>
       </div>

@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState } from '@/components/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
@@ -1085,16 +1085,11 @@ export default function NiveisPage() {
                 </Button>
               </div>
             ) : (
-              <div className="text-center py-12">
-                <Briefcase className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  Nenhum cargo criado para este nível
-                </p>
-                <Button className="bg-primary-strong hover:bg-primary-strong/90 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Primeiro Cargo
-                </Button>
-              </div>
+              <EmptyState
+                icon={<Briefcase className="h-12 w-12" />}
+                title="Nenhum cargo criado para este nível"
+                description="Crie cargos para este nível na seção de Cargos."
+              />
             )}
           </div>
 

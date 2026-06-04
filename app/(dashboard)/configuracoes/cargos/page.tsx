@@ -40,7 +40,7 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Briefcase, TrendingUp, BarChart3, Plus, Search, Filter, Grid3x3, List, MoreVertical, ChevronUp, Users, Edit, Copy, Trash2, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState } from '@/components/shared'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
 import { handleError, validateRequired } from '@/lib/errors/error-handler'
@@ -946,9 +946,10 @@ export default function CargosPage() {
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : pessoasDoCargo.length === 0 ? (
-                <p className="text-center text-sm text-muted-foreground py-4">
-                  Nenhuma pessoa neste cargo.
-                </p>
+                <EmptyState
+                  icon={<Users className="h-10 w-10" />}
+                  title="Nenhuma pessoa neste cargo"
+                />
               ) : (
                 pessoasDoCargo.map((person) => (
                   <div key={person.id} className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50">
