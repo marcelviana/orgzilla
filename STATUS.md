@@ -3,7 +3,7 @@
 > **Fonte única de verdade sobre o estado real do projeto.**
 > Em caso de conflito entre este arquivo e `CLAUDE.md`, READMEs de camadas ou qualquer outra doc, **este arquivo prevalece** até ser revisado.
 
-**Última atualização:** 3 de junho de 2026 (breadcrumb centralizado em componente único; skeletons compartilhados)
+**Última atualização:** 4 de junho de 2026 (débito §3.7: overflow das abas no mobile, registrado na Fase C do design system)
 
 ---
 
@@ -160,6 +160,13 @@ A arquitetura-alvo (Repository → Service → Action → UI) ainda está **parc
 ✅ Todos os arquivos migrados para `handleError` + `lib/ui/toast-config`. Nenhum arquivo em `app/` importa `useToast` ou `sonner` diretamente.
 
 Convenção para código novo: usar sempre `handleError(error, tipo)` de `lib/errors/error-handler.ts` e os helpers de `lib/ui/toast-config` (`toast.error`, `toast.successDino`, etc.). Não usar `useToast`/`sonner` diretamente.
+
+### 3.7 Débito de design — overflow das abas no mobile (Fase C, não resolvido por escolha)
+As `TabsList` das telas de pessoa usam `grid w-full grid-cols-5` (cai para `grid-cols-4` sem aba financeira), espremendo 5 abas em telas estreitas (~375px):
+- `app/(dashboard)/pessoas/[id]/page.tsx:353` — abas: informações gerais, histórico profissional, histórico salarial, projetos, anotações.
+- `app/(dashboard)/pessoas/nova/page.tsx:277` e `app/(dashboard)/pessoas/[id]/editar/page.tsx:325` — abas: dados pessoais, dados profissionais, dados financeiros (gestor), projetos/produtos, tags.
+
+**Por que ficou como débito (não foi alterado):** trocar o `grid-cols-5` por uma tab-strip com scroll horizontal **não é um swap trivial** — muda a distribuição das abas em todos os breakpoints (não só mobile), exigindo classes responsivas que convivam com o estilo base do shadcn (`inline-flex`/`h-9`/`bg-muted`/`p-1`) e tratamento de *scroll-into-view* da aba ativa e affordance de rolagem. É mudança de **UX de navegação**, e essas telas são **autenticadas** — não validáveis no viewport real do agente (auth wall). Decisão consciente: não fazer mudança de navegação às cegas. Requer implementação + **teste manual no mobile** pelo mantenedor.
 
 ---
 

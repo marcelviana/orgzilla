@@ -90,12 +90,14 @@ Ambíguas deixadas como estão: assunto de email `mailto` (`app/unauthorized/pag
 "Configurações > Usuários" (caminho de navegação nomeado, `configuracoes-client.tsx`).
 Nota: stats hardcoded de `trilhas` (mock, §4) tiveram só a copy ajustada, não os números.
 
-### Fase C — Overflow das abas no mobile (pequena; pode virar só débito)
-**Escopo:** `TabsList` com `grid-cols-5` (ex.: `pessoas/[id]`, `pessoas/nova`,
-`pessoas/[id]/editar`) espreme 5 abas em telas ~375px. Avaliar tab-strip com scroll horizontal.
-
-**Cuidado:** mudar a tab-strip é **mudança de UX com risco** (quebra a distribuição uniforme).
-Se não for trivial/seguro, **registre como débito no STATUS.md** em vez de forçar.
+### Fase C — Overflow das abas no mobile — ✅ ENCERRADA COMO DÉBITO (não virou código)
+Avaliado: trocar `grid-cols-5` por scroll horizontal **não é trivial** (muda a distribuição em
+todos os breakpoints, exige classes responsivas convivendo com o estilo base do shadcn +
+scroll-into-view da aba ativa) e é **mudança de UX de navegação** em telas **autenticadas**,
+não validáveis no viewport real (auth wall). Decisão consciente de não fazer às cegas.
+Registrado em `STATUS.md` §3.7 com o problema descrito e os locais
+(`pessoas/[id]`:353, `pessoas/nova`:277, `pessoas/[id]/editar`:325). Requer implementação +
+teste manual no mobile pelo mantenedor.
 
 ### Fase F12 — Remover mock + religar menus inertes
 **Escopo:**
