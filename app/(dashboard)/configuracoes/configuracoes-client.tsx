@@ -34,21 +34,7 @@ import Image from "next/image"
 import type { NivelComEstatisticas } from "@/app/actions/niveis.actions"
 import type { TrilhaComEstatisticas } from "@/app/actions/trilhas.actions"
 import type { TagComEstatisticas } from "@/app/actions/tags.actions"
-
-// Mock current user (perfil ainda não migrado)
-const currentUser = {
-  nome: "João Silva",
-  email: "joao@orgzilla.com",
-  avatar: "/avatar.jpg",
-  tipoPerfil: "admin" as "admin" | "gestor" | "visualizador",
-  pessoaVinculada: {
-    id: "p1",
-    nome: "João Silva",
-    cargo: "Engineering Manager",
-    time: "Engenharia",
-    telefone: "(11) 98765-4321",
-  },
-}
+import type { UsuarioLogado } from "@/lib/middleware/auth.middleware"
 
 type Section =
   | "perfil"
@@ -66,12 +52,13 @@ type Section =
   | "ajuda"
 
 interface Props {
+  usuario: UsuarioLogado
   niveis: NivelComEstatisticas[]
   trilhas: TrilhaComEstatisticas[]
   tags: TagComEstatisticas[]
 }
 
-export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
+export default function ConfiguracoesClient({ usuario, niveis, trilhas, tags }: Props) {
   const router = useRouter()
   const [activeSection, setActiveSection] = useState<Section>("perfil")
   const [showPassword, setShowPassword] = useState(false)
@@ -88,8 +75,8 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
     ativo?: boolean
   } | null>(null)
 
-  const isAdmin = currentUser.tipoPerfil === "admin"
-  const isGestor = currentUser.tipoPerfil === "gestor" || isAdmin
+  const isAdmin = usuario.tipo_perfil === "admin"
+  const isGestor = usuario.tipo_perfil === "gestor" || isAdmin
 
   const passwordStrength = () => {
     const hasLength = password.length >= 8
@@ -149,17 +136,19 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
             <Card className="p-6">
               <div className="flex flex-col items-center space-y-4">
                 <Avatar className="h-32 w-32">
-                  <AvatarFallback className="bg-primary text-4xl text-white">JS</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-4xl text-white">
+                    {usuario.nome.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  </AvatarFallback>
                 </Avatar>
                 <Button variant="outline" size="sm">
                   <Upload className="mr-2 h-4 w-4" />
                   Alterar foto
                 </Button>
                 <div className="text-center">
-                  <h3 className="text-xl font-bold text-secondary">{currentUser.nome}</h3>
-                  <p className="text-sm text-muted-foreground">{currentUser.email}</p>
+                  <h3 className="text-xl font-bold text-secondary">{usuario.nome}</h3>
+                  <p className="text-sm text-muted-foreground">{usuario.email}</p>
                   <Badge className="mt-2 bg-primary-strong text-white">
-                    {currentUser.tipoPerfil === "admin" ? "Administrador" : currentUser.tipoPerfil === "gestor" ? "Gestor" : "Visualizador"}
+                    {usuario.tipo_perfil === "admin" ? "Administrador" : usuario.tipo_perfil === "gestor" ? "Gestor" : "Visualizador"}
                   </Badge>
                 </div>
               </div>
@@ -167,16 +156,16 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
 
             <Card className="p-6">
               <h3 className="mb-4 text-lg font-semibold text-secondary">Informações Pessoais</h3>
-              {currentUser.pessoaVinculada ? (
+              {usuario.pessoa ? (
                 <div className="space-y-4">
                   <div className="rounded-lg bg-accent/10 p-4">
                     <p className="text-sm text-foreground">
                       Suas informações estão vinculadas a{" "}
-                      <Link href={`/pessoas/${currentUser.pessoaVinculada.id}`} className="font-semibold text-accent hover:underline">
-                        {currentUser.pessoaVinculada.nome}
+                      <Link href={`/pessoas/${usuario.pessoa.id}`} className="font-semibold text-accent hover:underline">
+                        {usuario.pessoa.nome}
                       </Link>
                     </p>
-                    <Link href={`/pessoas/${currentUser.pessoaVinculada.id}`} className="mt-2 inline-flex items-center text-sm text-accent hover:underline">
+                    <Link href={`/pessoas/${usuario.pessoa.id}`} className="mt-2 inline-flex items-center text-sm text-accent hover:underline">
                       Ver perfil completo
                       <ChevronRight className="ml-1 h-4 w-4" />
                     </Link>
@@ -184,15 +173,11 @@ export default function ConfiguracoesClient({ niveis, trilhas, tags }: Props) {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <Label className="text-muted-foreground">Cargo</Label>
-                      <p className="mt-1 font-medium">{currentUser.pessoaVinculada.cargo}</p>
+                      <p className="mt-1 font-medium">{usuario.pessoa.cargo?.nome ?? "—"}</p>
                     </div>
                     <div>
                       <Label className="text-muted-foreground">Time</Label>
-                      <p className="mt-1 font-medium">{currentUser.pessoaVinculada.time}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Telefone</Label>
-                      <p className="mt-1 font-medium">{currentUser.pessoaVinculada.telefone}</p>
+                      <p className="mt-1 font-medium">{usuario.pessoa.time?.nome ?? "—"}</p>
                     </div>
                   </div>
                 </div>
