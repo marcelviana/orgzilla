@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { handleError } from '@/lib/errors/error-handler'
 import { toast } from '@/lib/ui/toast-config'
 import { ChevronRight, Info, Plus, X, Users, Loader2 } from 'lucide-react'
-import { DetailsSkeleton, PageHeader } from '@/components/shared'
+import { DetailsSkeleton, PageHeader, ConfirmDialog } from '@/components/shared'
 import { createTime } from '@/app/actions/times.actions'
 import { getTimesParaFiltro, getCargosParaFiltro, getPessoasParaGestor } from '@/app/actions/pessoas.actions'
 
@@ -40,6 +40,7 @@ export default function NovoTimePage() {
 
   const [showParentSelect, setShowParentSelect] = useState(false)
   const [showManagerSelect, setShowManagerSelect] = useState(false)
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
   const [isDirty, setIsDirty] = useState(false)
   const [selectedGestor, setSelectedGestor] = useState<{ id: string; nome: string; cargo: string | null; time: string | null } | null>(null)
   const [selectedTimePai, setSelectedTimePai] = useState<{ id: string; nome: string; path?: string } | null>(null)
@@ -145,9 +146,7 @@ export default function NovoTimePage() {
 
   const handleCancel = () => {
     if (isDirty) {
-      if (confirm('Descartar alterações?')) {
-        window.history.back()
-      }
+      setShowDiscardConfirm(true)
     } else {
       window.history.back()
     }
@@ -470,6 +469,17 @@ export default function NovoTimePage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <ConfirmDialog
+        open={showDiscardConfirm}
+        onOpenChange={setShowDiscardConfirm}
+        title="Descartar alterações?"
+        description="As alterações não salvas serão perdidas."
+        variant="warning"
+        confirmText="Descartar"
+        cancelText="Continuar editando"
+        onConfirm={() => window.history.back()}
+      />
     </DashboardShell>
   )
 }

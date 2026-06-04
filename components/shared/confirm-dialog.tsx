@@ -78,10 +78,13 @@ export function ConfirmDialog({
     onOpenChange(false)
   }
 
+  // Texto escuro (secondary) sobre a cor semântica: passa WCAG AA em todas as
+  // variantes (ex.: navy sobre coral ~5:1). Branco sobre essas cores reprovaria
+  // (DESIGN_SYSTEM.md §3.1/§7).
   const variantStyles = {
-    danger: "bg-[#FF5A5F] hover:bg-[#FF5A5F]/90 text-white",
-    warning: "bg-[#FF7A00] hover:bg-[#FF7A00]/90 text-white",
-    info: "bg-[#00C8FF] hover:bg-[#00C8FF]/90 text-white",
+    danger: "bg-danger hover:bg-danger/90 text-secondary",
+    warning: "bg-warning hover:bg-warning/90 text-secondary",
+    info: "bg-info hover:bg-info/90 text-secondary",
   }
 
   return (
