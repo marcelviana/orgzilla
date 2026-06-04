@@ -324,7 +324,7 @@ export default function BuscaPage() {
                                   <Button variant="ghost" size="sm" asChild>
                                     <Link href={`/pessoas/${pessoa.id}`}>Ver Perfil</Link>
                                   </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <Button variant="ghost" size="icon" aria-label="Favoritar" className="h-8 w-8">
                                     <Star className="h-4 w-4" />
                                   </Button>
                                 </div>

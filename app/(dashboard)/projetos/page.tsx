@@ -115,6 +115,7 @@ export default function ProjetosPage() {
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="icon"
+                  aria-label="Visualização em grade"
                   className="h-8 w-8"
                   onClick={() => setViewMode('grid')}
                 >
@@ -123,6 +124,7 @@ export default function ProjetosPage() {
                 <Button
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="icon"
+                  aria-label="Visualização em lista"
                   className="h-8 w-8"
                   onClick={() => setViewMode('list')}
                 >
@@ -199,7 +201,7 @@ export default function ProjetosPage() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" aria-label="Ações do projeto">
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>

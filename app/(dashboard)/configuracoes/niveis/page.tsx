@@ -484,6 +484,7 @@ export default function NiveisPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label="Expandir detalhes do nível"
                           onClick={() => toggleRow(level.id)}
                         >
                           {expandedRows.includes(level.id) ? (
@@ -559,7 +560,7 @@ export default function NiveisPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" aria-label="Ações do nível">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>

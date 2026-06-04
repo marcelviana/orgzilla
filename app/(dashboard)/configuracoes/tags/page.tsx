@@ -507,6 +507,7 @@ export default function TagsPage() {
                   <Button
                     size="icon"
                     variant="ghost"
+                    aria-label="Editar tag"
                     className="h-7 w-7"
                     onClick={(e) => {
                       e.stopPropagation()
@@ -519,6 +520,7 @@ export default function TagsPage() {
                     <Button
                       size="icon"
                       variant="ghost"
+                      aria-label="Excluir tag"
                       className="h-7 w-7 text-red-600 hover:text-red-700"
                       onClick={(e) => {
                         e.stopPropagation()
@@ -540,6 +542,7 @@ export default function TagsPage() {
             <DropdownMenuTrigger asChild>
               <Button
                 size="icon"
+                aria-label="Criar tag"
                 className="h-14 w-14 rounded-full bg-primary-strong hover:bg-primary-strong/90 shadow-lg"
               >
                 <Plus className="h-6 w-6" />
