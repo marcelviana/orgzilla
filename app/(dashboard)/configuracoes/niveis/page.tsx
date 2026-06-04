@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Layers, Users, Briefcase, Plus, Info, MoreVertical, ChevronRight, ChevronDown, Eye, Edit, Trash2, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react'
-import { TableSkeleton, PageHeader, EmptyState, StatsCard } from '@/components/shared'
+import { TableSkeleton, PageHeader, EmptyState, StatsCard, ConfirmDialog } from '@/components/shared'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { toast } from '@/lib/ui/toast-config'
@@ -214,28 +214,24 @@ export default function NiveisPage() {
   const handleDeleteLevel = async () => {
     if (!selectedLevel) return
 
+    // onConfirm do ConfirmDialog: loading e fechamento são geridos pelo componente.
+    // Em falha, relança para manter o dialog aberto; sucesso resolve → fecha sozinho.
+    let result: Awaited<ReturnType<typeof softDeleteNivel>>
     try {
-      setIsSubmitting(true)
-
-      const result = await softDeleteNivel(selectedLevel.id)
-
-      if (result.success) {
-        toast.successDino(`Nível ${selectedLevel.nome} desativado com sucesso!`)
-
-        // Recarrega dados
-        await loadNiveis()
-
-        // Fecha modal
-        setDeleteModalOpen(false)
-      } else {
-        toast.error(result.error || 'Não foi possível desativar o nível')
-      }
+      result = await softDeleteNivel(selectedLevel.id)
     } catch (err) {
-      const appError = handleError(err, 'database')
-      toast.error(appError)
-    } finally {
-      setIsSubmitting(false)
+      toast.error(handleError(err, 'database'))
+      throw err
     }
+
+    if (!result.success) {
+      const msg = result.error || 'Não foi possível desativar o nível'
+      toast.error(msg)
+      throw new Error(msg)
+    }
+
+    toast.successDino(`Nível ${selectedLevel.nome} desativado com sucesso!`)
+    await loadNiveis()
   }
 
   const handleToggleStatus = async (levelId: string, currentStatus: boolean) => {
@@ -844,58 +840,38 @@ export default function NiveisPage() {
       </Dialog>
 
       {/* Delete Modal */}
-      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-        <DialogContent 
-          className="sm:max-w-md"
-          onInteractOutside={() => setDeleteModalOpen(false)}
-          onEscapeKeyDown={() => setDeleteModalOpen(false)}
-        >
-          <DialogHeader>
-            <DialogTitle>Excluir nível?</DialogTitle>
-            <DialogDescription>
-              {selectedLevel != null && ((selectedLevel.pessoas ?? 0) > 0 || (selectedLevel.cargos ?? 0) > 0) ? (
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2 text-red-600">
-                    <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <span>
-                      Não é possível excluir. {selectedLevel.pessoas} pessoas e{' '}
-                      {selectedLevel.cargos} cargos neste nível.
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p>Esta ação não pode ser desfeita.</p>
-                  <p className="text-sm text-amber-600">
-                    Removerá o nível da hierarquia. Verifique a sequência.
-                  </p>
-                </div>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteModalOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => { void handleDeleteLevel() }}
-              disabled={
-                isSubmitting ||
-                (selectedLevel != null && (selectedLevel.pessoas ?? 0) > 0) ||
-                (selectedLevel != null && (selectedLevel.cargos ?? 0) > 0)
-              }
-            >
-              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isSubmitting ? 'Excluindo...' : 'Excluir nível'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        title="Excluir nível?"
+        variant="danger"
+        confirmText="Excluir nível"
+        confirmDisabled={
+          selectedLevel != null &&
+          ((selectedLevel.pessoas ?? 0) > 0 || (selectedLevel.cargos ?? 0) > 0)
+        }
+        onConfirm={handleDeleteLevel}
+        description={
+          selectedLevel != null && ((selectedLevel.pessoas ?? 0) > 0 || (selectedLevel.cargos ?? 0) > 0) ? (
+            <div className="space-y-2">
+              <div className="flex items-start gap-2 text-danger">
+                <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <span>
+                  Não é possível excluir. {selectedLevel.pessoas} pessoas e{' '}
+                  {selectedLevel.cargos} cargos neste nível.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p>Esta ação não pode ser desfeita.</p>
+              <p className="text-sm text-warning">
+                Removerá o nível da hierarquia. Verifique a sequência.
+              </p>
+            </div>
+          )
+        }
+      />
 
       {/* Details Modal */}
       <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
