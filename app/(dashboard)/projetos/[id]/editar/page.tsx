@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -111,28 +113,20 @@ export default function EditarProjeto() {
             {/* Status */}
             <div className="space-y-2">
               <Label>Status</Label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={status === 'Ativo'}
-                    onChange={() => setStatus('Ativo')}
-                    className="w-4 h-4 text-green-600"
-                  />
+              <RadioGroup
+                value={status}
+                onValueChange={(v) => setStatus(v as 'Ativo' | 'Inativo')}
+                className="flex gap-4"
+              >
+                <label htmlFor="status-ativo" className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="Ativo" id="status-ativo" />
                   <StatusBadge status="Ativo" />
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={status === 'Inativo'}
-                    onChange={() => setStatus('Inativo')}
-                    className="w-4 h-4 text-muted-foreground"
-                  />
+                <label htmlFor="status-inativo" className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="Inativo" id="status-inativo" />
                   <StatusBadge status="Inativo" />
                 </label>
-              </div>
+              </RadioGroup>
               <p className="text-sm text-muted-foreground">Projetos inativos não aparecem em filtros por padrão</p>
             </div>
 
@@ -250,17 +244,15 @@ export default function EditarProjeto() {
                   key={pessoa.id}
                   className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
                 >
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedPeople.includes(pessoa.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
+                    onCheckedChange={(checked) => {
+                      if (checked) {
                         setSelectedPeople([...selectedPeople, pessoa.id])
                       } else {
                         setSelectedPeople(selectedPeople.filter((id) => id !== pessoa.id))
                       }
                     }}
-                    className="w-4 h-4 text-orange-500 rounded"
                   />
                   <Avatar className="w-12 h-12">
                     <AvatarImage src={pessoa.avatar || "/placeholder.svg"} alt={pessoa.nome} />

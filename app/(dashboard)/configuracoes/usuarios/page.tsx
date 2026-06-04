@@ -42,6 +42,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Users, ShieldAlert, Network, Plus, Search, MoreVertical, Eye, EyeOff, Filter, ChevronDown, LinkIcon, Unlink, Trash2, CheckCircle2, XCircle, Download, X, Loader2 } from 'lucide-react'
 import { TableSkeleton } from '@/components/shared/loading-state'
 import { PageHeader } from '@/components/shared'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import Link from "next/link"
 import {
   getUsuarios,
@@ -832,18 +833,15 @@ export default function UsuariosPage() {
                 <Label>
                   Tipo de Perfil <span className="text-error">*</span>
                 </Label>
-                <div className="mt-2 space-y-3">
-                  <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
-                    <input
-                      type="radio"
-                      name="tipoPerfil"
-                      value="admin"
-                      checked={formData.tipoPerfil === "admin"}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tipoPerfil: e.target.value as 'admin' | 'gestor' | 'visualizador' })
-                      }
-                      className="mt-1"
-                    />
+                <RadioGroup
+                  value={formData.tipoPerfil}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, tipoPerfil: v as 'admin' | 'gestor' | 'visualizador' })
+                  }
+                  className="mt-2 space-y-3"
+                >
+                  <label htmlFor="perfil-admin" className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
+                    <RadioGroupItem value="admin" id="perfil-admin" className="mt-1" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <ShieldAlert className="h-4 w-4 text-error" />
@@ -855,17 +853,8 @@ export default function UsuariosPage() {
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
-                    <input
-                      type="radio"
-                      name="tipoPerfil"
-                      value="gestor"
-                      checked={formData.tipoPerfil === "gestor"}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tipoPerfil: e.target.value as 'admin' | 'gestor' | 'visualizador' })
-                      }
-                      className="mt-1"
-                    />
+                  <label htmlFor="perfil-gestor" className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
+                    <RadioGroupItem value="gestor" id="perfil-gestor" className="mt-1" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Network className="h-4 w-4 text-primary" />
@@ -877,17 +866,8 @@ export default function UsuariosPage() {
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
-                    <input
-                      type="radio"
-                      name="tipoPerfil"
-                      value="visualizador"
-                      checked={formData.tipoPerfil === "visualizador"}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tipoPerfil: e.target.value as 'admin' | 'gestor' | 'visualizador' })
-                      }
-                      className="mt-1"
-                    />
+                  <label htmlFor="perfil-visualizador" className="flex items-start gap-3 rounded-lg border p-4 cursor-pointer hover:bg-accent/5">
+                    <RadioGroupItem value="visualizador" id="perfil-visualizador" className="mt-1" />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-accent" />
@@ -898,7 +878,7 @@ export default function UsuariosPage() {
                       </p>
                     </div>
                   </label>
-                </div>
+                </RadioGroup>
               </div>
 
               {createModalOpen && (
